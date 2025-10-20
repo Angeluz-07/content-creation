@@ -1,0 +1,22 @@
+# ui
+gradio
+
+# audio manipulation
+# audioop-lts
+pydub
+ffmpeg-python
+soundfile
+
+# other
+natsort
+
+#video manipulation
+moviepy
+
+# noise removal
+#pip install deepfilternet
+#pip install torch torchaudio -f https://download.pytorch.org/whl/cpu/torch_stable.html
+
+
+# tts
+#coqui-tts
