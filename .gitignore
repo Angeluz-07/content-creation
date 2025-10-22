@@ -210,3 +210,4 @@ __marimo__/
 # others
 .gradio
 input_audios/
+.archive

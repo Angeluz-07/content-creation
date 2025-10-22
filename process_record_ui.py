@@ -34,4 +34,4 @@ demo = gr.Interface(
     fn=process_audio, inputs=[gr.Audio(label="Input Audio", type="filepath")], outputs=[gr.Audio(label="Output Audio")]
 )
 
-demo.launch()
+demo.launch(server_name="0.0.0.0")
