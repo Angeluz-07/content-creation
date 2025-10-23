@@ -4,17 +4,17 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && \
-    apt-get install -y ffmpeg && \
+    apt-get install -y ffmpeg git && \
     apt-get clean
 
 # Install PyTorch CPU version
-RUN pip install -v torch torchaudio -f https://download.pytorch.org/whl/cpu/torch_stable.html
+RUN pip install --no-cache-dir -v "torch==2.8.0" "torchaudio==2.8.0" --index-url https://download.pytorch.org/whl/cpu
 
 # Install cargo && c++ compilers for deepfilternet
 RUN apt-get install -y cargo build-essential
 
 # Install deepfilter net
-RUN pip install deepfilternet
+RUN pip install --no-cache-dir deepfilternet
 
 # Install requirements
 COPY requirements.txt .

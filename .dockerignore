@@ -87,3 +87,9 @@ venv/
 
 # VS Code
 .vscode/
+
+# Others
+.gradio
+input_audios/
+.archive
+*.bat
