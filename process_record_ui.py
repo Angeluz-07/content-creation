@@ -6,6 +6,8 @@ from process_record import transform_m4a_to_wav, split_audio, remove_noise_from_
 INPUT_AUDIOS_FOLDER = Path(__file__).parent / "input_audios"
 INPUT_AUDIOS_FOLDER.mkdir(exist_ok=True)
 
+DEFAULT_EXAMPLE = Path(__file__).parent / "examples" / "Voz 070.m4a"
+
 def process_audio(audio_filepath):
     # generate workdir folder    
     TS = generate_timestamp()
@@ -31,7 +33,7 @@ def process_audio(audio_filepath):
     return result_filepath
 
 demo = gr.Interface(
-    fn=process_audio, inputs=[gr.Audio(label="Input Audio", type="filepath")], outputs=[gr.Audio(label="Output Audio")]
+    fn=process_audio, inputs=[gr.Audio(value=DEFAULT_EXAMPLE, label="Input Audio(*.m4a)", type="filepath")], outputs=[gr.Audio(label="Output Audio(*.wav)")]
 )
 
 demo.launch(server_name="0.0.0.0")
