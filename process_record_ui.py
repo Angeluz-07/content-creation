@@ -8,19 +8,16 @@ INPUT_AUDIOS_FOLDER = Path(__file__).parent / "input_audios"
 INPUT_AUDIOS_FOLDER.mkdir(exist_ok=True)
 
 DEFAULT_EXAMPLE = Path(__file__).parent / "examples" / "Voz 070.m4a"
-def postprocess_denoised_audio(denoised_filepath, no_silence):
-    #import pdb;pdb.set_trace()
+
+def postprocess_denoised_audio(denoised_filepath):
     if denoised_filepath:
-        if no_silence:
-            # Remove Silences
-            input_filepath = denoised_filepath
-            output_path = add_suffix_before_extension(input_filepath,"_NS")
-            remove_silence(input_filepath, output_file=output_path)
-            denoised_and_nosilence_path = output_path
-        else: 
-            denoised_and_nosilence_path = None
+        # Remove Silences
+        input_filepath = denoised_filepath
+        output_path = add_suffix_before_extension(input_filepath,"_NS")
+        remove_silence(input_filepath, output_file=output_path)
+        denoised_and_nosilence_path = output_path
     else:
-        return None
+        denoised_and_nosilence_path = None
     return denoised_and_nosilence_path
 
 def process_audio(audio_filepath):
@@ -47,15 +44,15 @@ def process_audio(audio_filepath):
 
 with gr.Blocks() as demo:
     # A hidden component to pass the audio data between tabs
-    shared_audio_state = gr.State(value=None) 
     # gr.State is better for hidden, non-UI data transfer
+    shared_audio_state = gr.State(value=None) 
 
     with gr.Tab("Step 1: Denoise Audio"):
 
         with gr.Row():
             
             with gr.Column():
-                input_audio_t1 =  gr.Audio(value=DEFAULT_EXAMPLE, label="Input Audio(*.m4a)", type="filepath")
+                input_audio_t1 = gr.Audio(value=DEFAULT_EXAMPLE, label="Input Audio(*.m4a)", type="filepath")
                 run_button_t1 = gr.Button("Submit")
     
             with gr.Column():
@@ -77,29 +74,31 @@ with gr.Blocks() as demo:
                 outputs=[shared_audio_state]
             )
 
-    # Tab 2: Audio Analyzer
     with gr.Tab("Step 2: Postprocess Denoised Audio") as tab2:
         
         with gr.Row():
-            # We don't need an input Audio component here, as the input comes from the state
             with gr.Column():
-                in2 = gr.Audio(label="Output Audio. Denoised(*.wav)", type="filepath", interactive=False)
-                checkbox = gr.Checkbox(label="Remove Silence After Denoise")
+                denoised_audio = gr.Audio(label="Output Audio. Denoised(*.wav)", type="filepath", interactive=False)
+                #min_silence_len=500, silence_thresh
+                min_silence = gr.Slider(minimum=100, maximum=1000, step=100)
+                silence_thresh = gr.Slider(minimum=-100, maximum=0, step=10)
                 use_tab1_output_button = gr.Button("Submit")
             with gr.Column():
-                output_text_t2 = gr.Audio(label="Output Audio. Denoised + No Silences(*.wav)")
+                output_audio_t2 = gr.Audio(label="Output Audio. Denoised + No Silences(*.wav)")
 
+        # automatically loads output of tab1
         tab2.select(
-            fn=lambda x: x,  # Returns path for display and path for the next step
+            fn=lambda x: x, 
             inputs=[shared_audio_state], 
-            outputs=[in2] # State is a dummy output to chain the next call
+            outputs=[denoised_audio] 
         )
+
         # !!! KEY STEP 2: Use the hidden shared state component as 
         # the input for Tab 2's function when the button is clicked.
         use_tab1_output_button.click(
             fn=postprocess_denoised_audio,
-            inputs=[shared_audio_state, checkbox ], # Pass the hidden state
-            outputs=[output_text_t2]
+            inputs=[denoised_audio],
+            outputs=[output_audio_t2]
         )
 
 demo.launch(server_name="0.0.0.0", show_error=True)

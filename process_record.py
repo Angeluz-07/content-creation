@@ -103,7 +103,7 @@ def remove_noise_from_folder(folder_path):
             except Exception as e:
                 print(f"Error processing {file_path}: {str(e)}")
 
-def remove_silence(input_file, output_file):
+def remove_silence(input_file, output_file, min_silence_len=500, silence_thresh=-40, keep_silence=100):
     """
     Removes silence gaps from an audio file.
     
@@ -112,17 +112,13 @@ def remove_silence(input_file, output_file):
         output_file: Path to save processed WAV file
         min_silence_len: Minimum duration of silence to remove (milliseconds)
         silence_thresh: Silence threshold in dBFS (-infinity to 0)
+        keep_silence: Amount of silence to keep at the beginning/end of each non-silent chunk
     """
     # Check if input file exists
     assert os.path.isfile(input_file), f"Input file {input_file} not found"
     
     # Load audio file
     audio = AudioSegment.from_wav(input_file)
-    
-    # Define parameters for silence detection
-    min_silence_len = 500  # Minimum silence length in milliseconds to consider as a gap
-    silence_thresh = -40   # Silence threshold in dBFS (decibels relative to full scale)
-    keep_silence = 100     # Amount of silence to keep at the beginning/end of each non-silent chunk
 
     audio_chunks = silence.split_on_silence(
         audio,
