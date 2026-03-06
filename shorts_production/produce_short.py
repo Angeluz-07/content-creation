@@ -1,40 +1,54 @@
-from moviepy import VideoFileClip, TextClip, CompositeVideoClip, ImageClip
+from moviepy import VideoFileClip, TextClip, CompositeVideoClip, ImageClip, ColorClip
 
-def create_short(config):
-    # 1. Cargar clip original
-    clip = VideoFileClip(config["input_video"])
+def producir_short(config):
+    # 1. Dimensiones Base (Formato Móvil 1080x1920)
+    CANVAS_W = 1080
+    CANVAS_H = 1920
     
-    # 2. Recorte para formato móvil (Vertical)
-    # Ejemplo: Tomar el centro del video
-    w, h = clip.size
-    target_ratio = 9/16
-    v_width = int(h * target_ratio)
-    video_cropped = clip.cropped(x_center=w/2, width=v_width, height=h)
+    # 2. Cargar video y redimensionar
+    # En lugar de zoom, lo ajustamos al ancho del canvas
+    clip_raw = VideoFileClip(config["input_video"])
+    video_redimensionado = clip_raw.resized(width=CANVAS_W) 
     
-    # 1. El Hook (Letras abajo sobre fondo negro)
-    txt_clip = TextClip(
+    # 3. Crear Fondo Negro (Lienzo)
+    fondo = ColorClip(size=(CANVAS_W, CANVAS_H), color=(0, 0, 0)).with_duration(clip_raw.duration)
+    
+    # 4. El Hook (Evitando overflow con method='caption')
+    # 'caption' ajusta el texto automáticamente al ancho dado
+    hook_clip = TextClip(
         text=config['hook_text'],
-        font_size=60,
+        font_size=70,
         color='white',
-        bg_color='black',
-        size=(int(v_width), 250) # El fondo negro se define con 'size'
-    ).with_duration(clip.duration).with_position(("center", "bottom"))
+        method='caption', # Clave para que no se corte
+        size=(CANVAS_W - 100, None) # Margen de 50px a los lados
+    ).with_duration(clip_raw.duration).with_position(("center", 1400)) # Posición fija abajo
 
-    # 2. La Marca de Agua (Arriba derecha)
-    # Si quieres que sea más pequeña, ajusta el font_size o usa .resized()
+    # 5. Marca de Agua
     watermark = TextClip(
-        text="@miusuario",
-        font_size=30,
+        text="@tu_usuario",
+        font_size=40,
         color='gray'
-    ).with_duration(clip.duration).with_position((int(v_width * 0.8), 20))
+    ).with_duration(clip_raw.duration).with_position((CANVAS_W - 300, 50))
 
-    # 5. Montaje Final
-    final_video = CompositeVideoClip([video_cropped, txt_clip, watermark], size=(v_width, int(h)))
-    
+    # 6. Composición
+    # Colocamos el video en la parte superior/media
+    final_video = CompositeVideoClip(
+        [fondo, video_redimensionado.with_position(("center", 200)), hook_clip, watermark],
+        size=(CANVAS_W, CANVAS_H)
+    )
+
+    # 7. Renderizado (Fix para reproducción en PC)
     if config.get('debug_mode'):
-        final_video.save_frame("debug_position.png", t=1) # Imagen rápida de prueba
+        final_video.save_frame("debug_rectificado.png", t=2)
     else:
-        final_video.write_videofile(config['output_name'], fps=30)
+        # Agregamos pixel_format para compatibilidad universal
+        final_video.write_videofile(
+            config['output_name'], 
+            fps=30, 
+            codec="libx264", 
+            audio_codec="aac",
+            ffmpeg_params=["-pix_fmt", "yuv420p"] # ESTO arregla que no se vea en PC
+        )
     
 config = {
     "input_video": "test.mp4",
@@ -48,7 +62,7 @@ import time
 start_time = time.perf_counter()
 
 # === Your code goes here ===
-create_short(config)
+producir_short(config)
 # ===========================
 
 end_time = time.perf_counter()
