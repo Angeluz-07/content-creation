@@ -28,27 +28,39 @@ def producir_short(config):
     # 3. Crear Fondo Negro (Lienzo)
     fondo = ColorClip(size=(CANVAS_W, CANVAS_H), color=(0, 0, 0)).with_duration(clip_raw.duration)
     
-    # ... (Resto del código de TextClips para Hook y Marca de Agua sigue igual) ...
-    # El Hook lo movemos un poco más abajo si el video ahora ocupa más espacio
+    ANCHO_HOOK = 920  # Dejamos margen a los lados (1080 - 160)
+    ALTO_HOOK = 350   # Altura fija para dar "aire" arriba y abajo
+
     hook_clip = TextClip(
         text=config['hook_text'],
-        font_size=70,
+        font_size=100,
         color='white',
+        bg_color='black',
         method='caption',
-        size=(CANVAS_W - 100, None)
-    ).with_duration(clip_raw.duration).with_position(("center", 1600)) # Ajustado hacia abajo
+        size=(ANCHO_HOOK, ALTO_HOOK), # Altura fija en lugar de None
+        text_align='center',          # Centrado horizontal
+        vertical_align='center',      # Centrado vertical dentro de la caja
+    ).with_duration(clip_raw.duration)
+
+    # 2. Posicionamiento
+    # Al tener una altura de 350, si lo pones en Y=1200, 
+    # el borde inferior llegará a 1550, dejando espacio libre abajo.
+    posicion_y_hook = 1150 
+
+    hook_final = hook_clip.with_position(("center", posicion_y_hook))
 
     # 5. Marca de Agua
     watermark = TextClip(
-        text="@tu_usuario",
-        font_size=40,
-        color='gray'
-    ).with_duration(clip_raw.duration).with_position((CANVAS_W - 300, 50))
+        text="@e",
+        font_size=60,
+        color='gray',
+        size=(350, 150), # Altura fija en lugar de None
+    ).with_duration(clip_raw.duration).with_position((50, 15)).rotated(15)
 
     # 6. Composición
     # Colocamos las piezas sobre el fondo.
     final_video = CompositeVideoClip(
-        [fondo, video_estirado.with_position(posicion_video), hook_clip, watermark],
+        [fondo, video_estirado.with_position(posicion_video), hook_final, watermark],
         size=(CANVAS_W, CANVAS_H)
     )
 
@@ -67,7 +79,7 @@ def producir_short(config):
     
 config = {
     "input_video": "test.mp4",
-    "hook_text": "DON PUCHO Desclasifica",
+    "hook_text": " \n Desclasifica \n su pasado",
     "debug_mode": True,
     "output_name": "output_test.mp4"
 }
