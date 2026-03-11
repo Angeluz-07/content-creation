@@ -3,3 +3,6 @@ yt-dlp
 
 #video manipulation
 moviepy
+
+#text fonts
+Pillow
