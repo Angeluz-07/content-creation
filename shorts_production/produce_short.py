@@ -1,70 +1,70 @@
 from moviepy import VideoFileClip, TextClip, CompositeVideoClip, ImageClip, ColorClip
 
-def producir_short(config):
-    # Configuraciones base
+
+def generar_capa_ui(config, output_png="temp/temp_ui.png"):
     CANVAS_SIZE = (1080, 1920)
     FUENTE_PATH = "C:/Windows/Fonts/CascadiaCode.ttf"
 
-    # 1. CARGA DEL VIDEO (Ya viene con el lienzo y posición de FFmpeg)
-    clip_raw = VideoFileClip(config["input_video"])
-    duracion = clip_raw.duration
-
-    # 2. CREACIÓN DE ELEMENTOS DE INTERFAZ (UI)
-    hook_clip = TextClip(
+    # Hook
+    hook = TextClip(
         text=config['hook_text'], font_size=100, color='white', bg_color='black',
         method='caption', size=(920, 350), text_align='center',
         vertical_align='center', font=FUENTE_PATH
-    ).with_duration(duracion).with_position(("center", 1150))
+    ).with_position(("center", 1150))
 
+    # Watermark
     watermark = TextClip(
-        text="@e", font_size=55, color='gray',
+        text="@elTarrinero", font_size=55, color='gray',
         size=(460, 155), font=FUENTE_PATH
-    ).with_duration(duracion).with_position((50, 15)).rotated(15)
+    ).with_position((50, 15)).rotated(15)
 
-    logo_final = ImageClip("emoji_comment.png") \
-                .resized(width=150) \
-                .with_duration(duracion) \
-                .with_position((800, 1035))
+    # Logo
+    logo = ImageClip("assets/emoji_comment.png").resized(width=150).with_position((800, 1035))
 
-    # 3. APLANADO DE UI (Optimización de rendimiento)
-    ui_composite = CompositeVideoClip([hook_clip, watermark, logo_final], size=CANVAS_SIZE)
-    
-    # Extraemos el frame y su transparencia
-    ui_estatica = ImageClip(ui_composite.get_frame(0))
-    ui_estatica.mask = ImageClip(ui_composite.mask.get_frame(0), is_mask=True)
-    ui_estatica = ui_estatica.with_duration(duracion)
+    # Componemos y guardamos UN SOLO FRAME
+    ui_composite = CompositeVideoClip([hook, watermark, logo], size=CANVAS_SIZE, bg_color=None)
+    ui_composite.save_frame(output_png, t=0)
+    return output_png
 
-    # 4. COMPOSICIÓN FINAL
-    # Al no poner .with_position(), ambos clips se alinean al (0,0)
-    final_video = CompositeVideoClip(
-        [clip_raw, ui_estatica],
-        size=CANVAS_SIZE
-    )
+import subprocess
 
-    # 5. RENDERIZADO
-    if config.get('debug_mode'):
-        final_video.save_frame("debug_final.png", t=2)
+def ensamblar_final(video_input, ui_png, video_output, debug=False):
+    if debug:
+        print("🔍 MODO DEBUG: Generando un solo frame de prueba...")
+        # Comando optimizado solo para extraer 1 imagen
+        ffmpeg_cmd = [
+            'ffmpeg', '-y',
+            '-ss', '00:00:01',            # Salta al segundo 1 (rápido)
+            '-i', video_input,
+            '-i', ui_png,
+            '-filter_complex', '[0:v][1:v]overlay=0:0',
+            '-frames:v', '1',             # Solo un frame
+            '-q:v', '2',                  # Alta calidad de imagen
+            'temp/debug_frame.jpg'             # Salida como imagen
+        ]
     else:
-        final_video.write_videofile(
-            config['output_name'], 
-            fps=30, 
-            codec="hevc_amf", 
-            audio_codec="aac",
-            # IMPORTANTE: Seteamos el preset aquí, pero con valor numérico 
-            # para que el driver de AMD no intente "evaluar" texto.
-            preset="0", 
-            ffmpeg_params=[
-                "-pix_fmt", "yuv420p",
-                "-rc", "vbr_latency",
-                "-quality", "speed" # Intentamos pasarlo aquí si el preset falla
-            ]
-        )
-    
+        print("🚀 MODO PRODUCCIÓN: Ensamblado completo...")
+        # Tu comando original de alto rendimiento
+        ffmpeg_cmd = [
+            'ffmpeg', '-y',
+            '-i', video_input,
+            '-i', ui_png,
+            '-filter_complex', '[0:v][1:v]overlay=0:0',
+            '-c:v', 'hevc_amf',
+            '-quality', '0',
+            '-rc', 'cbr',
+            '-b:v', '15M',
+            '-c:a', 'copy',
+            video_output
+        ]
+
+    subprocess.run(ffmpeg_cmd, check=True)
+
 config = {
-    "input_video": "test.mp4",
-    "hook_text": " \n Desclasifica \n su pasado",
-    "debug_mode": False,
-    "output_name": "output_test.mp4"
+    "input_video": "temp/.mp4",
+    "hook_text": " \n\"El pueblo no\n te quiere\"",
+    "debug_mode": 0,
+    "output_name": "output_videos/.mp4"
 }
 
 import time
@@ -72,7 +72,12 @@ import time
 start_time = time.perf_counter()
 
 # === Your code goes here ===
-producir_short(config)
+#producir_short(config)
+# 1. Generas la imagen una sola vez
+ui_file = generar_capa_ui(config)
+
+# 2. Unes todo con la potencia de la GPU
+ensamblar_final(config["input_video"], ui_file, config["output_name"], config["debug_mode"])
 # ===========================
 
 end_time = time.perf_counter()
