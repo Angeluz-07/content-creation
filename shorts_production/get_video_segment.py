@@ -8,8 +8,8 @@ import os
 import subprocess
 import os
 
-def get_segment(url, inicio, fin, nombre_salida):
-    temp_file = "temp_raw_download.mp4"
+def get_segment(url, inicio, fin, nombre_salida, id):
+    temp_file = f"temp/{id}_raw_download.mp4"
     
     # 1. Verificar si el archivo temporal ya existe
     if os.path.exists(temp_file):
@@ -75,9 +75,9 @@ def get_segment(url, inicio, fin, nombre_salida):
         print(f"❌ Error en el procesamiento de FFmpeg: {e}")
 
 url = "https://www.youtube.com/watch?v"
-inicio =  "00:56:06" 
-fin = "00:57:33"
-nombre_salida = "test.mp4"
-get_segment(url, inicio, fin, nombre_salida)
-# Ejemplo de uso:
-# descargar_segmento_seguro("https://www.youtube.com/watch?v=...", "00:45:00", "00:46:30", "clip_temp.mp4")
+inicio =  "00:09:10" 
+fin = "00:10:18"
+id = "tarri"
+
+nombre_salida = f"temp/{id}_resized.mp4"
+get_segment(url, inicio, fin, nombre_salida, id)
