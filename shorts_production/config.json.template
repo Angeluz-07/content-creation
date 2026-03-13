@@ -1,0 +1,12 @@
+{
+    "url": "youtube url",
+    "start_segment":"00:01:15",
+    "end_segment":"00:01:30",
+    "output_segment_name":"temp/segment_resized.mp4",
+    "watermark_text":"@myPage",
+    "input_video": "temp/segment_resized.mp4",
+    "hook_text": "Some hook text",
+    "output_name": "output_videos/output_video.mp4",    
+    "get_segment": 0,
+    "debug_mode": 0 
+}

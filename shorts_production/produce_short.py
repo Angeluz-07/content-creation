@@ -126,8 +126,10 @@ def ensamblar_final(video_input, ui_png, video_output, debug=False):
     subprocess.run(ffmpeg_cmd, check=True)
 
 import time
+import json
 
-
+with open("config.json", "r", encoding="utf-8") as file:
+    config = json.load(file)
 
 if config["get_segment"]:
     start_time = time.perf_counter()
