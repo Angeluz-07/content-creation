@@ -70,13 +70,13 @@ def get_segment(url, inicio, fin, nombre_salida, download_segment, resize_segmen
     else:
         print("Skipping resizing...")
 
-def generar_capa_ui(config, output_png="temp/temp_ui.png"):
+def generar_capa_ui(config, hook_text, output_png="temp/temp_ui.png"):
     CANVAS_SIZE = (1080, 1920)
     FUENTE_PATH = "C:/Windows/Fonts/CascadiaCode.ttf"
 
     # Hook
     hook = TextClip(
-        text=config['hook_text'], font_size=100, color='white', bg_color='black',
+        text=hook_text, font_size=100, color='white', bg_color='black',
         method='caption', size=(920, 350), text_align='center',
         vertical_align='center', font=FUENTE_PATH
     ).with_position(("center", 1150))
@@ -134,17 +134,19 @@ with open("config.json", "r", encoding="utf-8") as file:
     configs = json.load(file)
     config = configs[0] # get most recent config to work with
 
+SEGMENT_INDEX = -1
+
 if config["get_segment"]:
     start_time = time.perf_counter()
     # === Your code goes here ===
     get_segment(
-        config["url"], 
-        config["start_segment"], 
-        config["end_segment"], 
+        config["url"],
+        config["segments"][SEGMENT_INDEX]["start_segment"], 
+        config["segments"][SEGMENT_INDEX]["end_segment"], 
         config["output_segment_name"],
         config["download_segment"],
         config["resize_segment"],
-        id=Path(config["output_name"]).stem.split("_")[-1]
+        id=Path(config["segments"][SEGMENT_INDEX]["output_name"]).stem.split("_")[-1]
     )
     # ===========================
     end_time = time.perf_counter()
@@ -156,8 +158,8 @@ if config["get_segment"]:
 start_time = time.perf_counter()
 
 # === Your code goes here ===
-ui_file = generar_capa_ui(config)
-ensamblar_final(config["input_video"], ui_file, config["output_name"], config["debug_video_frame"])
+ui_file = generar_capa_ui(config, config["segments"][SEGMENT_INDEX]["hook_text"])
+ensamblar_final(config["input_video"], ui_file, config["segments"][SEGMENT_INDEX]["output_name"], config["debug_video_frame"])
 # ===========================
 
 end_time = time.perf_counter()
