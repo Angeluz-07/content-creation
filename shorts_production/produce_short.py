@@ -2,8 +2,8 @@ from moviepy import TextClip, CompositeVideoClip, ImageClip
 import subprocess
 import os
 
-def get_segment(url, inicio, fin, nombre_salida, download_segment, resize_segment):
-    temp_file = f"temp/segment_raw_download.mp4"
+def get_segment(url, inicio, fin, nombre_salida, download_segment, resize_segment, id):
+    temp_file = f"temp/{id}_segment_raw_download.mp4"
     
     if download_segment:
         # Descarga limpia del segmento
@@ -129,7 +129,7 @@ def ensamblar_final(video_input, ui_png, video_output, debug=False):
 
 import time
 import json
-
+from pathlib import Path
 with open("config.json", "r", encoding="utf-8") as file:
     configs = json.load(file)
     config = configs[0] # get most recent config to work with
@@ -143,7 +143,8 @@ if config["get_segment"]:
         config["end_segment"], 
         config["output_segment_name"],
         config["download_segment"],
-        config["resize_segment"]
+        config["resize_segment"],
+        id=Path(config["output_name"]).stem.split("_")[-1]
     )
     # ===========================
     end_time = time.perf_counter()
