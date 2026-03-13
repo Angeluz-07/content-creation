@@ -2,13 +2,10 @@ from moviepy import TextClip, CompositeVideoClip, ImageClip
 import subprocess
 import os
 
-def get_segment(url, inicio, fin, nombre_salida):
+def get_segment(url, inicio, fin, nombre_salida, download_segment, resize_segment):
     temp_file = f"temp/segment_raw_download.mp4"
     
-    # 1. Verificar si el archivo temporal ya existe
-    if os.path.exists(temp_file):
-        print(f"♻️ El archivo temporal '{temp_file}' ya existe. Saltando descarga...")
-    else:
+    if download_segment:
         # Descarga limpia del segmento
         ydl_opts = [
             'yt-dlp', '--quiet', '--no-warnings',
@@ -23,50 +20,55 @@ def get_segment(url, inicio, fin, nombre_salida):
         except subprocess.CalledProcessError as e:
             print(f"❌ Error en la descarga: {e}")
             return
+    else:
+        print("Skipping downloading...")
 
-    # 2. Procesamiento local con GPU (Filtros corregidos + AMF)
-    try:
-        POS_Y=180
-        # Variables de control
-        CANVAS_W, CANVAS_H = 1080, 1920
-        FACTOR = 1.5  # Tu 1.5x vital
-        TARGET_W = int(CANVAS_W * FACTOR) # 1620px
+    if resize_segment:
+        # 2. Procesamiento local con GPU (Filtros corregidos + AMF)
+        try:
+            POS_Y=180
+            # Variables de control
+            CANVAS_W, CANVAS_H = 1080, 1920
+            FACTOR = 1.5  # Tu 1.5x vital
+            TARGET_W = int(CANVAS_W * FACTOR) # 1620px
 
-        safe_filter = (
-            # 1. Escalamos el VIDEO para que el ancho sea 1620. 
-            # La altura se ajusta sola (-1) para no achatar.
-            f"scale={TARGET_W}:-1,"
+            safe_filter = (
+                # 1. Escalamos el VIDEO para que el ancho sea 1620. 
+                # La altura se ajusta sola (-1) para no achatar.
+                f"scale={TARGET_W}:-1,"
+                
+                # 2. Forzamos que los píxeles sean cuadrados.
+                "setsar=1:1,"
+                
+                # 3. CORTAMOS el video al ancho del lienzo (1080). 
+                # Esto elimina los bordes laterales que sobran por el zoom (el overflow).
+                # 'ih' mantiene la altura que resultó del escalado anterior.
+                f"crop={CANVAS_W}:ih,"
+                
+                # 4. Ponemos el video en el lienzo vertical.
+                # Ahora 'iw' es exactamente 1080, así que no habrá error.
+                f"pad={CANVAS_W}:{CANVAS_H}:(ow-iw)/2:{POS_Y}:black"
+            )
+            ffmpeg_cmd = [
+                'ffmpeg', '-y', '-i', temp_file,
+                '-vf', safe_filter,
+                '-c:v', 'h264_amf', 
+                '-rc', 'cbr',
+                '-b:v', '18M',         # Subimos a 18M para que el zoom no pierda nitidez
+                '-quality', 'quality', 
+                '-pix_fmt', 'yuv420p',
+                '-c:a', 'aac',     
+                nombre_salida
+            ]
+            print("🚀 Aplicando hardware acceleration (AMF) con filtros corregidos...")
+            subprocess.run(ffmpeg_cmd, check=True)
             
-            # 2. Forzamos que los píxeles sean cuadrados.
-            "setsar=1:1,"
-            
-            # 3. CORTAMOS el video al ancho del lienzo (1080). 
-            # Esto elimina los bordes laterales que sobran por el zoom (el overflow).
-            # 'ih' mantiene la altura que resultó del escalado anterior.
-            f"crop={CANVAS_W}:ih,"
-            
-            # 4. Ponemos el video en el lienzo vertical.
-            # Ahora 'iw' es exactamente 1080, así que no habrá error.
-            f"pad={CANVAS_W}:{CANVAS_H}:(ow-iw)/2:{POS_Y}:black"
-        )
-        ffmpeg_cmd = [
-            'ffmpeg', '-y', '-i', temp_file,
-            '-vf', safe_filter,
-            '-c:v', 'h264_amf', 
-            '-rc', 'cbr',
-            '-b:v', '18M',         # Subimos a 18M para que el zoom no pierda nitidez
-            '-quality', 'quality', 
-            '-pix_fmt', 'yuv420p',
-            '-c:a', 'aac',     
-            nombre_salida
-        ]
-        print("🚀 Aplicando hardware acceleration (AMF) con filtros corregidos...")
-        subprocess.run(ffmpeg_cmd, check=True)
-        
-        print(f"✅ Proceso terminado con éxito: {nombre_salida}")
+            print(f"✅ Proceso terminado con éxito: {nombre_salida}")
 
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Error en el procesamiento de FFmpeg: {e}")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Error en el procesamiento de FFmpeg: {e}")
+    else:
+        print("Skipping resizing...")
 
 def generar_capa_ui(config, output_png="temp/temp_ui.png"):
     CANVAS_SIZE = (1080, 1920)
@@ -129,12 +131,20 @@ import time
 import json
 
 with open("config.json", "r", encoding="utf-8") as file:
-    config = json.load(file)
+    configs = json.load(file)
+    config = configs[0] # get most recent config to work with
 
 if config["get_segment"]:
     start_time = time.perf_counter()
     # === Your code goes here ===
-    get_segment(config["url"], config["start_segment"], config["end_segment"], config["output_segment_name"])
+    get_segment(
+        config["url"], 
+        config["start_segment"], 
+        config["end_segment"], 
+        config["output_segment_name"],
+        config["download_segment"],
+        config["resize_segment"]
+    )
     # ===========================
     end_time = time.perf_counter()
     elapsed_time = end_time - start_time
@@ -146,7 +156,7 @@ start_time = time.perf_counter()
 
 # === Your code goes here ===
 ui_file = generar_capa_ui(config)
-ensamblar_final(config["input_video"], ui_file, config["output_name"], config["debug_mode"])
+ensamblar_final(config["input_video"], ui_file, config["output_name"], config["debug_video_frame"])
 # ===========================
 
 end_time = time.perf_counter()
