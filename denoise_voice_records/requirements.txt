@@ -2,7 +2,6 @@
 gradio
 
 # audio manipulation
-# audioop-lts
 pydub
 ffmpeg-python
 soundfile
