@@ -2,7 +2,7 @@ import gradio as gr
 from pathlib import Path
 from pydub import AudioSegment
 from process_record import transform_m4a_to_wav, split_audio, remove_noise_from_folder, combine_wav_files_with_suffix, generate_timestamp, remove_silence, add_suffix_before_extension
-import version
+import denoise_voice_records.version as version
 
 INPUT_AUDIOS_FOLDER = Path(__file__).parent / "input_audios"
 INPUT_AUDIOS_FOLDER.mkdir(exist_ok=True)
