@@ -1,6 +1,9 @@
 from moviepy import TextClip, CompositeVideoClip, ImageClip
 import subprocess
 import os
+import time
+import json
+from pathlib import Path
 
 def get_segment(url, inicio, fin, nombre_salida, download_segment, resize_segment, id):
     temp_file = f"temp/{id}_segment_raw_download.mp4"
@@ -127,9 +130,6 @@ def ensamblar_final(video_input, ui_png, video_output, debug=False):
 
     subprocess.run(ffmpeg_cmd, check=True)
 
-import time
-import json
-from pathlib import Path
 with open("config.json", "r", encoding="utf-8") as file:
     configs = json.load(file)
     config = configs[0] # get most recent config to work with
