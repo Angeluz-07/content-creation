@@ -1,3 +1,4 @@
+import subprocess
 
 def download_segment_from_yt(start_ts: str, end_ts : str, url:str, output_path: str):
     """
@@ -15,5 +16,5 @@ def download_segment_from_yt(start_ts: str, end_ts : str, url:str, output_path: 
         print("📥 Downloading segment from YouTube...")
         subprocess.run(ydl_opts, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"❌ Error en la descarga: {e}")
+        print(f"❌ Error on download: {e}")
         return
