@@ -4,25 +4,13 @@ import os
 import time
 import json
 from pathlib import Path
+from download_video_segment import download_segment_from_yt
 
 def get_segment(url, inicio, fin, nombre_salida, download_segment, resize_segment, id):
     temp_file = f"temp/{id}_segment_raw_download.mp4"
     
     if download_segment:
-        # Descarga limpia del segmento
-        ydl_opts = [
-            'yt-dlp', '--quiet', '--no-warnings',
-            '-f', 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/mp4',
-            '--external-downloader', 'ffmpeg',
-            '--external-downloader-args', f'ffmpeg_i:-ss {inicio} -to {fin}',
-            url, '-o', temp_file
-        ]
-        try:
-            print("📥 Descargando segmento de YouTube...")
-            subprocess.run(ydl_opts, check=True)
-        except subprocess.CalledProcessError as e:
-            print(f"❌ Error en la descarga: {e}")
-            return
+        download_segment_from_yt(inicio, fin, url,temp_file)
     else:
         print("Skipping downloading...")
 
