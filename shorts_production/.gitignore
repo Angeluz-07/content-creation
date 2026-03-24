@@ -3,3 +3,5 @@
 /output_videos
 /temp
 config.json
+
+__pycache__
