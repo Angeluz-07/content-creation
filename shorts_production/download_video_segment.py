@@ -44,3 +44,11 @@ def download_segment_from_yt(start_ts: str, end_ts: str, url: str, output_path: 
         print("Raw segment downloaded successfuly")
     except Exception as e:
         print(f"Error while downloading: {e}")
+
+
+# url = ""
+# start_ts ="00:03:49"
+# end_ts = "00:05:01"
+# outfile = "temp.mp4"
+
+# download_segment_from_yt(start_ts, end_ts, url, outfile)
