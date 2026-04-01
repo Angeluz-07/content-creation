@@ -13,12 +13,15 @@ def download_segment_from_yt(start_ts: str, end_ts: str, url: str, output_path: 
     end_sec = to_seconds(end_ts)
 
     ydl_opts = {
-        "quiet": True,
+        "quiet": False,
         "no_warnings": True,
-        "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "format": "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/mp4",
         "outtmpl": output_path,
-        # Recorte nativo eficiente
+        # CHANGE THIS: Remove the strict [ext=mp4] requirement.
+        # We ask for best video + best audio and tell it to merge into mp4.
+        "format": "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
+        "merge_output_format": "mp4",
+        # Add this to handle the "tv downgraded" streams correctly
+        "check_formats": "selected",
         "download_ranges": lambda info_dict, ydl: [
             {
                 "start_time": start_sec,
@@ -26,10 +29,19 @@ def download_segment_from_yt(start_ts: str, end_ts: str, url: str, output_path: 
             }
         ],
         "force_keyframes_at_cuts": True,
-        # Evitar bloqueos por frecuencia
         "sleep_interval": random.randint(5, 15),
         "max_sleep_interval": 30,
+        #"cookiefile": "youtube_cookies.txt",
+        "extractor_args": {
+            "youtube": {
+                # 'tv' or 'android' clients are great for avoiding bot-checks,
+                # but they require the broader format selection above.
+                "player_client": ["android", "web"],
+                "player_skip": ["webpage", "configs"],
+            }
+        },
     }
+
 
     try:
         print(f"Starting download raw segment: {start_ts} - {end_ts}")
