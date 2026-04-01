@@ -122,7 +122,7 @@ def generar_capa_ui(config, hook_text, output_png="temp/temp_ui.png"):
 
     # Componemos y guardamos UN SOLO FRAME
     ui_composite = CompositeVideoClip(
-        [hook, watermark], size=CANVAS_SIZE, bg_color=None
+        [hook, watermark, logo], size=CANVAS_SIZE, bg_color=None
     )
     ui_composite.save_frame(output_png, t=0)
     return output_png
