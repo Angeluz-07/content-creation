@@ -1,1 +1,1 @@
-docker run -v "%cd%/input_audios:/app/input_audios" -p 7860:7860 -it angeluz07/content-creation-img:0.0.1
+docker run -v "%cd%/input_audios:/app/input_audios" -p 7860:7860 -it angeluz07/denoise-voice-records:0.0.2
