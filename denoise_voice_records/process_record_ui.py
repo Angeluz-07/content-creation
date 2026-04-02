@@ -17,23 +17,6 @@ INPUT_AUDIOS_FOLDER.mkdir(exist_ok=True)
 DEFAULT_EXAMPLE = Path(__file__).parent / "examples" / "Voz 070.m4a"
 
 
-def postprocess_denoised_audio(denoised_filepath, min_silence, silence_thresh):
-    if denoised_filepath:
-        # Remove Silences
-        input_filepath = denoised_filepath
-        output_path = add_suffix_before_extension(input_filepath, "_NS")
-        remove_silence(
-            input_filepath,
-            output_file=output_path,
-            min_silence_len=min_silence,
-            silence_thresh=silence_thresh,
-        )
-        denoised_and_nosilence_path = output_path
-    else:
-        denoised_and_nosilence_path = None
-    return denoised_and_nosilence_path
-
-
 def process_audio(audio_filepath):
     # generate workdir folder
     TS = generate_timestamp()
