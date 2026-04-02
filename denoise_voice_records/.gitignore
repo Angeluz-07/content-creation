@@ -211,4 +211,3 @@ __marimo__/
 .gradio
 input_audios/
 .archive
-*.bat

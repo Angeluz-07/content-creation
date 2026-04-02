@@ -1,0 +1,1 @@
+docker run -p 7860:7860 -it angeluz07/content-creation-img:0.0.1

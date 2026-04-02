@@ -1,22 +1,22 @@
-# Tools for content creation
-Personal repo with tools to automate tasks for content creation.
+# Denoise Voice Records
+App built with Gradio and 'deepfilternet' to denoise voice records in format .m4a
 
 ## Docker commands
 
 ```
-# build image
-docker build -t content-creation-img .
+# Build img
+docker_build_img.bat
 
-# Run docker default script
-docker run -p 7860:7860 -it content-creation-img
+# Run docker img
+docker_run_img.bat
 
 # Access to service via 'locahost:7860'
 
-# Run docker another script
-docker run -it content-creation-img bash
+# Run bash in the running docker img
+docker_bash_img.bat
 ```
 
-## Commands for local dev
+## Commands for local dev(TODO: Review)
 ```
 # create venv
 python -m venv .venv

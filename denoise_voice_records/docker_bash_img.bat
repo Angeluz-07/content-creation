@@ -1,0 +1,1 @@
+docker run -it angeluz07/content-creation-img:0.0.1 bash

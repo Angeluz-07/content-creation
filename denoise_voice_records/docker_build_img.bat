@@ -1,0 +1,1 @@
+docker build -t angeluz07/content-creation-img:0.0.1 .

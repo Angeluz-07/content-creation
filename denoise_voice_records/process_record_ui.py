@@ -2,7 +2,7 @@ import gradio as gr
 from pathlib import Path
 from pydub import AudioSegment
 from process_record import transform_m4a_to_wav, split_audio, remove_noise_from_folder, combine_wav_files_with_suffix, generate_timestamp, remove_silence, add_suffix_before_extension
-import denoise_voice_records.version as version
+from version import VERSION
 
 INPUT_AUDIOS_FOLDER = Path(__file__).parent / "input_audios"
 INPUT_AUDIOS_FOLDER.mkdir(exist_ok=True)
@@ -43,7 +43,7 @@ def process_audio(audio_filepath):
 
 
 with gr.Blocks() as demo:
-    gr.Markdown(f"<center><h1>Denoise Voice Records App</h1>(v{version.VERSION})</center>")
+    gr.Markdown(f"<center><h1>Denoise Voice Records App</h1>(v{VERSION})</center>")
     # A hidden component to pass the audio data between tabs
     # gr.State is better for hidden, non-UI data transfer
     shared_audio_state = gr.State(value=None) 
