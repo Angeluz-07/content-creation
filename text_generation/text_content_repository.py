@@ -16,6 +16,10 @@ class TextContent:
     id: str = field(default_factory=lambda: str(uuid4()))
     prompt_config_id: Optional[str] = None
 
+    def get_ts_from_created_at(self):
+        """Generate a timestamp string in YYYYMMDD_HHMMSS format."""
+        return self.created_at.strftime("%Y%m%d_%H%M%S")
+
 class TextContentRepository:
     def __init__(self, directory: str = str(TEXT_OUTPUT_FOLDER)):
         self.directory = Path(directory)
@@ -29,7 +33,7 @@ class TextContentRepository:
         
         post = frontmatter.Post(body, **data)
         
-        file_path = self.directory / f"{content.id}.md"
+        file_path = self.directory / f"{content.get_ts_from_created_at()}.md"
         with open(file_path, "wb") as f:
             frontmatter.dump(post, f)
 
