@@ -16,7 +16,7 @@ class TextContent:
     id: str = field(default_factory=lambda: str(uuid4()))
     prompt_config_id: Optional[str] = None
 
-class TextContentRepo:
+class TextContentRepository:
     def __init__(self, directory: str = str(TEXT_OUTPUT_FOLDER)):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
@@ -59,4 +59,3 @@ class TextContentRepo:
             id=metadata.get('id'),
             prompt_config_id=metadata.get('prompt_config_id')
         )
-text_content_repo = TextContentRepo()
