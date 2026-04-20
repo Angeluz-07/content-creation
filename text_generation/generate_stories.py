@@ -5,10 +5,15 @@ from datetime import datetime
 from pathlib import Path
 
 from prompt_config import PromptConfig, prompts_config_repository
-from advices import advice_repository, AdviceRepo, Advice
+from text_content import text_content_repo, TextContent
 
 MODELO = "gemma3:4b" # mas literario
 #MODELO = "llama3.2:3b" # mas equilibrado
+
+# class TextGeneratorService:
+#     def __init__(self, prompts_config_repository, prompts_put):
+#         self.model = MODELO
+#         self.prompts_config_repository = prompts_config_repository
 
 def generar_story(prompt_config: PromptConfig):
 
@@ -31,7 +36,7 @@ def generar_story(prompt_config: PromptConfig):
         "conteo_palabras": len(historia.split())
     }
 
-    adv = Advice(
+    adv = TextContent(
         topic= prompt_config.name,
         text = historia, 
         num_words=len(historia.split()),
@@ -43,7 +48,7 @@ def generar_story(prompt_config: PromptConfig):
     return adv
 
 if __name__ == "__main__":
-    prompt = prompts_config_repository.get_by_id("script_generator")
+    prompt = prompts_config_repository.get_by_id("opinologo")
     adv = generar_story(prompt)
-    advice_repository.add(adv)
+    text_content_repo.save(adv)
     print(f"successfully generated in {adv.creation_duration} -> {adv}")
