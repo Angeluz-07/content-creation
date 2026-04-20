@@ -1,1 +1,2 @@
 ollama # for genai
+python-frontmatter # to parse metadata in .md files

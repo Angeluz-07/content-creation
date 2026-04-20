@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
-import json
-BASE_DIR = Path(__file__).resolve().parent.parent
-PROMPT_CONFIG_PATH = BASE_DIR / ".data" / ".prompts_config.json"
+from config import PROMPTS_FOLDER
+import frontmatter
 
 @dataclass
 class PromptConfig:
@@ -13,34 +12,36 @@ class PromptConfig:
     name: str
     num_predict: int = 200
 
-
 class PromptConfigRepo:
-    def __init__(self, file_path: str = PROMPT_CONFIG_PATH):
-        self.file_path = Path(file_path)
+    def __init__(self, directory: str = str(PROMPTS_FOLDER)):
+        self.directory = Path(directory)
 
-    def _read_all(self) -> List[dict]:
-        with open(self.file_path, encoding='utf-8') as f:
-            return json.load(f)
-        
     def get_all(self) -> List[PromptConfig]:
-        data = self._read_all()
-        return [self._map_to_entity(item) for item in data]
-    
-    def _map_to_entity(self, data: dict) -> PromptConfig:
-        """Helper to reconstruct the objects from a dictionary."""
-        system = "\n".join(data['system_content'])
-        user = "\n".join(data['user_content'])
+        configs = []
+        for file_path in self.directory.glob("*.md"):
+            configs.append(self._map_to_entity(file_path))
+        return configs
+
+    def _map_to_entity(self, file_path: Path) -> PromptConfig:
+        post = frontmatter.load(file_path)
+        
+        # Separamos el contenido por los headers # System y # User
+        content_parts = post.content.split("# User")
+        system_content = content_parts[0].replace("# System", "").strip()
+        user_content = content_parts[1].strip() if len(content_parts) > 1 else ""
+
         return PromptConfig(
-            system_content=system,
-            user_content=user,
-            name=data["name"],
-            id=data["id"],
-            num_predict=data["num_predict"]
+            id=post["id"],
+            name=post["name"],
+            num_predict=post.get("num_predict", 200),
+            system_content=system_content,
+            user_content=user_content
         )
 
     def get_by_id(self, id: str) -> Optional[PromptConfig]:
-        data = self._read_all()
-        item = next((x for x in data if x["id"] == id), None)
-        return self._map_to_entity(item) if item else None
+        # Aquí puedes optimizar buscando por nombre de archivo si prefieres
+        # O simplemente filtrar el get_all()
+        return next((x for x in self.get_all() if x.id == id), None)
+    
 
 prompts_config_repository = PromptConfigRepo()

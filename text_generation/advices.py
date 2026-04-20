@@ -7,7 +7,7 @@ import json
 from dataclasses import asdict
 from datetime import timezone
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent
 DATA_FOLDER = BASE_DIR / ".data"
 ADVICES_FILE_PATH = DATA_FOLDER / "advices.json"
 

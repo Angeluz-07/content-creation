@@ -43,7 +43,7 @@ def generar_story(prompt_config: PromptConfig):
     return adv
 
 if __name__ == "__main__":
-    prompt = prompts_config_repository.get_by_id("")
+    prompt = prompts_config_repository.get_by_id("script_generator")
     adv = generar_story(prompt)
     advice_repository.add(adv)
     print(f"successfully generated in {adv.creation_duration} -> {adv}")
