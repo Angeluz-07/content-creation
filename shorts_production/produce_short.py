@@ -83,7 +83,7 @@ def get_segment(url, inicio, fin, force_download, id):
         return resized_file
 
 
-def generar_capa_ui(config, hook_text, output_png="temp/temp_ui.png"):
+def generar_capa_ui(watermark_text, hook_text, output_png="temp/temp_ui.png"):
     CANVAS_SIZE = (1080, 1920)
     FUENTE_PATH = "C:/Windows/Fonts/CascadiaCode.ttf"
 
@@ -103,7 +103,7 @@ def generar_capa_ui(config, hook_text, output_png="temp/temp_ui.png"):
     # Watermark
     watermark = (
         TextClip(
-            text=config["watermark_text"],
+            text=watermark_text,
             font_size=55,
             color="gray",
             size=(460, 155),
@@ -184,20 +184,30 @@ def ensamblar_final(video_input, ui_png, video_output, debug=False):
 
 
 with open("config.json", "r", encoding="utf-8") as file:
-    configs = json.load(file)
-    config = configs[0]  # get most recent config to work with
+    config = json.load(file)
 
 SEGMENT_INDEX = -1
 
+WATERMARK_TEXT = config["watermark_text"]
+INPUT_VIDEO = config["input_video"]
+DEBUG_VIDEO_FRAME = config["debug_video_frame"]
+FORCE_DOWNLOAD = config["force_download"]
+
+input_segment = config["input_segments"][0]
+URL = input_segment["url"]
+START_SEGMENT = input_segment["segments"][SEGMENT_INDEX]["start_segment"]
+END_SEGMENT = input_segment["segments"][SEGMENT_INDEX]["end_segment"]
+HOOK_TEXT = input_segment["segments"][SEGMENT_INDEX]["hook_text"]
+OUTPUT_NAME = input_segment["segments"][SEGMENT_INDEX]["output_name"]
 
 start_time = time.perf_counter()
 # === Your code goes here ===
 resized_filepath = get_segment(
-    config["url"],
-    config["segments"][SEGMENT_INDEX]["start_segment"],
-    config["segments"][SEGMENT_INDEX]["end_segment"],
-    config["force_download"],
-    id=Path(config["segments"][SEGMENT_INDEX]["output_name"]).stem.split("_")[-1],
+    URL,
+    START_SEGMENT,
+    END_SEGMENT,
+    FORCE_DOWNLOAD,
+    id=Path(OUTPUT_NAME).stem.split("_")[-1],
 )
 # ===========================
 end_time = time.perf_counter()
@@ -209,12 +219,12 @@ print(f"Elapsed time: {elapsed_time:.4f} seconds")
 start_time = time.perf_counter()
 
 # === Your code goes here ===
-ui_file = generar_capa_ui(config, config["segments"][SEGMENT_INDEX]["hook_text"])
+ui_file = generar_capa_ui(WATERMARK_TEXT, HOOK_TEXT)
 ensamblar_final(
     resized_filepath,
     ui_file,
-    config["segments"][SEGMENT_INDEX]["output_name"],
-    config["debug_video_frame"],
+    OUTPUT_NAME,
+    DEBUG_VIDEO_FRAME,
 )
 # ===========================
 

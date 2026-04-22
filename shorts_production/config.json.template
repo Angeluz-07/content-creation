@@ -1,17 +1,19 @@
-[
-  {
-    "url": "",
-    "segments": [
-      {
-        "start_segment": "00:09:09",
-        "end_segment": "00:09:28",
-        "hook_text": "This Guy is talking about\nPython",
-        "output_name": "output_videos/test1.mp4"
-      }
-    ],
-    "watermark_text": "@Angeluz07",
-    "input_video": "temp/segment_resized.mp4",
-    "debug_video_frame": 1,
-    "force_download": 0
-  }
-]
+{
+  "watermark_text": "@test",
+  "input_video": "temp/segment_resized.mp4",
+  "force_download": 0,  
+  "debug_video_frame":0,
+  "input_segments": [
+     {
+      "url": "",
+      "segments": [
+        {
+          "start_segment": "01:09:23",
+          "end_segment": "01:10:07",
+          "hook_text": "test",
+          "output_name": "output_videos/test.mp4"
+        }
+      ]
+    }
+  ]
+}
