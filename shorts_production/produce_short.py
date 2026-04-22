@@ -31,7 +31,7 @@ def get_segment(url, inicio, fin, force_download, id):
             POS_Y = 180
             # Variables de control
             CANVAS_W, CANVAS_H = 1080, 1920
-            FACTOR = 1.5  # Tu 1.5x vital
+            FACTOR = 1.53  # Tu 1.5x vital
             TARGET_W = int(CANVAS_W * FACTOR)  # 1620px
 
             safe_filter = (

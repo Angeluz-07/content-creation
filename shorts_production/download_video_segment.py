@@ -18,10 +18,10 @@ def download_segment_from_yt(start_ts: str, end_ts: str, url: str, output_path: 
         "outtmpl": output_path,
         # CHANGE THIS: Remove the strict [ext=mp4] requirement.
         # We ask for best video + best audio and tell it to merge into mp4.
-        "format": "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
+        "format": "bestvideo+bestaudio/best",
+        "format_sort": ["res:4k", "ext:mp4:m4a"],
         "merge_output_format": "mp4",
         # Add this to handle the "tv downgraded" streams correctly
-        "check_formats": "selected",
         "download_ranges": lambda info_dict, ydl: [
             {
                 "start_time": start_sec,
