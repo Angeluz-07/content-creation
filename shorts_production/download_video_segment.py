@@ -29,14 +29,14 @@ def download_segment_from_yt(start_ts: str, end_ts: str, url: str, output_path: 
             }
         ],
         "force_keyframes_at_cuts": True,
-        "sleep_interval": random.randint(5, 15),
-        "max_sleep_interval": 30,
+        #"sleep_interval": random.randint(5, 15),
+        #"max_sleep_interval": 30,
         #"cookiefile": "youtube_cookies.txt",
         "extractor_args": {
             "youtube": {
                 # 'tv' or 'android' clients are great for avoiding bot-checks,
                 # but they require the broader format selection above.
-                "player_client": ["android", "web"],
+                "player_client": ["android"],
                 "player_skip": ["webpage", "configs"],
             }
         },
