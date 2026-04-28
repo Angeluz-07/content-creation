@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
-import type { Config } from '../types/config' // Ajusta la ruta
-import { mapConfigToPayload } from '../mappers/config';
-import api from '@/api/client';
+import { ref } from 'vue' 
+import type { Config } from '../types/config' 
+import { mapConfigToPayload } from '../mappers/config'
+import api from '@/api/client'
 
-// Inicializamos el estado reactivo con los valores por defecto
 const form = reactive<Config>({
   url: '',
   forceDownload: false,
@@ -14,18 +14,22 @@ const form = reactive<Config>({
   hookText: '',
   outname: '',
 })
+const isLoading = ref(false) 
 
 const handleSubmit = async () => {
+  isLoading.value = true 
   try {
-    console.log('Datos a enviar:', form);
-    
-    const payload = mapConfigToPayload(form);
-    const { data } = await api.post("/produce-short", payload);
+    console.log('Datos a enviar:', form)
+
+    const payload = mapConfigToPayload(form)
+    const { data } = await api.post('/produce-short', payload)
     console.log(data)
   } catch (error) {
-    console.error('Error al enviar:', error);
+    console.error('Error al enviar:', error)
+  } finally {
+    isLoading.value = false 
   }
-};
+}
 </script>
 
 <template>
@@ -117,7 +121,13 @@ const handleSubmit = async () => {
         </div>
 
         <div class="card-actions justify-end mt-6">
-          <button type="submit" class="btn btn-primary w-full md:w-auto">Enviar</button>
+          <button type="submit"  
+          :class="{ 'pointer-events-none': isLoading }"
+          :tabindex="isLoading ? -1 : 0" 
+          class="btn btn-primary w-full md:w-auto">
+            <span v-if="isLoading" class="loading loading-spinner"></span>
+            {{ isLoading ? 'Procesando...' : 'Enviar' }}
+          </button>
         </div>
       </form>
     </div>
