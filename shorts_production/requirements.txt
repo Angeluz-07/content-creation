@@ -6,3 +6,7 @@ moviepy
 
 #text fonts
 Pillow
+
+# for rest api interface
+fastapi[standard]
+uvicorn[standard]
