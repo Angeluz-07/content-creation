@@ -31,7 +31,7 @@ class ShortProducer:
             id=Path(OUTPUT_NAME).stem.split("_")[-1],
         )
 
-        # ui_file = self.generar_capa_ui(WATERMARK_TEXT, HOOK_TEXT)
+        ui_file = self.generar_capa_ui(WATERMARK_TEXT, HOOK_TEXT)
         # self.ensamblar_final(
         #     resized_filepath,
         #     ui_file,
@@ -125,8 +125,10 @@ class ShortProducer:
         )
 
         # Logo
+        from rest_api.config import ASSETS_DIR # todo: improve
+        logo_path = str(ASSETS_DIR / "emoji_comment.png")
         logo = (
-            ImageClip("assets/emoji_comment.png")
+            ImageClip(logo_path)
             .resized(width=150)
             .with_position((800, 1035))
         )
