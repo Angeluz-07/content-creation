@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import type { Config } from '../types/config' // Ajusta la ruta
+import { mapConfigToPayload } from '../mappers/config';
+import api from '@/api/client';
 
 // Inicializamos el estado reactivo con los valores por defecto
 const form = reactive<Config>({
@@ -13,6 +15,17 @@ const form = reactive<Config>({
   outname: '',
 })
 
+const handleSubmit = async () => {
+  try {
+    console.log('Datos a enviar:', form);
+    
+    const payload = mapConfigToPayload(form);
+    const { data } = await api.post("/produce-short", payload);
+    console.log(data)
+  } catch (error) {
+    console.error('Error al enviar:', error);
+  }
+};
 </script>
 
 <template>
@@ -20,7 +33,7 @@ const form = reactive<Config>({
     <div class="card-body">
       <h2 class="card-title mb-4">Configuración</h2>
 
-      <form class="space-y-4">
+      <form @submit.prevent="handleSubmit" class="space-y-4">
         <div class="form-control w-full">
           <label class="label">
             <span class="label-text font-semibold">URL</span>
