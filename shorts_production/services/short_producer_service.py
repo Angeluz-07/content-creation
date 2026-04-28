@@ -20,7 +20,7 @@ class ShortProducer:
         OUTPUT_NAME = c.outname
 
         WATERMARK_TEXT = "@something"
-        HOOK_TEXT = c.hook_text
+        HOOK_TEXT = c.hook_text.replace(r'\n', '\n') # todo improve
         DEBUG_VIDEO_FRAME = c.debug_video_frame
 
         resized_filepath = self.get_segment(
