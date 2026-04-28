@@ -6,7 +6,7 @@ const router = createRouter({
      {
       path: "/shorts-prod",
       name: "shortsProd",
-      component: () => import("../ShortsProd.vue"),
+      component: () => import("../views/ShortsProd.vue"),
     },
   ],
 })
