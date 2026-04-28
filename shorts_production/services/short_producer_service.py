@@ -32,14 +32,16 @@ class ShortProducer:
         )
 
         ui_file = self.generar_capa_ui(WATERMARK_TEXT, HOOK_TEXT)
-        # self.ensamblar_final(
-        #     resized_filepath,
-        #     ui_file,
-        #     OUTPUT_NAME,
-        #     DEBUG_VIDEO_FRAME,
-        # )
+        self.ensamblar_final(
+            resized_filepath,
+            ui_file,
+            OUTPUT_NAME,
+            DEBUG_VIDEO_FRAME,
+        )
 
     def ensamblar_final(self, video_input, ui_png, video_output, debug=False):
+        from rest_api.config import TEMP_DIR # todo: improve
+        salida_imagen = str(TEMP_DIR /  "debug_frame.png")
         if debug:
             print("DEBUG MODE: Generating one debug frame...")
             # Comando optimizado solo para extraer 1 imagen
@@ -61,7 +63,7 @@ class ShortProducer:
                 "1",  # Solo un frame
                 "-q:v",
                 "2",  # Alta calidad de imagen
-                "temp/debug_frame.jpg",  # Salida como imagen
+                salida_imagen,  # Salida como imagen
             ]
         else:
             print("PRODUCTION MODE: Ensemble full video...")
