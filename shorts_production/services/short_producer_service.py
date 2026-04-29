@@ -42,10 +42,9 @@ class ShortProducer:
             OUTPUT_NAME,
             DEBUG_VIDEO_FRAME,
         )
-        print("Saving config repo...")
-        self.config_repo.add(c)
-        #from pprint import pprint
-        #pprint(config_dict)
+        if not DEBUG_VIDEO_FRAME:
+            print("Saving config repo...")
+            self.config_repo.add(c)
 
     def ensamblar_final(self, video_input, ui_png, video_output, debug=False):
         from rest_api.config import TEMP_DIR, OUTPUT_DIR # todo: improve
