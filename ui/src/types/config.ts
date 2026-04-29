@@ -1,6 +1,7 @@
 // types/config.ts
 export interface Config {
   url: string;
+  watermarkText: string; 
   forceDownload: boolean;
   debugVideoFrame: boolean;
   startSegment: string;

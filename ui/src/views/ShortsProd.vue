@@ -7,6 +7,7 @@ import api from '@/api/client'
 
 const form = reactive<Config>({
   url: 'https://www.youtube.com/watch',
+  watermarkText: '@theExample',
   forceDownload: false,
   debugVideoFrame: true,
   startSegment: '00:00:10',
@@ -66,6 +67,19 @@ const refreshVideo = () => {
         <h2 class="card-title mb-4">Configuración de Procesamiento</h2>
 
         <form @submit.prevent="handleSubmit" class="space-y-4">
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text font-semibold">Watermark text</span>
+            </label>
+            <input
+              v-model="form.watermarkText"
+              type="text"
+              placeholder="@theExample"
+              class="input input-bordered w-full"
+              required
+            />
+          </div>
+
           <div class="form-control w-full">
             <label class="label">
               <span class="label-text font-semibold">URL</span>
@@ -195,7 +209,7 @@ const refreshVideo = () => {
           :key="videoUrl"
           controls
           class="absolute inset-0 w-full h-full object-contain"
-          @loadeddata="isVideoLoaded = false"
+          @loadeddata="isVideoLoaded = true"
         >
           <source :src="videoUrl" type="video/mp4" />
           Tu navegador no soporta la etiqueta de video.

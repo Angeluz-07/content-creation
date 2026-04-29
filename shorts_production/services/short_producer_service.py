@@ -19,7 +19,7 @@ class ShortProducer:
         FORCE_DOWNLOAD = c.force_download
         OUTPUT_NAME = c.outname
 
-        WATERMARK_TEXT = "@something"
+        WATERMARK_TEXT = c.watermark_text
         HOOK_TEXT = c.hook_text.replace(r'\n', '\n') # todo improve
         DEBUG_VIDEO_FRAME = c.debug_video_frame
 
@@ -38,6 +38,8 @@ class ShortProducer:
             OUTPUT_NAME,
             DEBUG_VIDEO_FRAME,
         )
+        from pprint import pprint
+        pprint(config_dict)
 
     def ensamblar_final(self, video_input, ui_png, video_output, debug=False):
         from rest_api.config import TEMP_DIR # todo: improve

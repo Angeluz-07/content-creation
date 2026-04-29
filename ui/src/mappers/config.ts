@@ -10,6 +10,7 @@ export interface ConfigPayload {
   end_segment: string;
   hook_text: string;
   outname: string;
+  watermark_text: string;
 }
 
 export const mapConfigToPayload = (data: Config): ConfigPayload => {
@@ -21,5 +22,6 @@ export const mapConfigToPayload = (data: Config): ConfigPayload => {
     end_segment: data.endSegment,
     hook_text: data.hookText,
     outname: data.outname,
+    watermark_text: data.watermarkText
   };
 };

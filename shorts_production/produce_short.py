@@ -189,7 +189,7 @@ with open("config.json", "r", encoding="utf-8") as file:
 SEGMENT_INDEX = -1
 
 WATERMARK_TEXT = config["watermark_text"]
-INPUT_VIDEO = config["input_video"]
+#INPUT_VIDEO = config["input_video"]
 DEBUG_VIDEO_FRAME = config["debug_video_frame"]
 FORCE_DOWNLOAD = config["force_download"]
 

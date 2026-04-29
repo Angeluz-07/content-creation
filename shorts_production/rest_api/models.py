@@ -8,3 +8,4 @@ class ConfigInput(BaseModel):
     end_segment: str
     hook_text: str
     outname: str
+    watermark_text: str
