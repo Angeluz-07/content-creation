@@ -1,2 +1,8 @@
 # others
 .archive
+
+# env
+.env
+
+# mongo local data
+/mongo_data

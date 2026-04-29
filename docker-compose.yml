@@ -1,0 +1,36 @@
+services:
+  mongodb:
+    image: mongo:7.0.8
+    container_name: mongo_cc
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASS}
+    volumes:
+      - ./mongo_data:/data/db
+    command: ["--wiredTigerCacheSizeGB", "0.25"] # Límite interno de Mongo para cache
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'     # Máximo 50% de un núcleo de CPU
+          memory: 512M    # Máximo 512MB de RAM
+        reservations:
+          memory: 128M    # Garantiza al menos 128MB
+  compass:
+    image: haohanyang/compass-web:latest
+    container_name: compass_web_panel
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      # Conecta automáticamente al servicio de mongo de arriba
+      - CW_MONGO_URI=mongodb://${MONGO_USER}:${MONGO_PASS}@mongodb:27017
+      - CW_ENABLE_EDIT_CONNECTIONS=true
+    depends_on:
+      - mongodb
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
