@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from uuid import uuid4
 
 
 @dataclass
@@ -11,3 +12,5 @@ class Config:
     watermark_text: str
     force_download: bool = False
     debug_video_frame: bool = True
+    id: str = field(default_factory=lambda: str(uuid4()))
+
