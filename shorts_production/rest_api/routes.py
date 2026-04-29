@@ -4,7 +4,7 @@ from context import short_producer
 
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
-from config import TEMP_DIR
+from config import TEMP_DIR, OUTPUT_DIR
 
 router = APIRouter(prefix="", tags=["main"])
 
@@ -34,3 +34,14 @@ def get_image():
         raise HTTPException(status_code=404, detail="Imagen no encontrada")
     
     return FileResponse(file_path)
+
+@router.get("/video/{video_id}")
+def get_video(video_id: str):
+    file_path = str(OUTPUT_DIR/ f"{video_id}.mp4")
+    print(file_path)
+    import os
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    # media_type='video/mp4' es crucial para que el navegador sepa qué hacer
+    return FileResponse(file_path, media_type="video/mp4")

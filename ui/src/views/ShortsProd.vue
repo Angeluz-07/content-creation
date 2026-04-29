@@ -23,7 +23,8 @@ const handleSubmit = async () => {
 
     const payload = mapConfigToPayload(form)
     const { data } = await api.post('/produce-short', payload)
-    refreshImage();
+    refreshImage()
+    refreshVideo()
     console.log(data)
   } catch (error) {
     console.error('Error al enviar:', error)
@@ -32,7 +33,6 @@ const handleSubmit = async () => {
   }
 }
 
-const props = defineProps<{ imageId: string }>()
 const isLoaded = ref(false)
 
 // Construimos la URL de la API
@@ -44,13 +44,22 @@ const onImageLoad = () => {
 const imgKey = ref(0);
 
 const refreshImage = () => {
-  const timestamp = new Date().getTime();
-  imageUrl.value = `http://localhost:8000/images/?ts=${timestamp}`;
-};
+  const timestamp = new Date().getTime()
+  imageUrl.value = `http://localhost:8000/images/?ts=${timestamp}`
+}
+const videoUrl = ref("")
 
+const refreshVideo = () => {
+  // 2. Construimos la URL solo cuando se llama la función
+  // Agregamos el timestamp para evitar que el navegador use caché vieja
+  const timestamp = Date.now();
+  const filename =  form.outname.split('/').pop().split('.')[0]
+  videoUrl.value = `http://localhost:8000/video/${filename}?t=${timestamp}`;
+};
 </script>
 
 <template>
+
   <div class="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
     <div class="card w-full bg-base-100 shadow-xl">
       <div class="card-body">
@@ -175,6 +184,24 @@ const refreshImage = () => {
       </figure>
     </div>
   </div>
+  <div class="card w-full max-w-2xl bg-base-100 shadow-xl overflow-hidden">
+    <video 
+      :key="videoUrl"
+      controls 
+      class="w-full aspect-video bg-black"
+    >
+      <source :src="videoUrl" type="video/mp4">
+      Tu navegador no soporta la etiqueta de video.
+    </video>
+
+    <div class="card-body p-4">
+      <h2 class="card-title">Video Procesado</h2>
+      <p>Puedes reproducir o descargar el video desde aquí.</p>
+    </div>
+  </div>
+
+  
 </template>
 
 <style scoped></style>
+
