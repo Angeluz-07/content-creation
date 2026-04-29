@@ -106,6 +106,8 @@ class ShortProducer:
 
         
     def generar_capa_ui(self, watermark_text, hook_text, output_png="temp/temp_ui.png"):
+        from rest_api.config import TEMP_DIR # todo: improve
+        output_png = str(TEMP_DIR / "temp_ui.png")
         CANVAS_SIZE = (1080, 1920)
         FUENTE_PATH = "C:/Windows/Fonts/CascadiaCode.ttf"
 

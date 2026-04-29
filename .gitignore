@@ -5,4 +5,4 @@
 .env
 
 # mongo local data
-/mongo_data
+.mongo_data

@@ -2,13 +2,14 @@ from pathlib import Path
 from dotenv import load_dotenv
 import os
 
-REST_API_DIR = Path(__file__).resolve().parent.parent
-ASSETS_DIR = REST_API_DIR / "assets"
-OUTPUT_DIR = REST_API_DIR / "output_videos"
-TEMP_DIR = REST_API_DIR / "temp"
+PROJECT_DIR = Path(__file__).resolve().parent.parent
+DATA_DIR =  PROJECT_DIR / ".data"
+ASSETS_DIR = DATA_DIR / "assets"
+OUTPUT_DIR = DATA_DIR / "output_videos"
+TEMP_DIR = DATA_DIR / "temp"
+
 
 ENV_DIR = Path(__file__).resolve().parent.parent.parent / ".env"
-
 load_dotenv(dotenv_path=ENV_DIR)
 
 MONGO_USER=os.getenv("MONGO_USER")
