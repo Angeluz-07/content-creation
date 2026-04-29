@@ -28,7 +28,7 @@ class ShortProducer:
             START_SEGMENT,
             END_SEGMENT,
             FORCE_DOWNLOAD,
-            id=Path(OUTPUT_NAME).stem.split("_")[-1],
+            id=OUTPUT_NAME,
         )
 
         ui_file = self.generar_capa_ui(WATERMARK_TEXT, HOOK_TEXT)
@@ -42,8 +42,9 @@ class ShortProducer:
         pprint(config_dict)
 
     def ensamblar_final(self, video_input, ui_png, video_output, debug=False):
-        from rest_api.config import TEMP_DIR # todo: improve
+        from rest_api.config import TEMP_DIR, OUTPUT_DIR # todo: improve
         salida_imagen = str(TEMP_DIR /  "debug_frame.png")
+        salida_video = str(OUTPUT_DIR / f"{video_output}.mp4")
         if debug:
             print("DEBUG MODE: Generating one debug frame...")
             # Comando optimizado solo para extraer 1 imagen
@@ -92,7 +93,7 @@ class ShortProducer:
                 "15M",
                 "-c:a",
                 "copy",
-                video_output,
+                salida_video,
             ]
 
         subprocess.run(ffmpeg_cmd, check=True)

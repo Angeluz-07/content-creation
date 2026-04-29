@@ -5,15 +5,17 @@ import type { Config } from '../types/config'
 import { mapConfigToPayload } from '../mappers/config'
 import api from '@/api/client'
 
+const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT;
+
 const form = reactive<Config>({
   url: 'https://www.youtube.com/watch',
-  watermarkText: '@theExample',
+  watermarkText: WATERMARK_TEXT,
   forceDownload: false,
   debugVideoFrame: true,
   startSegment: '00:00:10',
   endSegment: '00:00:20',
   hookText: 'test',
-  outname: 'output_videos/test4.mp4',
+  outname: 'test4',
 })
 const isLoading = ref(false)
 
@@ -55,7 +57,7 @@ const refreshVideo = () => {
   // 2. Construimos la URL solo cuando se llama la función
   // Agregamos el timestamp para evitar que el navegador use caché vieja
   const timestamp = Date.now()
-  const filename = form.outname.split('/').pop().split('.')[0]
+  const filename = form.outname
   videoUrl.value = `http://localhost:8000/video/${filename}?t=${timestamp}`
 }
 </script>
