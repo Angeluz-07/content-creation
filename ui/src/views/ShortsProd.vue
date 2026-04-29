@@ -6,13 +6,13 @@ import { mapConfigToPayload } from '../mappers/config'
 import api from '@/api/client'
 
 const form = reactive<Config>({
-  url: '',
+  url: 'https://www.youtube.com/watch',
   forceDownload: false,
   debugVideoFrame: true,
-  startSegment: '',
-  endSegment: '',
-  hookText: '',
-  outname: '',
+  startSegment: '00:00:10',
+  endSegment: '00:00:20',
+  hookText: 'test',
+  outname: 'output_videos/test4.mp4',
 })
 const isLoading = ref(false)
 
@@ -34,6 +34,7 @@ const handleSubmit = async () => {
 }
 
 const isLoaded = ref(false)
+const isVideoLoaded = ref(true)
 
 // Construimos la URL de la API
 const imageUrl = ref(`http://localhost:8000/images/`)
@@ -41,26 +42,25 @@ const imageUrl = ref(`http://localhost:8000/images/`)
 const onImageLoad = () => {
   isLoaded.value = true
 }
-const imgKey = ref(0);
+const imgKey = ref(0)
 
 const refreshImage = () => {
   const timestamp = new Date().getTime()
   imageUrl.value = `http://localhost:8000/images/?ts=${timestamp}`
 }
-const videoUrl = ref("")
+const videoUrl = ref('')
 
 const refreshVideo = () => {
   // 2. Construimos la URL solo cuando se llama la función
   // Agregamos el timestamp para evitar que el navegador use caché vieja
-  const timestamp = Date.now();
-  const filename =  form.outname.split('/').pop().split('.')[0]
-  videoUrl.value = `http://localhost:8000/video/${filename}?t=${timestamp}`;
-};
+  const timestamp = Date.now()
+  const filename = form.outname.split('/').pop().split('.')[0]
+  videoUrl.value = `http://localhost:8000/video/${filename}?t=${timestamp}`
+}
 </script>
 
 <template>
-
-  <div class="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+  <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
     <div class="card w-full bg-base-100 shadow-xl">
       <div class="card-body">
         <h2 class="card-title mb-4">Configuración de Procesamiento</h2>
@@ -183,25 +183,26 @@ const refreshVideo = () => {
         />
       </figure>
     </div>
-  </div>
-  <div class="card w-full max-w-2xl bg-base-100 shadow-xl overflow-hidden">
-    <video 
-      :key="videoUrl"
-      controls 
-      class="w-full aspect-video bg-black"
-    >
-      <source :src="videoUrl" type="video/mp4">
-      Tu navegador no soporta la etiqueta de video.
-    </video>
+    <div class="card w-full md:w-fit mx-auto bg-base-100 shadow-xl overflow-hidden">
+      <div class="card-body p-4">
+        <h2 class="card-title">Video</h2>
+      </div>
+      <figure class="relative aspect-[9/16] w-full md:w-[400px] bg-black">
+        <div v-if="!isVideoLoaded" class="absolute inset-0 skeleton"></div>
 
-    <div class="card-body p-4">
-      <h2 class="card-title">Video Procesado</h2>
-      <p>Puedes reproducir o descargar el video desde aquí.</p>
+        <video
+          v-if="videoUrl"
+          :key="videoUrl"
+          controls
+          class="absolute inset-0 w-full h-full object-contain"
+          @loadeddata="isVideoLoaded = false"
+        >
+          <source :src="videoUrl" type="video/mp4" />
+          Tu navegador no soporta la etiqueta de video.
+        </video>
+      </figure>
     </div>
   </div>
-
-  
 </template>
 
 <style scoped></style>
-
