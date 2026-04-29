@@ -10,3 +10,7 @@ Pillow
 # for rest api interface
 fastapi[standard]
 uvicorn[standard]
+
+# for mongodb/cosmosdb driver
+pymongo==4.16.0 
+python-dotenv==1.2.2

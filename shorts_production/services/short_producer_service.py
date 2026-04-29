@@ -3,6 +3,7 @@ import random
 import time
 import subprocess
 from pathlib import Path
+from dbs.interfaces import IRepository
 from moviepy import TextClip, CompositeVideoClip, ImageClip
 
 from domain.models import Config
@@ -10,6 +11,9 @@ from domain.models import Config
 
 
 class ShortProducer:
+    def __init__(self, config_repo: IRepository):
+        self.config_repo = config_repo
+
     def run(self, config_dict):
         c = Config(**config_dict)
         print("processing", c.url)
@@ -38,8 +42,10 @@ class ShortProducer:
             OUTPUT_NAME,
             DEBUG_VIDEO_FRAME,
         )
-        from pprint import pprint
-        pprint(config_dict)
+        print("Saving config repo...")
+        self.config_repo.add(c)
+        #from pprint import pprint
+        #pprint(config_dict)
 
     def ensamblar_final(self, video_input, ui_png, video_output, debug=False):
         from rest_api.config import TEMP_DIR, OUTPUT_DIR # todo: improve
