@@ -1,8 +1,9 @@
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
-PROMPTS_FOLDER = BASE_DIR / ".data" / "prompts"
-TEXT_OUTPUT_FOLDER = BASE_DIR / ".data" / "text_output"
+DATA_DIR =  BASE_DIR / ".data" 
+PROMPTS_FOLDER = DATA_DIR / "prompts"
+TEXT_OUTPUT_FOLDER = DATA_DIR / "text_output"
+POSTS_IN_FOLDER = DATA_DIR / "posts_in"
 
-DEFAULT_MODEL = "gemma3:4b" # mas literario
-#MODELO = "llama3.2:3b" # mas equilibrado
+DEFAULT_MODEL = "gemma2:9b" # better for cc
