@@ -141,7 +141,7 @@ class ShortProducer:
             -webkit-backdrop-filter: blur(12px);
             border: 2px solid rgba(255, 255, 255, 0.15);
             border-radius: 45px;
-            padding: 50px 80px;
+            padding: 10px 80px;
             text-align: center;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
             display: inline-block;
@@ -179,7 +179,7 @@ class ShortProducer:
         # Hook
         ruta_img = self.generar_banner_from_html(hook_text,FUENTE_PATH )
         hook = (ImageClip(ruta_img)
-                    .with_position(("center", 1150))) # Mantén el margen de seguridad de la App
+                    .with_position(("center",825))) # Mantén el margen de seguridad de la App
         # Watermark
         watermark = (
             TextClip(
@@ -204,7 +204,7 @@ class ShortProducer:
 
         # Componemos y guardamos UN SOLO FRAME
         ui_composite = CompositeVideoClip(
-            [hook, watermark, logo], size=CANVAS_SIZE, bg_color=None
+            [hook, watermark], size=CANVAS_SIZE, bg_color=None
         )
         ui_composite.save_frame(output_png, t=0)
         return output_png
@@ -233,46 +233,44 @@ class ShortProducer:
             # 2. Procesamiento local con GPU (Filtros corregidos + AMF)
             try:
                 POS_Y = 180
-                # Variables de control
                 CANVAS_W, CANVAS_H = 1080, 1920
-                FACTOR = 1.53  # Tu 1.5x vital
-                TARGET_W = int(CANVAS_W * FACTOR)  # 1620px
+                FRAME_TIME = "00:00:00"
+                OFFSET_Y = 20
+                FRAME_ZOOM = 1.50
+                TARGET_W_FRAME = int(CANVAS_W * FRAME_ZOOM)
 
-                safe_filter = (
-                    # 1. Escalamos el VIDEO para que el ancho sea 1620.
-                    # La altura se ajusta sola (-1) para no achatar.
-                    f"scale={TARGET_W}:-1,"
-                    # 2. Forzamos que los píxeles sean cuadrados.
-                    "setsar=1:1,"
-                    # 3. CORTAMOS el video al ancho del lienzo (1080).
-                    # Esto elimina los bordes laterales que sobran por el zoom (el overflow).
-                    # 'ih' mantiene la altura que resultó del escalado anterior.
-                    f"crop={CANVAS_W}:ih,"
-                    # 4. Ponemos el video en el lienzo vertical.
-                    # Ahora 'iw' es exactamente 1080, así que no habrá error.
-                    f"pad={CANVAS_W}:{CANVAS_H}:(ow-iw)/2:{POS_Y}:black"
+                # Agregamos 'loop=1' y 'frames:v 1' para asegurar que el frame sea estático y persistente
+                complex_filter = (
+                    # --- PROCESAR VIDEO PRINCIPAL [0:v] ---
+                    f"[0:v]scale={TARGET_W_FRAME}:-1,setsar=1:1,crop={CANVAS_W}:ih[vid]; "
+                    
+                    # --- PROCESAR FRAME [1:v] ---
+                    # loop=1:v hace que el frame se repita infinitamente para que no desaparezca
+                    f"[1:v]scale={TARGET_W_FRAME}:-1,setsar=1:1,crop={CANVAS_W}:ih,loop=loop=-1:size=1:start=0[img]; "
+                    
+                    # --- CREAR LIENZO Y MONTAR ---
+                    f"color=s={CANVAS_W}x{CANVAS_H}:c=black[bg]; "
+                    f"[bg][vid]overlay=0:{POS_Y}[tmp]; "
+                    f"[tmp][img]overlay=0:{POS_Y}+H/2+{OFFSET_Y}:shortest=1[outv]" 
                 )
+
                 ffmpeg_cmd = [
-                    "ffmpeg",
-                    "-loglevel",
-                    "error",
-                    "-stats",
-                    "-i",
-                    temp_file,
-                    "-vf",
-                    safe_filter,
-                    "-c:v",
-                    "h264_amf",
-                    "-rc",
-                    "cbr",
-                    "-b:v",
-                    "18M",  # Subimos a 18M para que el zoom no pierda nitidez
-                    "-quality",
-                    "quality",
-                    "-pix_fmt",
-                    "yuv420p",
-                    "-c:a",
-                    "aac",
+                    "ffmpeg", "-loglevel", "error", "-stats",
+                    # Entrada 0: Video completo
+                    "-i", temp_file,
+                    # Entrada 1: El frame (buscamos el segundo exacto y leemos solo 1 frame)
+                    "-ss", FRAME_TIME, "-i", temp_file, 
+                    "-filter_complex", complex_filter,
+                    # Mapeamos la salida del filtro [outv] y el audio del video original
+                    "-map", "[outv]",
+                    "-map", "0:a", 
+                    "-c:v", "h264_amf",
+                    "-rc", "cbr",
+                    "-b:v", "18M",
+                    "-quality", "quality",
+                    "-pix_fmt", "yuv420p",
+                    "-c:a", "aac",
+                    "-shortest", # Crucial para que el loop del frame no haga el video infinito
                     resized_file,
                 ]
                 print("Resizing video for mobile canvas...")
