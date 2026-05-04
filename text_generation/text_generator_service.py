@@ -1,36 +1,56 @@
+from config import DEFAULT_MODEL
+from domain.models import Prompt, FewShotExample
+from typing import List
+from text_content_repository import TextContent #todo:improve
 import ollama
 
-from prompt_repository import Prompt
-from text_content_repository import TextContent
-from config import DEFAULT_MODEL
-
-
 class TextGenerator:
-    def __init__(self, model=DEFAULT_MODEL):
-        self.model = DEFAULT_MODEL
+    def __init__(self, model: str = DEFAULT_MODEL):
+        self.model = model
 
-    def generate(self, prompt: Prompt):
-        system_content = prompt.system_content
-        user_content = prompt.user_content
-        num_predict = prompt.num_predict
+    def _build_messages(self, prompt: Prompt) -> List[dict]:
+        """Construye la lista de mensajes alternando user/assistant para los ejemplos."""
+        messages = []
+        
+        # 1. Mensaje del sistema
+        messages.append({"role": "system", "content": prompt.system_content})
+        
+        # 2. Inyectar ejemplos dinámicamente como turnos de chat reales
+        for ex in prompt.examples:
+            messages.append({"role": "user", "content": f"Noticia: {ex.seed}"})
+            messages.append({"role": "assistant", "content": ex.post})
+            
+        # 3. La tarea real (La nueva semilla)
+        # Usamos el mismo formato exacto que los ejemplos para mantener el patrón
+        messages.append({"role": "user", "content": f"Noticia: {prompt.user_content}"})
+        
+        return messages
+
+    def generate(self, prompt: Prompt) -> TextContent:
+        # Construimos el payload de mensajes dinámico
+        messages = self._build_messages(prompt)
+        
         response = ollama.chat(
             model=self.model,
-            messages=[
-                {"role": "system", "content": system_content},
-                {"role": "user", "content": user_content},
-            ],
-            options={"num_predict": num_predict, "temperature": 0.8},
+            messages=messages,
+            options={
+                "num_predict": prompt.num_predict,
+                "temperature": prompt.temperature
+            }
         )
-
-        # Limpieza: Eliminamos posibles espacios en blanco extras
+        
         historia = response["message"]["content"].strip()
+        
+        # Limpieza por si el modelo repite el prefijo del patrón por inercia
+        if historia.lower().startswith("post:"):
+            historia = historia[5:].strip()
 
-        result = TextContent(
+
+        duration_seconds = float(round(response.total_duration / 1e9, 2))
+        return TextContent(
             topic=prompt.name,
             text=historia,
             num_words=len(historia.split()),
             prompt_config_id=prompt.id,
-            creation_duration=float(round(response.total_duration / 1e9, 2)),
+            creation_duration=duration_seconds,
         )
-
-        return result

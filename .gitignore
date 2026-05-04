@@ -6,3 +6,6 @@
 
 # mongo local data
 .mongo_data
+
+# qdrant local data
+.qdrant_data

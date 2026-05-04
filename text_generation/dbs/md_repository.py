@@ -59,7 +59,8 @@ class PromptRepository(MDRepository):
             name=post["name"],
             num_predict=post.get("num_predict", 200),
             system_content=system_content,
-            user_content=user_content
+            user_content=user_content,
+            examples=[]
         )
 
             
