@@ -103,26 +103,83 @@ class ShortProducer:
 
         subprocess.run(ffmpeg_cmd, check=True)
 
+    def generar_banner_from_html(self, texto, fuente_local):
+        from html2image import Html2Image
+
+        # 1. Transformar saltos de línea de Python a HTML
+        # Esto permite que si tu hook_text tiene "\n", se renderice en varias líneas.
+        texto_html = texto.replace("\n", "<br>")
+
         
+        hti = Html2Image(size=(1200, 600), custom_flags=[
+            '--no-sandbox', 
+            '--disable-gpu', 
+            '--hide-scrollbars',
+            '--default-background-color=00000000'
+        ])
+        
+        css = f"""
+        @font-face {{
+            font-family: 'MontserratLocal';
+            src: url('file:///{fuente_local}');
+        }}
+
+        body {{ 
+            background: transparent !important; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            width: 100vw;
+            overflow: hidden;
+        }}
+
+        .banner {{
+            background: rgba(30, 30, 30, 0.85); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 45px;
+            padding: 50px 80px;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+            display: inline-block;
+            max-width: 900px; /* Limitamos el ancho para forzar el balance de las 3 líneas */
+        }}
+
+        h1 {{
+            color: white;
+            font-family: 'MontserratLocal', sans-serif;
+            font-size: 100px; /* Bajamos un poco el tamaño para acomodar 3 líneas mejor */
+            font-weight: 900;
+            margin: 0;
+            letter-spacing: -2px;
+            line-height: 1; /* Espaciado entre líneas profesional */
+            text-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }}
+        """
+        
+        # Usamos la variable texto_html ya procesada
+        html = f'<div class="banner"><h1>{texto_html}</h1></div>'
+
+        output_name = 'banner_final.png'
+        hti.screenshot(html_str=html, css_str=css, save_as=output_name)
+        
+        return output_name
+                
+
     def generar_capa_ui(self, watermark_text, hook_text, output_png="temp/temp_ui.png"):
-        from rest_api.config import TEMP_DIR # todo: improve
+        from rest_api.config import TEMP_DIR, TEXT_FONT_PATH # todo: improve
         output_png = str(TEMP_DIR / "temp_ui.png")
+        WATERMARK_TEXT_FONT_PATH = "C:/Windows/Fonts/CascadiaCode.ttf"
         CANVAS_SIZE = (1080, 1920)
-        FUENTE_PATH = "C:/Windows/Fonts/CascadiaCode.ttf"
+        FUENTE_PATH = str(TEXT_FONT_PATH).replace("\\", "/")
 
         # Hook
-        hook = TextClip(
-            text=hook_text,
-            font_size=100,
-            color="white",
-            bg_color="black",
-            method="caption",
-            size=(920, 350),
-            text_align="center",
-            vertical_align="center",
-            font=FUENTE_PATH,
-        ).with_position(("center", 1150))
-
+        ruta_img = self.generar_banner_from_html(hook_text,FUENTE_PATH )
+        hook = (ImageClip(ruta_img)
+                    .with_position(("center", 1150))) # Mantén el margen de seguridad de la App
         # Watermark
         watermark = (
             TextClip(
@@ -130,7 +187,7 @@ class ShortProducer:
                 font_size=55,
                 color="gray",
                 size=(460, 155),
-                font=FUENTE_PATH,
+                font=WATERMARK_TEXT_FONT_PATH,
             )
             .with_position((50, 15))
             .rotated(15)
