@@ -7,6 +7,9 @@ from dbs.interfaces import IRepository
 from moviepy import TextClip, CompositeVideoClip, ImageClip
 
 from rest_api.config import TEMP_DIR # todo: improve
+from rest_api.config import ASSETS_DIR # todo: improve
+from rest_api.config import TEXT_FONT_PATH
+
 from domain.models import Config
 #todo move functions to domain service
 
@@ -29,12 +32,14 @@ class ShortProducer:
         DEBUG_VIDEO_FRAME = c.debug_video_frame
 
         file_id = OUTPUT_NAME
-        filepath = self.get_segment(URL,START_SEGMENT,END_SEGMENT,FORCE_DOWNLOAD,file_id)
-        filepath = self.resize_segment(filepath, file_id)
+        raw_filepath = self.get_segment(URL,START_SEGMENT,END_SEGMENT,FORCE_DOWNLOAD,file_id)
+        resized_filepath = self.resize_segment(raw_filepath, file_id)
 
-        ui_file = self.generar_capa_ui(WATERMARK_TEXT, HOOK_TEXT)
+        frame_filepath = self.get_video_frame(raw_filepath)
+
+        ui_file = self.generate_fixed_layer(WATERMARK_TEXT, HOOK_TEXT, frame_filepath)
         self.ensamblar_final(
-            filepath,
+            resized_filepath,
             ui_file,
             OUTPUT_NAME,
             DEBUG_VIDEO_FRAME,
@@ -42,6 +47,28 @@ class ShortProducer:
         if not DEBUG_VIDEO_FRAME:
             print("Saving config repo...")
             self.config_repo.add(c)
+
+    def get_video_frame(self, input_filepath, timestamp="00:00:10"):
+        output_image_path = str(TEMP_DIR /  "video_frame.png")
+
+        ffmpeg_cmd = [
+            "ffmpeg",
+            "-loglevel", "error",
+            "-y",
+            "-ss", timestamp,              # Buscamos el tiempo exacto (antes del input es más rápido)
+            "-i", input_filepath,          # Entrada de video
+            "-frames:v", "1",               # Solo extraer 1 frame
+            "-q:v", "5",                    # Calidad alta (2-5 es ideal para JPEG)
+            output_image_path              # Ruta de salida (ej: frame.jpg o frame.png)
+        ]
+        
+        try:
+            print(f"Capturando frame en {timestamp}...")
+            subprocess.run(ffmpeg_cmd, check=True)
+            print(f"Imagen guardada en: {output_image_path}")
+            return output_image_path
+        except subprocess.CalledProcessError as e:
+            print(f"Error al capturar el frame: {e}")
 
     def ensamblar_final(self, video_input, ui_png, video_output, debug=False):
         from rest_api.config import TEMP_DIR, OUTPUT_DIR # todo: improve
@@ -100,25 +127,26 @@ class ShortProducer:
 
         subprocess.run(ffmpeg_cmd, check=True)
 
-    def generar_banner_from_html(self, texto, fuente_local):
+    def generate_banner_from_html(self, text:str, font_path:str):        
         from html2image import Html2Image
+        output_dir = str(TEMP_DIR)
 
-        # 1. Transformar saltos de línea de Python a HTML
-        # Esto permite que si tu hook_text tiene "\n", se renderice en varias líneas.
-        texto_html = texto.replace("\n", "<br>")
+        texto_html = text.replace("\n", "<br>")
 
         
         hti = Html2Image(size=(1200, 600), custom_flags=[
             '--no-sandbox', 
             '--disable-gpu', 
             '--hide-scrollbars',
+            '--disable-direct-composition',
+            '--log-level=3', 
             '--default-background-color=00000000'
-        ])
+        ], keep_temp_files=True, temp_path=output_dir)
         
         css = f"""
         @font-face {{
             font-family: 'MontserratLocal';
-            src: url('file:///{fuente_local}');
+            src: url('file:///{font_path}');
         }}
 
         body {{ 
@@ -158,23 +186,19 @@ class ShortProducer:
         # Usamos la variable texto_html ya procesada
         html = f'<div class="banner"><h1>{texto_html}</h1></div>'
 
+        hti.output_path = output_dir
         output_name = 'banner_final.png'
         hti.screenshot(html_str=html, css_str=css, save_as=output_name)
         
         return output_name
                 
 
-    def generar_capa_ui(self, watermark_text, hook_text, output_png="temp/temp_ui.png"):
-        from rest_api.config import TEMP_DIR, TEXT_FONT_PATH # todo: improve
+    def generate_fixed_layer(self, watermark_text, hook_text, frame_filepath):
         output_png = str(TEMP_DIR / "temp_ui.png")
         WATERMARK_TEXT_FONT_PATH = "C:/Windows/Fonts/CascadiaCode.ttf"
         CANVAS_SIZE = (1080, 1920)
-        FUENTE_PATH = str(TEXT_FONT_PATH).replace("\\", "/")
+        TEXT_FONT_PATH_ = str(TEXT_FONT_PATH).replace("\\", "/")
 
-        # Hook
-        ruta_img = self.generar_banner_from_html(hook_text,FUENTE_PATH )
-        hook = (ImageClip(ruta_img)
-                    .with_position(("center",810))) # Mantén el margen de seguridad de la App
         # Watermark
         watermark = (
             TextClip(
@@ -188,8 +212,15 @@ class ShortProducer:
             .rotated(15)
         )
 
+        # Hook text
+        banner_filename = self.generate_banner_from_html(hook_text, TEXT_FONT_PATH_)
+        banner_filepath = str(TEMP_DIR / banner_filename)
+        hook = (
+            ImageClip(banner_filepath)
+            .with_position(("center",810))
+        )
+
         # Logo
-        from rest_api.config import ASSETS_DIR # todo: improve
         logo_path = str(ASSETS_DIR / "emoji_comment.png")
         logo = (
             ImageClip(logo_path)
@@ -197,9 +228,16 @@ class ShortProducer:
             .with_position((800, 1035))
         )
 
+        # Watermark
+        frame = (
+            ImageClip(frame_filepath)            
+            .resized(width=int(1080*1.5))
+            .with_position(("center", 1250))
+        )
+
         # Componemos y guardamos UN SOLO FRAME
         ui_composite = CompositeVideoClip(
-            [hook, watermark], size=CANVAS_SIZE, bg_color=None
+            [watermark, hook, logo, frame], size=CANVAS_SIZE, bg_color=None
         )
         ui_composite.save_frame(output_png, t=0)
         return output_png
@@ -267,7 +305,7 @@ class ShortProducer:
 
        
     def get_segment(self, url: str, start_ts: str, end_ts:str, force_download: bool, file_id: str):
-        raw_filepath = str(TEMP_DIR / f"{file_id}_segment_raw_download.mp4")
+        raw_filepath = str(TEMP_DIR / f"{file_id}_segment_raw.mp4")
         file_doesnt_exist = not Path(raw_filepath).is_file()
 
         if file_doesnt_exist:
