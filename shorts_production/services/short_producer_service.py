@@ -134,14 +134,12 @@ class ShortProducer:
             width: 100vw;
             overflow: hidden;
         }}
-
+       
         .banner {{
-            background: rgba(30, 30, 30, 0.85); 
+            background:  black;
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            border: 2px solid rgba(255, 255, 255, 0.15);
-            border-radius: 45px;
-            padding: 10px 80px;
+            padding: 5px 300px;
             text-align: center;
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
             display: inline-block;
@@ -154,9 +152,9 @@ class ShortProducer:
             font-size: 100px; /* Bajamos un poco el tamaño para acomodar 3 líneas mejor */
             font-weight: 900;
             margin: 0;
-            letter-spacing: -2px;
+            letter-spacing: 0px;
             line-height: 1; /* Espaciado entre líneas profesional */
-            text-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            text-shadow: 0 5px 15px rgba(255,255,255,0.4);
         }}
         """
         
@@ -179,7 +177,7 @@ class ShortProducer:
         # Hook
         ruta_img = self.generar_banner_from_html(hook_text,FUENTE_PATH )
         hook = (ImageClip(ruta_img)
-                    .with_position(("center",825))) # Mantén el margen de seguridad de la App
+                    .with_position(("center",810))) # Mantén el margen de seguridad de la App
         # Watermark
         watermark = (
             TextClip(
@@ -232,12 +230,13 @@ class ShortProducer:
         if not resized_file_exists:
             # 2. Procesamiento local con GPU (Filtros corregidos + AMF)
             try:
-                POS_Y = 180
+                POS_Y = 0
                 CANVAS_W, CANVAS_H = 1080, 1920
-                FRAME_TIME = "00:00:00"
-                OFFSET_Y = 20
+                FRAME_TIME = "00:00:12"
+                OFFSET_Y = 250
                 FRAME_ZOOM = 1.50
                 TARGET_W_FRAME = int(CANVAS_W * FRAME_ZOOM)
+                TARGET_W_FRAME2 =  int(CANVAS_W * 1.6)
 
                 # Agregamos 'loop=1' y 'frames:v 1' para asegurar que el frame sea estático y persistente
                 complex_filter = (
@@ -246,7 +245,7 @@ class ShortProducer:
                     
                     # --- PROCESAR FRAME [1:v] ---
                     # loop=1:v hace que el frame se repita infinitamente para que no desaparezca
-                    f"[1:v]scale={TARGET_W_FRAME}:-1,setsar=1:1,crop={CANVAS_W}:ih,loop=loop=-1:size=1:start=0[img]; "
+                    f"[1:v]scale={TARGET_W_FRAME2}:-1,setsar=1:1,crop={CANVAS_W}:ih,loop=loop=-1:size=1:start=0[img]; "
                     
                     # --- CREAR LIENZO Y MONTAR ---
                     f"color=s={CANVAS_W}x{CANVAS_H}:c=black[bg]; "
