@@ -149,36 +149,43 @@ class ShortProducer:
             src: url('file:///{font_path}');
         }}
 
-        body {{ 
+        body {{
             background: transparent !important; 
             margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            width: 100vw;
+            padding: 0;
+            display: block; 
             overflow: hidden;
         }}
-       
+
         .banner {{
-            background:  black;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 5px 300px;
+            background: black;
+            display: block; 
+            
+            /* Dimensiones fijas obligatorias */
+            width: 1100px; 
+            height: 350px; 
+            
+            /* Centrado horizontal usando márgenes */
+            margin: 0 auto; 
+            
+            /* Centrado interno del texto */
+            display: flex;
+            justify-content: center;
+            align-items: center;
             text-align: center;
+            
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
-            display: inline-block;
-            max-width: 900px; /* Limitamos el ancho para forzar el balance de las 3 líneas */
+            box-sizing: border-box; /* Importante para que el padding no sume al tamaño */
+            padding: 20px;
         }}
 
         h1 {{
             color: white;
             font-family: 'MontserratLocal', sans-serif;
-            font-size: 100px; /* Bajamos un poco el tamaño para acomodar 3 líneas mejor */
+            font-size: 80px; 
             font-weight: 900;
             margin: 0;
-            letter-spacing: 0px;
-            line-height: 1; /* Espaciado entre líneas profesional */
+            line-height: 1;
             text-shadow: 0 5px 15px rgba(255,255,255,0.4);
         }}
         """
@@ -217,7 +224,7 @@ class ShortProducer:
         banner_filepath = str(TEMP_DIR / banner_filename)
         hook = (
             ImageClip(banner_filepath)
-            .with_position(("center",810))
+            .with_position(("center", 925))
         )
 
         # Logo
@@ -225,7 +232,7 @@ class ShortProducer:
         logo = (
             ImageClip(logo_path)
             .resized(width=150)
-            .with_position((800, 1035))
+            .with_position((860, 860))
         )
 
         # Watermark
@@ -237,7 +244,7 @@ class ShortProducer:
 
         # Componemos y guardamos UN SOLO FRAME
         ui_composite = CompositeVideoClip(
-            [watermark, hook, logo, frame], size=CANVAS_SIZE, bg_color=None
+            [watermark, hook, frame], size=CANVAS_SIZE, bg_color=None
         )
         ui_composite.save_frame(output_png, t=0)
         return output_png
