@@ -6,6 +6,7 @@ from pathlib import Path
 from dbs.interfaces import IRepository
 from moviepy import TextClip, CompositeVideoClip, ImageClip
 
+from rest_api.config import TEMP_DIR # todo: improve
 from domain.models import Config
 #todo move functions to domain service
 
@@ -27,17 +28,13 @@ class ShortProducer:
         HOOK_TEXT = c.hook_text.replace(r'\n', '\n') # todo improve
         DEBUG_VIDEO_FRAME = c.debug_video_frame
 
-        resized_filepath = self.get_segment(
-            URL,
-            START_SEGMENT,
-            END_SEGMENT,
-            FORCE_DOWNLOAD,
-            id=OUTPUT_NAME,
-        )
+        file_id = OUTPUT_NAME
+        filepath = self.get_segment(URL,START_SEGMENT,END_SEGMENT,FORCE_DOWNLOAD,file_id)
+        filepath = self.resize_segment(filepath, file_id)
 
         ui_file = self.generar_capa_ui(WATERMARK_TEXT, HOOK_TEXT)
         self.ensamblar_final(
-            resized_filepath,
+            filepath,
             ui_file,
             OUTPUT_NAME,
             DEBUG_VIDEO_FRAME,
@@ -207,83 +204,83 @@ class ShortProducer:
         ui_composite.save_frame(output_png, t=0)
         return output_png
 
-        
-    def get_segment(self, url, inicio, fin, force_download, id):
-        from rest_api.config import TEMP_DIR # todo: improve
-        temp_file = str(TEMP_DIR / f"{id}_segment_raw_download.mp4")
-        file_doesnt_exist = not Path(temp_file).is_file()
-
-        if file_doesnt_exist:
-            self.download_segment_from_yt(inicio, fin, url, temp_file)
-        elif force_download:
-            file_to_remove = Path(temp_file)
-            file_to_remove.unlink(missing_ok=True)  # delete file
-            self.download_segment_from_yt(inicio, fin, url, temp_file)
-        else:
-            print(
-                f"Raw file exists & force_download={force_download}, skipping raw download..."
-            )
-
-        resized_file = str(TEMP_DIR / f"{id}_segment_resized.mp4")
-        resized_file_exists = Path(resized_file).is_file()
+    
+    def resize_segment(self, input_filepath: str, file_id:str):
+        resized_filepath = str(TEMP_DIR / f"{file_id}_segment_resized.mp4")
+        resized_file_exists = Path(resized_filepath).is_file()
 
         if not resized_file_exists:
-            # 2. Procesamiento local con GPU (Filtros corregidos + AMF)
             try:
                 POS_Y = 0
                 CANVAS_W, CANVAS_H = 1080, 1920
-                FRAME_TIME = "00:00:12"
-                OFFSET_Y = 250
-                FRAME_ZOOM = 1.50
-                TARGET_W_FRAME = int(CANVAS_W * FRAME_ZOOM)
-                TARGET_W_FRAME2 =  int(CANVAS_W * 1.6)
+                ZOOM_FACTOR = 1.53  
+                TARGET_W = int(CANVAS_W * ZOOM_FACTOR)  # 1620px
 
-                # Agregamos 'loop=1' y 'frames:v 1' para asegurar que el frame sea estático y persistente
-                complex_filter = (
-                    # --- PROCESAR VIDEO PRINCIPAL [0:v] ---
-                    f"[0:v]scale={TARGET_W_FRAME}:-1,setsar=1:1,crop={CANVAS_W}:ih[vid]; "
-                    
-                    # --- PROCESAR FRAME [1:v] ---
-                    # loop=1:v hace que el frame se repita infinitamente para que no desaparezca
-                    f"[1:v]scale={TARGET_W_FRAME2}:-1,setsar=1:1,crop={CANVAS_W}:ih,loop=loop=-1:size=1:start=0[img]; "
-                    
-                    # --- CREAR LIENZO Y MONTAR ---
-                    f"color=s={CANVAS_W}x{CANVAS_H}:c=black[bg]; "
-                    f"[bg][vid]overlay=0:{POS_Y}[tmp]; "
-                    f"[tmp][img]overlay=0:{POS_Y}+H/2+{OFFSET_Y}:shortest=1[outv]" 
+                safe_filter = (
+                    # 1. Escalamos el VIDEO para que el ancho sea 1620.
+                    # La altura se ajusta sola (-1) para no achatar.
+                    f"scale={TARGET_W}:-1,"
+                    # 2. Forzamos que los píxeles sean cuadrados.
+                    "setsar=1:1,"
+                    # 3. CORTAMOS el video al ancho del lienzo (1080).
+                    # Esto elimina los bordes laterales que sobran por el zoom (el overflow).
+                    # 'ih' mantiene la altura que resultó del escalado anterior.
+                    f"crop={CANVAS_W}:ih,"
+                    # 4. Ponemos el video en el lienzo vertical.
+                    # Ahora 'iw' es exactamente 1080, así que no habrá error.
+                    f"pad={CANVAS_W}:{CANVAS_H}:(ow-iw)/2:{POS_Y}:black"
                 )
-
                 ffmpeg_cmd = [
-                    "ffmpeg", "-loglevel", "error", "-stats",
-                    # Entrada 0: Video completo
-                    "-i", temp_file,
-                    # Entrada 1: El frame (buscamos el segundo exacto y leemos solo 1 frame)
-                    "-ss", FRAME_TIME, "-i", temp_file, 
-                    "-filter_complex", complex_filter,
-                    # Mapeamos la salida del filtro [outv] y el audio del video original
-                    "-map", "[outv]",
-                    "-map", "0:a", 
-                    "-c:v", "h264_amf",
-                    "-rc", "cbr",
-                    "-b:v", "18M",
-                    "-quality", "quality",
-                    "-pix_fmt", "yuv420p",
-                    "-c:a", "aac",
-                    "-shortest", # Crucial para que el loop del frame no haga el video infinito
-                    resized_file,
+                    "ffmpeg",
+                    "-loglevel",
+                    "error",
+                    "-stats",
+                    "-i",
+                    input_filepath,
+                    "-vf",
+                    safe_filter,
+                    "-c:v",
+                    "h264_amf",
+                    "-rc",
+                    "cbr",
+                    "-b:v",
+                    "18M",  # Subimos a 18M para que el zoom no pierda nitidez
+                    "-quality",
+                    "quality",
+                    "-pix_fmt",
+                    "yuv420p",
+                    "-c:a",
+                    "aac",
+                    resized_filepath,
                 ]
                 print("Resizing video for mobile canvas...")
                 subprocess.run(ffmpeg_cmd, check=True)
 
-                print(f"Resizing successful with file: {resized_file}")
-                return resized_file
+                print(f"Resizing successful with file: {resized_filepath}")
+                return resized_filepath
             except subprocess.CalledProcessError as e:
                 print(f"Error while resizing : {e}")
+                raise
         else:
             print("Resized file exists. Skipping resizing...")
-            return resized_file
+            return resized_filepath
 
+       
+    def get_segment(self, url: str, start_ts: str, end_ts:str, force_download: bool, file_id: str):
+        raw_filepath = str(TEMP_DIR / f"{file_id}_segment_raw_download.mp4")
+        file_doesnt_exist = not Path(raw_filepath).is_file()
 
+        if file_doesnt_exist:
+            self.download_segment_from_yt(start_ts, end_ts, url, raw_filepath)
+        elif force_download:
+            file_to_remove = Path(raw_filepath)
+            file_to_remove.unlink(missing_ok=True)  # delete file
+            self.download_segment_from_yt(start_ts, end_ts, url, raw_filepath)
+        else:
+            print(
+                f"Raw file exists & force_download={force_download}, skipping raw download..."
+            )
+        return raw_filepath
 
     def download_segment_from_yt(self, start_ts: str, end_ts: str, url: str, output_path: str):
         # Convertir "00:01:00" a segundos para la API nativa
