@@ -14,7 +14,7 @@ from shorts_production.config import OUTPUT_DIR
 
 from domain.models import Config
 from domain.services.yt_downloader import YTDownloader
-from domain.services.video_builder import VideoBuilder
+from domain.services.video_builder import VideoBuilderV2
 
 
 class ShortProducer:
@@ -22,12 +22,12 @@ class ShortProducer:
         self,
         config_repo: IRepository,
         yt_downloader: YTDownloader = None,
-        video_builder: VideoBuilder = None,
+        video_builder: VideoBuilderV2 = None,
     ):
         self.config_repo = config_repo
         self.yt_downloader = yt_downloader or YTDownloader(output_path=str(TEMP_DIR))
 
-        default_video_builder = VideoBuilder(
+        default_video_builder = VideoBuilderV2(
             output_path=str(OUTPUT_DIR),
             temp_path=str(TEMP_DIR),
             font_path=str(TEXT_FONT_PATH),
@@ -54,9 +54,9 @@ class ShortProducer:
         result_path    = self.video_builder.build(input_filepath, file_id, watermark_text, hook_text, debug_video_frame)
 
         print("Video produced at ", result_path)
+        
         # fmt: on
 
-        if not debug_video_frame:
-            pass
-            # print("Saving config repo...")
-            # self.config_repo.add(c)
+        if not debug_video_frame:            
+            print("Saving config repo...")
+            self.config_repo.add(c)
