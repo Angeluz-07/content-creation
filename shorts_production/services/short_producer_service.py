@@ -163,7 +163,7 @@ class ShortProducer:
             
             /* Dimensiones fijas obligatorias */
             width: 1100px; 
-            height: 350px; 
+            height: 320px; 
             
             /* Centrado horizontal usando márgenes */
             margin: 0 auto; 
@@ -180,13 +180,13 @@ class ShortProducer:
         }}
 
         h1 {{
-            color: white;
+            color: #E0E0E0;
             font-family: 'MontserratLocal', sans-serif;
-            font-size: 80px; 
+            font-size: 100px; 
             font-weight: 900;
             margin: 0;
-            line-height: 1;
-            text-shadow: 0 5px 15px rgba(255,255,255,0.4);
+            line-height: 0.9;
+            letter-spacing: 10px;
         }}
         """
         
@@ -211,11 +211,12 @@ class ShortProducer:
             TextClip(
                 text=watermark_text,
                 font_size=55,
-                color="gray",
+                color="white",
                 size=(460, 155),
-                font=WATERMARK_TEXT_FONT_PATH,
+                font=TEXT_FONT_PATH_,
             )
-            .with_position((50, 15))
+            .with_opacity(0.5) 
+            .with_position((0, 5))
             .rotated(15)
         )
 
@@ -239,12 +240,12 @@ class ShortProducer:
         frame = (
             ImageClip(frame_filepath)            
             .resized(width=int(1080*1.5))
-            .with_position(("center", 1250))
+            .with_position(("center", 1220))
         )
 
         # Componemos y guardamos UN SOLO FRAME
         ui_composite = CompositeVideoClip(
-            [watermark, hook, frame], size=CANVAS_SIZE, bg_color=None
+            [watermark, frame, hook], size=CANVAS_SIZE, bg_color=None
         )
         ui_composite.save_frame(output_png, t=0)
         return output_png

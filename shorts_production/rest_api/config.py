@@ -7,7 +7,8 @@ DATA_DIR =  PROJECT_DIR / ".data"
 ASSETS_DIR = DATA_DIR / "assets"
 OUTPUT_DIR = DATA_DIR / "output_videos"
 TEMP_DIR = DATA_DIR / "temp"
-TEXT_FONT_PATH = ASSETS_DIR / "Montserrat-Bold.ttf"
+TEXT_FONT_PATH = ASSETS_DIR / "ProtestStrike-Regular.ttf"
+
 
 
 ENV_DIR = Path(__file__).resolve().parent.parent.parent / ".env"
