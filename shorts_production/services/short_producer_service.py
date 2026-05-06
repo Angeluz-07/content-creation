@@ -187,6 +187,7 @@ class ShortProducer:
             margin: 0;
             line-height: 0.9;
             letter-spacing: 10px;
+            text-shadow: 0px 1px 2px rgba(0,0,0,0.2)
         }}
         """
         
