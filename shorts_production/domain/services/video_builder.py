@@ -16,6 +16,24 @@ class VideoBuilder:
         self.assets_path = assets_path
         self.output_path_ = output_path_
 
+    def build(
+        self,
+        input_filepath: str,
+        file_id: str,
+        watermark_text: str,
+        hook_text: str,
+        debug_video_frame: str,
+    ):
+        hook_text_cleaned = hook_text.replace(r"\n", "\n")
+
+        # fmt: off
+        resized_filepath     = self._resize_video_segment(input_filepath, file_id)
+        frame_filepath       = self._get_video_frame(input_filepath)
+        fixed_layer_filepath = self._generate_fixed_layer(watermark_text, hook_text_cleaned, frame_filepath)
+        result_path          = self._assemble(resized_filepath, fixed_layer_filepath, file_id, debug_video_frame)
+        # fmt: on
+        return result_path
+
     def _resize_video_segment(self, input_filepath: str, file_id: str):
         resized_filepath = str(
             Path(self.output_path) / f"{file_id}_segment_resized.mp4"
