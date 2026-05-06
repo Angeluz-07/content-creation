@@ -9,12 +9,12 @@ from html2image import Html2Image
 class VideoBuilder:
 
     def __init__(
-        self, output_path: str, font_path: str, assets_path: str, output_path_: str
+        self, output_path: str, temp_path: str, font_path: str, assets_path: str, 
     ):
-        self.output_path = output_path
+        self.output_path = output_path        
+        self.temp_path = temp_path
         self.font_path = font_path
         self.assets_path = assets_path
-        self.output_path_ = output_path_
 
     def build(
         self,
@@ -36,7 +36,7 @@ class VideoBuilder:
 
     def _resize_video_segment(self, input_filepath: str, file_id: str):
         resized_filepath = str(
-            Path(self.output_path) / f"{file_id}_segment_resized.mp4"
+            Path(self.temp_path) / f"{file_id}_segment_resized.mp4"
         )
         resized_file_exists = Path(resized_filepath).is_file()
 
@@ -98,7 +98,7 @@ class VideoBuilder:
             return resized_filepath
 
     def _get_video_frame(self, input_filepath, timestamp="00:00:12"):
-        output_image_path = str(Path(self.output_path) / "video_frame.png")
+        output_image_path = str(Path(self.temp_path) / "video_frame.png")
 
         ffmpeg_cmd = [
             "ffmpeg",
@@ -125,7 +125,7 @@ class VideoBuilder:
             print(f"Error al capturar el frame: {e}")
 
     def _generate_fixed_layer(self, watermark_text, hook_text, frame_filepath):
-        output_png = str(Path(self.output_path) / "temp_ui.png")
+        output_png = str(Path(self.temp_path) / "temp_ui.png")
         CANVAS_SIZE = (1080, 1920)
         TEXT_FONT_PATH = str(self.font_path).replace("\\", "/")
 
@@ -145,7 +145,7 @@ class VideoBuilder:
 
         # Hook text
         banner_filename = self._generate_banner_from_html(hook_text, TEXT_FONT_PATH)
-        banner_filepath = str(Path(self.output_path) / banner_filename)
+        banner_filepath = str(Path(self.temp_path) / banner_filename)
         hook = ImageClip(banner_filepath).with_position(("center", 925))
 
         # Logo
@@ -173,7 +173,7 @@ class VideoBuilder:
         return output_png
 
     def _generate_banner_from_html(self, text: str, font_path: str):
-        output_dir = self.output_path
+        output_dir = self.temp_path
 
         texto_html = text.replace("\n", "<br>")
 
@@ -249,8 +249,8 @@ class VideoBuilder:
         return output_name
 
     def _assemble(self, video_input, ui_png, video_output, debug=False):
-        salida_imagen = str(Path(self.output_path) / "debug_frame.png")
-        salida_video = str(Path(self.output_path_) / f"{video_output}.mp4")
+        salida_imagen = str(Path(self.temp_path) / "debug_frame.png")
+        salida_video = str(Path(self.output_path) / f"{video_output}.mp4")
         if debug:
             print("DEBUG MODE: Generating one debug frame...")
             # Comando optimizado solo para extraer 1 imagen

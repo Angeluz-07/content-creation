@@ -28,10 +28,10 @@ class ShortProducer:
         self.yt_downloader = yt_downloader or YTDownloader(output_path=str(TEMP_DIR))
 
         default_video_builder = VideoBuilder(
-            output_path=str(TEMP_DIR),
+            output_path=str(OUTPUT_DIR),
+            temp_path=str(TEMP_DIR),
             font_path=str(TEXT_FONT_PATH),
             assets_path=str(ASSETS_DIR),
-            output_path_=str(OUTPUT_DIR),
         )
         self.video_builder = video_builder or default_video_builder
 
@@ -44,7 +44,7 @@ class ShortProducer:
         url               = c.url
         start_ts          = c.start_segment
         end_ts            = c.end_segment
-        force_download    =  c.force_download
+        force_download    = c.force_download
         file_id           = c.outname
         watermark_text    = c.watermark_text
         hook_text         = c.hook_text # todo improve
@@ -53,6 +53,7 @@ class ShortProducer:
         input_filepath = self.yt_downloader.get_video_segment(url,start_ts,end_ts,force_download,file_id)   
         result_path    = self.video_builder.build(input_filepath, file_id, watermark_text, hook_text, debug_video_frame)
 
+        print("Video produced at ", result_path)
         # fmt: on
 
         if not debug_video_frame:
