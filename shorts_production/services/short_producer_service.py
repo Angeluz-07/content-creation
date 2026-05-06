@@ -1,14 +1,25 @@
+from pathlib import Path
+import sys
+
+# Get grandparent and add to path
+grandparent = Path(__file__).parent.parent.parent
+sys.path.append(str(grandparent))
+# INFO: the code above is to be able to import config.py from higher level folder
+
 import yt_dlp
 import random
 import time
 import subprocess
 from pathlib import Path
 from dbs.interfaces import IRepository
-from moviepy import TextClip, CompositeVideoClip, ImageClip
+from moviepy import TextClip, CompositeVideoClip, ImageClip, ColorClip
 
-from rest_api.config import TEMP_DIR # todo: improve
-from rest_api.config import ASSETS_DIR # todo: improve
-from rest_api.config import TEXT_FONT_PATH
+from moviepy.video.tools.drawing import color_gradient
+import numpy as np
+from shorts_production.config import TEMP_DIR # todo: improve
+from shorts_production.config import ASSETS_DIR # todo: improve
+from shorts_production.config import TEXT_FONT_PATH
+from shorts_production.config import OUTPUT_DIR # todo: improve
 
 from domain.models import Config
 #todo move functions to domain service
@@ -48,7 +59,7 @@ class ShortProducer:
             print("Saving config repo...")
             self.config_repo.add(c)
 
-    def get_video_frame(self, input_filepath, timestamp="00:00:10"):
+    def get_video_frame(self, input_filepath, timestamp="00:00:12"):
         output_image_path = str(TEMP_DIR /  "video_frame.png")
 
         ffmpeg_cmd = [
@@ -71,7 +82,6 @@ class ShortProducer:
             print(f"Error al capturar el frame: {e}")
 
     def ensamblar_final(self, video_input, ui_png, video_output, debug=False):
-        from rest_api.config import TEMP_DIR, OUTPUT_DIR # todo: improve
         salida_imagen = str(TEMP_DIR /  "debug_frame.png")
         salida_video = str(OUTPUT_DIR / f"{video_output}.mp4")
         if debug:
@@ -176,7 +186,7 @@ class ShortProducer:
             
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
             box-sizing: border-box; /* Importante para que el padding no sume al tamaño */
-            padding: 20px;
+            padding: 50px;
         }}
 
         h1 {{
@@ -237,12 +247,25 @@ class ShortProducer:
             .with_position((860, 860))
         )
 
+
         # Watermark
         frame = (
-            ImageClip(frame_filepath)            
-            .resized(width=int(1080*1.5))
+            ImageClip(frame_filepath)
+            .resized(width=int(1080*1.9))
             .with_position(("center", 1220))
         )
+
+        mask_array = color_gradient(
+            frame.size, 
+            p1=(0, 100), 
+            p2=(0, 0),
+            color_1=0, 
+            color_2=1, 
+            shape='linear'
+        )
+        mask_clip = ImageClip(mask_array, is_mask=True)
+        frame_ = frame.with_mask(mask_clip)
+
 
         # Componemos y guardamos UN SOLO FRAME
         ui_composite = CompositeVideoClip(
