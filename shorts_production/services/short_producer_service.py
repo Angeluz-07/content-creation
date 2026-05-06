@@ -21,14 +21,16 @@ from shorts_production.config import TEXT_FONT_PATH
 from shorts_production.config import OUTPUT_DIR # todo: improve
 
 from domain.models import Config
-from domain.services import YTDownloader
+from domain.services.yt_downloader import YTDownloader
+from domain.services.video_builder import VideoBuilder
 #todo move functions to domain service
 
 
 class ShortProducer:
-    def __init__(self, config_repo: IRepository, yt_downloader: YTDownloader = None):
+    def __init__(self, config_repo: IRepository, yt_downloader: YTDownloader = None, video_builder: VideoBuilder = None):
         self.config_repo = config_repo
         self.yt_downloader = yt_downloader or YTDownloader(output_path=str(TEMP_DIR))
+        self.video_builder = video_builder or VideoBuilder(output_path=str(TEMP_DIR))
 
     def run(self, config_dict):
         c = Config(**config_dict)
@@ -46,10 +48,8 @@ class ShortProducer:
         file_id = OUTPUT_NAME
         raw_filepath = self.yt_downloader.get_video_segment(URL,START_SEGMENT,END_SEGMENT,FORCE_DOWNLOAD,file_id)
         
-        resized_filepath = self.resize_segment(raw_filepath, file_id)
-
-        frame_filepath = self.get_video_frame(raw_filepath)
-
+        resized_filepath = self.video_builder._resize_video_segment(raw_filepath, file_id)
+        frame_filepath = self.video_builder._get_video_frame(raw_filepath)
         ui_file = self.generate_fixed_layer(WATERMARK_TEXT, HOOK_TEXT, frame_filepath)
         self.ensamblar_final(
             resized_filepath,
@@ -61,27 +61,7 @@ class ShortProducer:
             print("Saving config repo...")
             self.config_repo.add(c)
 
-    def get_video_frame(self, input_filepath, timestamp="00:00:12"):
-        output_image_path = str(TEMP_DIR /  "video_frame.png")
-
-        ffmpeg_cmd = [
-            "ffmpeg",
-            "-loglevel", "error",
-            "-y",
-            "-ss", timestamp,              # Buscamos el tiempo exacto (antes del input es más rápido)
-            "-i", input_filepath,          # Entrada de video
-            "-frames:v", "1",               # Solo extraer 1 frame
-            "-q:v", "5",                    # Calidad alta (2-5 es ideal para JPEG)
-            output_image_path              # Ruta de salida (ej: frame.jpg o frame.png)
-        ]
-        
-        try:
-            print(f"Capturando frame en {timestamp}...")
-            subprocess.run(ffmpeg_cmd, check=True)
-            print(f"Imagen guardada en: {output_image_path}")
-            return output_image_path
-        except subprocess.CalledProcessError as e:
-            print(f"Error al capturar el frame: {e}")
+    
 
     def ensamblar_final(self, video_input, ui_png, video_output, debug=False):
         salida_imagen = str(TEMP_DIR /  "debug_frame.png")
@@ -277,62 +257,3 @@ class ShortProducer:
         return output_png
 
     
-    def resize_segment(self, input_filepath: str, file_id:str):
-        resized_filepath = str(TEMP_DIR / f"{file_id}_segment_resized.mp4")
-        resized_file_exists = Path(resized_filepath).is_file()
-
-        if not resized_file_exists:
-            try:
-                POS_Y = 0
-                CANVAS_W, CANVAS_H = 1080, 1920
-                ZOOM_FACTOR = 1.53  
-                TARGET_W = int(CANVAS_W * ZOOM_FACTOR)  # 1620px
-
-                safe_filter = (
-                    # 1. Escalamos el VIDEO para que el ancho sea 1620.
-                    # La altura se ajusta sola (-1) para no achatar.
-                    f"scale={TARGET_W}:-1,"
-                    # 2. Forzamos que los píxeles sean cuadrados.
-                    "setsar=1:1,"
-                    # 3. CORTAMOS el video al ancho del lienzo (1080).
-                    # Esto elimina los bordes laterales que sobran por el zoom (el overflow).
-                    # 'ih' mantiene la altura que resultó del escalado anterior.
-                    f"crop={CANVAS_W}:ih,"
-                    # 4. Ponemos el video en el lienzo vertical.
-                    # Ahora 'iw' es exactamente 1080, así que no habrá error.
-                    f"pad={CANVAS_W}:{CANVAS_H}:(ow-iw)/2:{POS_Y}:black"
-                )
-                ffmpeg_cmd = [
-                    "ffmpeg",
-                    "-loglevel",
-                    "error",
-                    "-stats",
-                    "-i",
-                    input_filepath,
-                    "-vf",
-                    safe_filter,
-                    "-c:v",
-                    "h264_amf",
-                    "-rc",
-                    "cbr",
-                    "-b:v",
-                    "18M",  # Subimos a 18M para que el zoom no pierda nitidez
-                    "-quality",
-                    "quality",
-                    "-pix_fmt",
-                    "yuv420p",
-                    "-c:a",
-                    "aac",
-                    resized_filepath,
-                ]
-                print("Resizing video for mobile canvas...")
-                subprocess.run(ffmpeg_cmd, check=True)
-
-                print(f"Resizing successful with file: {resized_filepath}")
-                return resized_filepath
-            except subprocess.CalledProcessError as e:
-                print(f"Error while resizing : {e}")
-                raise
-        else:
-            print("Resized file exists. Skipping resizing...")
-            return resized_filepath
