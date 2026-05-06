@@ -9,3 +9,4 @@ class ConfigInput(BaseModel):
     hook_text: str
     outname: str
     watermark_text: str
+    frame_ts: str

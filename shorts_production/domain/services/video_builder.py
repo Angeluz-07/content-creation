@@ -31,12 +31,13 @@ class VideoBuilderV2:
         watermark_text: str,
         hook_text: str,
         debug_video_frame: str,
+        frame_ts: str
     ):
         hook_text_cleaned = hook_text.replace(r"\n", "\n")
 
         # fmt: off
         resized_filepath     = self._resize_video_segment(input_filepath, file_id)
-        frame_filepath       = self._get_video_frame(input_filepath)
+        frame_filepath       = self._get_video_frame(input_filepath, frame_ts)
         fixed_layer_filepath = self._generate_fixed_layer(watermark_text, hook_text_cleaned, frame_filepath)
         result_path          = self._assemble(resized_filepath, fixed_layer_filepath, file_id, debug_video_frame)
         # fmt: on
@@ -103,7 +104,7 @@ class VideoBuilderV2:
             print("Resized file exists. Skipping resizing...")
             return resized_filepath
 
-    def _get_video_frame(self, input_filepath, timestamp="00:00:12"):
+    def _get_video_frame(self, input_filepath, timestamp="00:00:15"):
         output_image_path = str(Path(self.temp_path) / "video_frame.png")
 
         ffmpeg_cmd = [
@@ -159,10 +160,13 @@ class VideoBuilderV2:
         logo = ImageClip(logo_path).resized(width=150).with_position((860, 860))
 
         # Watermark
+        frame_zoom_factor = 1.8
+        pos_y = 1200 # starts at, counting from top to bottom
+        pos_x = -300 # starts at, counting from left to right
         frame = (
             ImageClip(frame_filepath)
-            .resized(width=int(1080 * 1.9))
-            .with_position(("center", 1220))
+            .resized(width=int(1080 * frame_zoom_factor))
+            .with_position((pos_x, pos_y))
         )
 
         mask_array = color_gradient(

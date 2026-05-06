@@ -49,12 +49,13 @@ class ShortProducer:
         watermark_text    = c.watermark_text
         hook_text         = c.hook_text # todo improve
         debug_video_frame = c.debug_video_frame
+        frame_ts          = c.frame_ts
 
         input_filepath = self.yt_downloader.get_video_segment(url,start_ts,end_ts,force_download,file_id)   
-        result_path    = self.video_builder.build(input_filepath, file_id, watermark_text, hook_text, debug_video_frame)
+        result_path    = self.video_builder.build(input_filepath, file_id, watermark_text, hook_text, debug_video_frame, frame_ts)
 
         print("Video produced at ", result_path)
-        
+
         # fmt: on
 
         if not debug_video_frame:            

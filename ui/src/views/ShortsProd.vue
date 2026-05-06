@@ -16,6 +16,7 @@ const form = reactive<Config>({
   endSegment: '00:00:20',
   hookText: 'test',
   outname: 'test4',
+  frameTs: '00:00:10'
 })
 const isLoading = ref(false)
 
@@ -115,6 +116,19 @@ const refreshVideo = () => {
               </label>
               <input
                 v-model="form.endSegment"
+                type="text"
+                pattern="^([0-9]{2}:){2}[0-9]{2}$"
+                placeholder="00:00:00"
+                class="input input-bordered w-full"
+              />
+            </div>
+
+            <div class="form-control w-full">
+              <label class="label">
+                <span class="label-text">Frame to use (HH:MM:SS)</span>
+              </label>
+              <input
+                v-model="form.frameTs"
                 type="text"
                 pattern="^([0-9]{2}:){2}[0-9]{2}$"
                 placeholder="00:00:00"

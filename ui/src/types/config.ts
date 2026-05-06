@@ -8,4 +8,5 @@ export interface Config {
   endSegment: string;
   hookText: string;
   outname: string;
+  frameTs: string;
 }
