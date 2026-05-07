@@ -1,7 +1,7 @@
 from pathlib import Path
 import yt_dlp
-
 import time
+import subprocess
 
 
 class YTDownloader:
@@ -31,54 +31,47 @@ class YTDownloader:
     def _download_segment_from_yt(
         self, start_ts: str, end_ts: str, url: str, output_path: str
     ):
-        # Convertir "00:01:00" a segundos para la API nativa
-        def to_seconds(ts):
-            h, m, s = map(int, ts.split(":"))
-            return h * 3600 + m * 60 + s
+        print(f"Starting download raw segment (via Subprocess): {start_ts} - {end_ts}")
 
-        start_sec = to_seconds(start_ts)
-        end_sec = to_seconds(end_ts)
-
-        ydl_opts = {
-            "quiet": False,
-            "no_warnings": True,
-            "outtmpl": output_path,
-            # CHANGE THIS: Remove the strict [ext=mp4] requirement.
-            # We ask for best video + best audio and tell it to merge into mp4.
-            "format": "bestvideo+bestaudio/best",
-            "format_sort": ["res:4k", "ext:mp4:m4a"],
-            "merge_output_format": "mp4",
-            # Add this to handle the "tv downgraded" streams correctly
-            "download_ranges": lambda info_dict, ydl: [
-                {
-                    "start_time": start_sec,
-                    "end_time": end_sec,
-                }
-            ],
-            "force_keyframes_at_cuts": True,
-            # "sleep_interval": random.randint(5, 15),
-            # "max_sleep_interval": 30,
-            # "cookiefile": "youtube_cookies.txt",
-            "extractor_args": {
-                "youtube": {
-                    # 'tv' or 'android' clients are great for avoiding bot-checks,
-                    # but they require the broader format selection above.
-                    "player_client": ["android"],
-                    "player_skip": ["webpage", "configs"],
-                }
-            },
-        }
+        # El comando exacto que validamos en consola
+        command = [
+            "yt-dlp",
+            url,
+            # "--list-formats", #for debug only
+            "--cookies",
+            "my_cookies.txt",
+            "--js-runtimes",
+            "node",
+            "--remote-components",
+            "ejs:github",
+            # Formato: Tu filtro de 1080/720
+            "-f",
+            "bestvideo[height=1080][ext=mp4]+bestaudio[ext=m4a] / bestvideo[height=720][ext=mp4]+bestaudio[ext=m4a] / best[height=1080][ext=mp4] / best[height=720][ext=mp4]",
+            # Segmento: Usamos --download-sections con sintaxis de tiempo
+            "--download-sections",
+            f"*{start_ts}-{end_ts}",
+            "--force-keyframes-at-cuts",
+            "-o",
+            output_path,
+            "--merge-output-format",
+            "mp4",
+            # Evitar SABR forzando clientes móviles
+            "--extractor-args",
+            "youtube:player_client=web,tv",
+            "--verbose",  # Mantener para debug
+        ]
 
         try:
-            print(f"Starting download raw segment: {start_ts} - {end_ts}")
-
             start_time = time.perf_counter()
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([url])
-            end_time = time.perf_counter()
-            elapsed_time = end_time - start_time
-            print(f"Elapsed time: {elapsed_time:.4f} seconds")
 
-            print("Raw segment downloaded successfuly")
+            # Ejecutamos y capturamos salida para loguear si es necesario
+            result = subprocess.run(command, check=True, text=True)
+
+            end_time = time.perf_counter()
+            print(f"Elapsed time: {end_time - start_time:.4f} seconds")
+            print("Raw segment downloaded successfully via Subprocess")
+
+        except subprocess.CalledProcessError as e:
+            print(f"Error while downloading with subprocess: {e}")
         except Exception as e:
-            print(f"Error while downloading: {e}")
+            print(f"General error: {e}")
