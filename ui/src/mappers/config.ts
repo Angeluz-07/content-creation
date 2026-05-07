@@ -12,6 +12,7 @@ export interface ConfigPayload {
   outname: string;
   watermark_text: string;
   frame_ts: string;
+  font_name: string;
 }
 
 export const mapConfigToPayload = (data: Config): ConfigPayload => {
@@ -24,6 +25,7 @@ export const mapConfigToPayload = (data: Config): ConfigPayload => {
     hook_text: data.hookText,
     outname: data.outname,
     watermark_text: data.watermarkText,
-    frame_ts: data.frameTs
+    frame_ts: data.frameTs,
+    font_name: data.fontName
   };
 };

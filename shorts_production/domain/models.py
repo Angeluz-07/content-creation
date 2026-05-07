@@ -11,6 +11,7 @@ class Config:
     outname: str
     watermark_text: str
     frame_ts: str
+    font_name: str
     force_download: bool = False
     debug_video_frame: bool = True
     id: str = field(default_factory=lambda: str(uuid4()))

@@ -9,4 +9,5 @@ export interface Config {
   hookText: string;
   outname: string;
   frameTs: string;
+  fontName: string;
 }

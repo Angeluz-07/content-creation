@@ -15,6 +15,7 @@ from shorts_production.config import OUTPUT_DIR
 from domain.models import Config
 from domain.services.yt_downloader import YTDownloader
 from domain.services.video_builder import VideoBuilderV2
+from domain.services.font_provider import FontProvider
 
 
 class ShortProducer:
@@ -34,6 +35,7 @@ class ShortProducer:
             assets_path=str(ASSETS_DIR),
         )
         self.video_builder = video_builder or default_video_builder
+        self.font_provider = FontProvider(str(ASSETS_DIR))
 
     def run(self, config_dict):
         c = Config(**config_dict)
@@ -50,8 +52,10 @@ class ShortProducer:
         hook_text         = c.hook_text # todo improve
         debug_video_frame = c.debug_video_frame
         frame_ts          = c.frame_ts
+        font_name         = c.font_name
 
         input_filepath = self.yt_downloader.get_video_segment(url,start_ts,end_ts,force_download,file_id)   
+        self.video_builder.font_path = self.font_provider.get_font(c.font_name)
         result_path    = self.video_builder.build(input_filepath, file_id, watermark_text, hook_text, debug_video_frame, frame_ts)
 
         print("Video produced at ", result_path)

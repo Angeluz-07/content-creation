@@ -5,7 +5,7 @@ import type { Config } from '../types/config'
 import { mapConfigToPayload } from '../mappers/config'
 import api from '@/api/client'
 
-const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT;
+const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT
 
 const form = reactive<Config>({
   url: 'https://www.youtube.com/watch',
@@ -16,8 +16,29 @@ const form = reactive<Config>({
   endSegment: '00:00:20',
   hookText: 'test',
   outname: 'test4',
-  frameTs: '00:00:10'
+  frameTs: '00:00:10',
+  fontName: 'CascadiaCode',
 })
+
+const fontList = ref([
+  'Anton-Regular',
+  'Bangers-Regular',
+  'BowlbyOne-Regular',
+  'CascadiaCode',
+  'GoogleSans-Medium',
+  'Kanit-Black',
+  'LuckiestGuy-Regular',
+  'Montserrat-Bold',
+  'Oswald-Medium',
+  'PassionOne-Regular',
+  'Poppins-ExtraBold',
+  'ProtestStrike-Regular',
+  'RammettoOne-Regular',
+  'Rubik-Black',
+  'Rubik-Medium',
+  'SpaceGrotesk-Regular',
+])
+
 const isLoading = ref(false)
 
 const handleSubmit = async () => {
@@ -70,6 +91,20 @@ const refreshVideo = () => {
         <h2 class="card-title mb-4">Configuración de Procesamiento</h2>
 
         <form @submit.prevent="handleSubmit" class="space-y-4">
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text font-semibold">URL</span>
+            </label>
+            <!-- Use v-model for binding and select tag instead of input -->
+            <select v-model="form.fontName" class="select select-bordered w-full" required>
+              <option value="" disabled selected>Select a font</option>
+              <!-- Loop through the list of strings -->
+              <option v-for="fontName in fontList" :key="fontName" :value="fontName">
+                {{ fontName }}
+              </option>
+            </select>
+          </div>
+
           <div class="form-control w-full">
             <label class="label">
               <span class="label-text font-semibold">Watermark text</span>

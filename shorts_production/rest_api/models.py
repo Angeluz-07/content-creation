@@ -10,3 +10,4 @@ class ConfigInput(BaseModel):
     outname: str
     watermark_text: str
     frame_ts: str
+    font_name: str
