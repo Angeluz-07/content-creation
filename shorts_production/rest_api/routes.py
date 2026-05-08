@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from rest_api.models import ConfigInput, DownloadParamsInput
-from context import short_producer, downloader_service
+from context import short_producer, downloader_service, raw_segments_filename_provider
 
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
@@ -56,6 +56,15 @@ def get_raw_video(video_id: str):
     
     # media_type='video/mp4' es crucial para que el navegador sepa qué hacer
     return FileResponse(file_path, media_type="video/mp4")
+
+@router.get("/video/raws/")
+def get_raw_video_names():
+    values = raw_segments_filename_provider.get_filenames()
+    print(values)
+    return {
+        "status": "success",
+        "values": values
+    }
 
 @router.post("/download-segment")
 def process_video(input: DownloadParamsInput):

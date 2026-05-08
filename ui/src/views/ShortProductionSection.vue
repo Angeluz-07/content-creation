@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { ref, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import type { ShortProductionParams } from '../types/config'
 import { mapConfigToPayload } from '../mappers/config'
 import api from '@/api/client'
@@ -16,6 +16,21 @@ const form = reactive<ShortProductionParams>({
   fontName: 'CascadiaCode',
 })
 
+const fileNames= ref([]);
+
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/video/raws/');
+    fileNames.value = data.values;
+    
+    // // Optional: Pre-select the first item if the list isn't empty
+    if (fileNames.value.length > 0) {
+      form.fileName = fileNames.value[0];
+    }
+  } catch (error) {
+    console.error('Failed to load options:', error);
+  }
+});
 const fontList = ref([
   'Anton-Regular',
   'Bangers-Regular',
@@ -42,11 +57,11 @@ const handleSubmit = async () => {
   try {
     console.log('Datos a enviar:', form)
 
-    const payload = mapConfigToPayload(form)
-    const { data } = await api.post('/produce-short', payload)
-    refreshImage()
-    refreshVideo()
-    console.log(data)
+    // const payload = mapConfigToPayload(form)
+    // const { data } = await api.post('/produce-short', payload)
+    // refreshImage()
+    // refreshVideo()
+    // console.log(data)
   } catch (error) {
     console.error('Error al enviar:', error)
   } finally {
@@ -91,13 +106,13 @@ const refreshVideo = () => {
             <label class="label">
               <span class="label-text font-semibold">File name</span>
             </label>
-            <input
-              v-model="form.fileName"
-              type="text"
-              placeholder="nombre_archivo"
-              class="input input-bordered w-full"
-              required
-            />
+            <select v-model="form.fileName" class="select select-bordered w-full" required>
+              <option value="" disabled selected>Select a file</option>
+              <!-- Loop through the list of strings -->
+              <option v-for="fileName in fileNames" :key="fileName" :value="fileName">
+                {{ fileName }}
+              </option>
+            </select>
           </div>
 
           <div class="form-control w-full">
