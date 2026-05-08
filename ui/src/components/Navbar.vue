@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const menuItems = [
+  { name: 'Download Section', to: '/download-section' },
   { name: 'Shorts Production', to: '/shorts-prod' },
 ]
 </script>
@@ -28,7 +29,13 @@ const menuItems = [
           tabindex="-1"
           class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
         >
-          <li><a> Shorts Production </a></li>
+          <RouterLink v-for="item in menuItems" :key="item.name" :to="item.to">
+            <li>
+              <a>
+                {{ item.name }}
+              </a>
+            </li>
+          </RouterLink>
           <li>
             <a>Parent</a>
             <ul class="p-2">
@@ -41,6 +48,7 @@ const menuItems = [
       </div>
       <a class="btn btn-ghost text-xl">CC </a>
     </div>
+
     <div class="navbar-center hidden lg:flex">
       <ul class="menu menu-horizontal px-1">
         <RouterLink v-for="item in menuItems" :key="item.name" :to="item.to">
@@ -62,6 +70,7 @@ const menuItems = [
         <li><a>Item 3</a></li>
       </ul>
     </div>
+
     <div class="navbar-end">
       <a class="btn">Button</a>
     </div>
