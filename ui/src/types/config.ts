@@ -11,3 +11,11 @@ export interface Config {
   frameTs: string;
   fontName: string;
 }
+
+export interface DownloadParams {
+  url: string;
+  startSegment: string;
+  endSegment: string;
+  fileName: string;
+  forceDownload: boolean;
+}

@@ -1,43 +1,20 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { ref, computed } from 'vue'
-import type { Config } from '../types/config'
+import type { DownloadParams } from '../types/config'
 import { mapConfigToPayload } from '../mappers/config'
+import { toDownloadParamsPayload } from '../mappers/config'
 import api from '@/api/client'
 
-const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT
 
-const form = reactive<Config>({
+const form = reactive<DownloadParams>({
   url: 'https://www.youtube.com/watch',
-  watermarkText: WATERMARK_TEXT,
-  forceDownload: false,
-  debugVideoFrame: true,
   startSegment: '00:00:10',
   endSegment: '00:00:20',
-  hookText: 'test',
-  outname: 'test4',
-  frameTs: '00:00:10',
-  fontName: 'CascadiaCode',
+  fileName: 'test4',
+  forceDownload: false,
 })
 
-const fontList = ref([
-  'Anton-Regular',
-  'Bangers-Regular',
-  'BowlbyOne-Regular',
-  'CascadiaCode',
-  'GoogleSans-Medium',
-  'Kanit-Black',
-  'LuckiestGuy-Regular',
-  'Montserrat-Bold',
-  'Oswald-Medium',
-  'PassionOne-Regular',
-  'Poppins-ExtraBold',
-  'ProtestStrike-Regular',
-  'RammettoOne-Regular',
-  'Rubik-Black',
-  'Rubik-Medium',
-  'SpaceGrotesk-Regular',
-])
 
 const isLoading = ref(false)
 
@@ -46,11 +23,12 @@ const handleSubmit = async () => {
   try {
     console.log('Datos a enviar:', form)
 
-    const payload = mapConfigToPayload(form)
-    const { data } = await api.post('/produce-short', payload)
-    refreshImage()
-    refreshVideo()
-    console.log(data)
+    const payload = toDownloadParamsPayload(form)
+    console.log(payload)
+    // const { data } = await api.post('/produce-short', payload)
+    //refreshImage()
+    //refreshVideo()
+    //console.log(data)
   } catch (error) {
     console.error('Error al enviar:', error)
   } finally {
@@ -79,7 +57,7 @@ const refreshVideo = () => {
   // 2. Construimos la URL solo cuando se llama la función
   // Agregamos el timestamp para evitar que el navegador use caché vieja
   const timestamp = Date.now()
-  const filename = form.outname
+  const filename = form.fileName
   videoUrl.value = `http://localhost:8000/video/${filename}?t=${timestamp}`
 }
 </script>
@@ -138,7 +116,7 @@ const refreshVideo = () => {
               <span class="label-text">Filename</span>
             </label>
             <input
-              v-model="form.outname"
+              v-model="form.fileName"
               type="text"
               placeholder="nombre_archivo"
               class="input input-bordered w-full"
