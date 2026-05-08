@@ -160,7 +160,7 @@ class VideoBuilderV2:
         logo = ImageClip(logo_path).resized(width=150).with_position((860, 860))
 
         # Watermark
-        frame_zoom_factor = 1.8
+        frame_zoom_factor = 1.5
         pos_y = 1200 # starts at, counting from top to bottom
         pos_x = -300 # starts at, counting from left to right
         frame = (
@@ -243,8 +243,8 @@ class VideoBuilderV2:
             font-size: 100px; 
             font-weight: 900;
             margin: 0;
-            line-height: 0.9;
-            letter-spacing: 10px;
+            line-height: 1;
+            letter-spacing: 0px;
             text-shadow: 0px 1px 2px rgba(0,0,0,0.2)
         }}
         """
