@@ -20,7 +20,7 @@ class YTDownloader:
         elif force_download:
             print(f"File exist & force_download={force_download}, downloading...")
             file_to_remove = Path(raw_filepath)
-            file_to_remove.unlink(missing_ok=True)  # delete file
+            file_to_remove.unlink(missing_ok=True)  # deletes file
             self._download_segment_from_yt(start_ts, end_ts, url, raw_filepath)
         else:
             print(
@@ -33,21 +33,22 @@ class YTDownloader:
     ):
         print(f"Starting download raw segment (via Subprocess): {start_ts} - {end_ts}")
 
-        # El comando exacto que validamos en consola
         command = [
             "yt-dlp",
-            url,
-            # "--list-formats", #for debug only
+            url,            
+            "--external-downloader-args", "ffmpeg:-loglevel error", # hides extra logs
+            "--postprocessor-args", "ffmpeg:-loglevel error",  # hides extra logs
+            # "--list-formats", # for debug only
             "--cookies",
             "my_cookies.txt",
             "--js-runtimes",
             "node",
             "--remote-components",
             "ejs:github",
-            # Formato: Tu filtro de 1080/720
+            # Filter 1080/720
             "-f",
             "bestvideo[height=1080][ext=mp4]+bestaudio[ext=m4a] / bestvideo[height=720][ext=mp4]+bestaudio[ext=m4a] / best[height=1080][ext=mp4] / best[height=720][ext=mp4]",
-            # Segmento: Usamos --download-sections con sintaxis de tiempo
+            # Segment
             "--download-sections",
             f"*{start_ts}-{end_ts}",
             "--force-keyframes-at-cuts",
@@ -58,13 +59,12 @@ class YTDownloader:
             # Evitar SABR forzando clientes móviles
             "--extractor-args",
             "youtube:player_client=web,tv",
-            "--verbose",  # Mantener para debug
+            #"--verbose",  # for debug only
         ]
 
         try:
             start_time = time.perf_counter()
 
-            # Ejecutamos y capturamos salida para loguear si es necesario
             result = subprocess.run(command, check=True, text=True)
 
             end_time = time.perf_counter()
