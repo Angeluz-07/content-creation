@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from rest_api.models import ConfigInput
+from rest_api.models import ConfigInput, DownloadParamsInput
 from context import short_producer
 
 from fastapi import HTTPException
@@ -45,3 +45,13 @@ def get_video(video_id: str):
     
     # media_type='video/mp4' es crucial para que el navegador sepa qué hacer
     return FileResponse(file_path, media_type="video/mp4")
+
+@router.post("/download-segment")
+def process_video(input: DownloadParamsInput):
+    print(f"Procesando: {input.filename} desde {input.url}")
+    print(input)
+    
+    return {
+        "status": "success",
+        "message": f"Procesamiento iniciado para {input.filename}"
+    }

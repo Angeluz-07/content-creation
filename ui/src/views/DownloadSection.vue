@@ -25,10 +25,10 @@ const handleSubmit = async () => {
 
     const payload = toDownloadParamsPayload(form)
     console.log(payload)
-    // const { data } = await api.post('/produce-short', payload)
+    const { data } = await api.post('/download-segment', payload)
     //refreshImage()
     //refreshVideo()
-    //console.log(data)
+    console.log(data)
   } catch (error) {
     console.error('Error al enviar:', error)
   } finally {
