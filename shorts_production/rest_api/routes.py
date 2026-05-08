@@ -46,6 +46,17 @@ def get_video(video_id: str):
     # media_type='video/mp4' es crucial para que el navegador sepa qué hacer
     return FileResponse(file_path, media_type="video/mp4")
 
+@router.get("/video/raw/{video_id}")
+def get_raw_video(video_id: str):
+    file_path = str(TEMP_DIR/ f"{video_id}_segment_raw.mp4")
+    print(file_path)
+    import os
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Video no encontrado")
+    
+    # media_type='video/mp4' es crucial para que el navegador sepa qué hacer
+    return FileResponse(file_path, media_type="video/mp4")
+
 @router.post("/download-segment")
 def process_video(input: DownloadParamsInput):
     print(f"Procesando: {input.filename} desde {input.url}")

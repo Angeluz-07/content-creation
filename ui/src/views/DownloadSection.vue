@@ -2,7 +2,6 @@
 import { reactive } from 'vue'
 import { ref, computed } from 'vue'
 import type { DownloadParams } from '../types/config'
-import { mapConfigToPayload } from '../mappers/config'
 import { toDownloadParamsPayload } from '../mappers/config'
 import api from '@/api/client'
 
@@ -25,8 +24,7 @@ const handleSubmit = async () => {
 
     const payload = toDownloadParamsPayload(form)
     const { data } = await api.post('/download-segment', payload)
-    //refreshImage()
-    //refreshVideo()
+    refreshVideo()
   } catch (error) {
     console.error('Error al enviar:', error)
   } finally {
@@ -34,21 +32,7 @@ const handleSubmit = async () => {
   }
 }
 
-const isLoaded = ref(false)
 const isVideoLoaded = ref(true)
-
-// Construimos la URL de la API
-const imageUrl = ref(`http://localhost:8000/images/`)
-
-const onImageLoad = () => {
-  isLoaded.value = true
-}
-const imgKey = ref(0)
-
-const refreshImage = () => {
-  const timestamp = new Date().getTime()
-  imageUrl.value = `http://localhost:8000/images/?ts=${timestamp}`
-}
 const videoUrl = ref('')
 
 const refreshVideo = () => {
@@ -56,7 +40,7 @@ const refreshVideo = () => {
   // Agregamos el timestamp para evitar que el navegador use caché vieja
   const timestamp = Date.now()
   const filename = form.fileName
-  videoUrl.value = `http://localhost:8000/video/${filename}?t=${timestamp}`
+  videoUrl.value = `http://localhost:8000/video/raw/${filename}?t=${timestamp}`
 }
 </script>
 
