@@ -1,31 +1,23 @@
 // mappers/config.ts
-import type { Config, DownloadParams } from '../types/config';
+import type { ShortProductionParams, DownloadParams } from '../types/config';
 
 // todo: I could prescind of mappers by defining the API to receive properties as camelCase
 // since by now the mapping is redundant
 // Definimos el tipo de lo que espera el API (opcional, pero recomendado)
-export interface ConfigPayload {
-  url: string;
-  force_download: boolean;
+export interface ShortProductionParamsPayload {
   debug_video_frame: boolean;
-  start_segment: string;
-  end_segment: string;
   hook_text: string;
-  outname: string;
+  filename: string;
   watermark_text: string;
   frame_ts: string;
   font_name: string;
 }
 
-export const mapConfigToPayload = (data: Config): ConfigPayload => {
+export const toShortProductionParamsPayload = (data: ShortProductionParams): ShortProductionParamsPayload => {
   return {
-    url: data.url,
-    force_download: data.forceDownload,
     debug_video_frame: data.debugVideoFrame,
-    start_segment: data.startSegment,
-    end_segment: data.endSegment,
     hook_text: data.hookText,
-    outname: data.outname,
+    filename: data.fileName,
     watermark_text: data.watermarkText,
     frame_ts: data.frameTs,
     font_name: data.fontName

@@ -2,7 +2,7 @@
 import { reactive } from 'vue'
 import { ref, onMounted, computed } from 'vue'
 import type { ShortProductionParams } from '../types/config'
-import { mapConfigToPayload } from '../mappers/config'
+import { toShortProductionParamsPayload } from '../mappers/config'
 import api from '@/api/client'
 
 const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT
@@ -57,8 +57,8 @@ const handleSubmit = async () => {
   try {
     console.log('Datos a enviar:', form)
 
-    // const payload = mapConfigToPayload(form)
-    // const { data } = await api.post('/produce-short', payload)
+    const payload = toShortProductionParamsPayload(form)
+    const { data } = await api.post('/produce-short', payload)
     // refreshImage()
     // refreshVideo()
     // console.log(data)
