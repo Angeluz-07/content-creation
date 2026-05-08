@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const menuItems = [
   { name: 'Download Section', to: '/download-section' },
-  { name: 'Shorts Production', to: '/shorts-prod' },
+  { name: 'Shorts Production', to: '/short-production' },
 ]
 </script>
 

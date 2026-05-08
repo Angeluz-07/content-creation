@@ -1,15 +1,11 @@
 // types/config.ts
-export interface Config {
-  url: string;
-  watermarkText: string; 
-  forceDownload: boolean;
-  debugVideoFrame: boolean;
-  startSegment: string;
-  endSegment: string;
-  hookText: string;
-  outname: string;
-  frameTs: string;
+export interface ShortProductionParams {
+  fileName: string;
   fontName: string;
+  watermarkText: string; 
+  frameTs: string;  
+  hookText: string;
+  debugVideoFrame: boolean;
 }
 
 export interface DownloadParams {

@@ -1,21 +1,17 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
 import { ref, computed } from 'vue'
-import type { Config } from '../types/config'
+import type { ShortProductionParams } from '../types/config'
 import { mapConfigToPayload } from '../mappers/config'
 import api from '@/api/client'
 
 const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT
 
-const form = reactive<Config>({
-  url: 'https://www.youtube.com/watch',
+const form = reactive<ShortProductionParams>({
+  fileName: '',
   watermarkText: WATERMARK_TEXT,
-  forceDownload: false,
   debugVideoFrame: true,
-  startSegment: '00:00:10',
-  endSegment: '00:00:20',
   hookText: 'test',
-  outname: 'test4',
   frameTs: '00:00:10',
   fontName: 'CascadiaCode',
 })
@@ -79,7 +75,7 @@ const refreshVideo = () => {
   // 2. Construimos la URL solo cuando se llama la función
   // Agregamos el timestamp para evitar que el navegador use caché vieja
   const timestamp = Date.now()
-  const filename = form.outname
+  const filename = form.fileName
   videoUrl.value = `http://localhost:8000/video/${filename}?t=${timestamp}`
 }
 </script>
@@ -88,12 +84,25 @@ const refreshVideo = () => {
   <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
     <div class="card w-full bg-base-100 shadow-xl">
       <div class="card-body">
-        <h2 class="card-title mb-4">Configuración de Procesamiento</h2>
+        <h2 class="card-title mb-4">Params</h2>
 
         <form @submit.prevent="handleSubmit" class="space-y-4">
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text font-semibold">URL</span>
+              <span class="label-text font-semibold">File name</span>
+            </label>
+            <input
+              v-model="form.fileName"
+              type="text"
+              placeholder="nombre_archivo"
+              class="input input-bordered w-full"
+              required
+            />
+          </div>
+
+          <div class="form-control w-full">
+            <label class="label">
+              <span class="label-text font-semibold">Font</span>
             </label>
             <!-- Use v-model for binding and select tag instead of input -->
             <select v-model="form.fontName" class="select select-bordered w-full" required>
@@ -117,47 +126,18 @@ const refreshVideo = () => {
               required
             />
           </div>
-
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text font-semibold">URL</span>
+              <span class="label-text">Hook Text</span>
             </label>
             <input
-              v-model="form.url"
-              type="url"
-              placeholder="https://ejemplo.com/video"
+              v-model="form.hookText"
+              type="text"
+              placeholder="Escribe el hook aquí"
               class="input input-bordered w-full"
-              required
             />
           </div>
-
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="form-control w-full">
-              <label class="label">
-                <span class="label-text">Start Segment (HH:MM:SS)</span>
-              </label>
-              <input
-                v-model="form.startSegment"
-                type="text"
-                pattern="^([0-9]{2}:){2}[0-9]{2}$"
-                placeholder="00:00:00"
-                class="input input-bordered w-full"
-              />
-            </div>
-
-            <div class="form-control w-full">
-              <label class="label">
-                <span class="label-text">End Segment (HH:MM:SS)</span>
-              </label>
-              <input
-                v-model="form.endSegment"
-                type="text"
-                pattern="^([0-9]{2}:){2}[0-9]{2}$"
-                placeholder="00:00:00"
-                class="input input-bordered w-full"
-              />
-            </div>
-
             <div class="form-control w-full">
               <label class="label">
                 <span class="label-text">Frame to use (HH:MM:SS)</span>
@@ -170,41 +150,9 @@ const refreshVideo = () => {
                 class="input input-bordered w-full"
               />
             </div>
-
-            <div class="form-control w-full">
-              <label class="label">
-                <span class="label-text">Hook Text</span>
-              </label>
-              <input
-                v-model="form.hookText"
-                type="text"
-                placeholder="Escribe el hook aquí"
-                class="input input-bordered w-full"
-              />
-            </div>
-
-            <div class="form-control w-full">
-              <label class="label">
-                <span class="label-text">Outname</span>
-              </label>
-              <input
-                v-model="form.outname"
-                type="text"
-                placeholder="nombre_archivo"
-                class="input input-bordered w-full"
-                required
-              />
-            </div>
           </div>
 
           <div class="flex flex-col md:flex-row gap-6 pt-4">
-            <div class="form-control">
-              <label class="label cursor-pointer justify-start gap-3">
-                <input v-model="form.forceDownload" type="checkbox" class="toggle toggle-primary" />
-                <span class="label-text">Force Download</span>
-              </label>
-            </div>
-
             <div class="form-control">
               <label class="label cursor-pointer justify-start gap-3">
                 <input
