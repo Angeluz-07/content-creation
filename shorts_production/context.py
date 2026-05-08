@@ -14,6 +14,6 @@ mongo_client = get_mongo_client(MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT)
 config_repo = MongoConfigRepository(mongo_client, db_name="cc_db", collection_name="short_configs")
 
 
-short_producer = ShortProducer(config_repo=config_repo)
 downloader_service = DownloaderService()
 raw_segments_filename_provider = FilenameProvider(directory=str(TEMP_DIR), suffix="segment_raw.mp4")
+short_producer = ShortProducer(config_repo=config_repo, raw_file_provider=raw_segments_filename_provider)

@@ -14,8 +14,8 @@ class FilenameProvider:
             map[file_path.stem] = str(file_path)
         return map
 
-    def get_filepath(self, font_name: str):
-        return self.map[font_name]
+    def get_filepath(self, filename: str):
+        return self.map[filename]
 
     def get_filenames(self):
         return list(self.map.keys())

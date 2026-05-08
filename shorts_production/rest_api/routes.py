@@ -18,7 +18,7 @@ def process_video(config: ShortProductionParamsInput):
     # Aquí config ya es un objeto con todos los datos validados
     print(f"Procesando: {config.filename}")# todo: link data to params used for download
     print(config.model_dump())
-    #short_producer.run(config.model_dump())
+    short_producer.run(config.model_dump())
     # Lógica de negocio aquí...
     
     return {
