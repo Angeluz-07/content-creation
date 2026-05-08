@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from rest_api.models import ConfigInput, DownloadParamsInput
-from context import short_producer
+from context import short_producer, downloader_service
 
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
@@ -49,7 +49,7 @@ def get_video(video_id: str):
 @router.post("/download-segment")
 def process_video(input: DownloadParamsInput):
     print(f"Procesando: {input.filename} desde {input.url}")
-    print(input)
+    downloader_service.run(params=input.model_dump())
     
     return {
         "status": "success",

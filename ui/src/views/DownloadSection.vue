@@ -24,11 +24,9 @@ const handleSubmit = async () => {
     console.log('Datos a enviar:', form)
 
     const payload = toDownloadParamsPayload(form)
-    console.log(payload)
     const { data } = await api.post('/download-segment', payload)
     //refreshImage()
     //refreshVideo()
-    console.log(data)
   } catch (error) {
     console.error('Error al enviar:', error)
   } finally {

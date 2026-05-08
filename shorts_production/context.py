@@ -1,4 +1,5 @@
 from services.short_producer_service import ShortProducer
+from services.downloader_service import DownloaderService
 from dbs.mongo_client import get_mongo_client
 from dbs.config_repository import MongoConfigRepository
 from config import MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT
@@ -12,3 +13,4 @@ config_repo = MongoConfigRepository(mongo_client, db_name="cc_db", collection_na
 
 
 short_producer = ShortProducer(config_repo=config_repo)
+downloader_service = DownloaderService()

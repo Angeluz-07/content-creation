@@ -11,3 +11,10 @@ class ConfigInput(BaseModel):
     watermark_text: str
     frame_ts: str
     font_name: str
+
+class DownloadParamsInput(BaseModel):
+    url: str
+    force_download: bool = False
+    start_segment: str 
+    end_segment: str
+    filename: str
