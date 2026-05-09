@@ -60,7 +60,7 @@ const handleSubmit = async () => {
     const payload = toShortProductionParamsPayload(form)
     const { data } = await api.post('/produce-short', payload)
     refreshImage()
-    // refreshVideo()
+    refreshVideo()
     // console.log(data)
   } catch (error) {
     console.error('Error al enviar:', error)
