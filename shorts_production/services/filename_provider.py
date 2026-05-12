@@ -18,4 +18,6 @@ class FilenameProvider:
         return self.map[filename]
 
     def get_filenames(self):
-        return list(self.map.keys())
+        result = list(self.map.keys())
+        result.reverse()
+        return result
