@@ -14,7 +14,9 @@ class DownloaderService:
         start_ts = params["start_segment"]
         end_ts = params["end_segment"]
         force_download = params["force_download"]
-        filename = params["filename"]
+
+        params["filename"] = f"{params["filename"]}_segment_raw"
+        filename = params["filename"] 
 
         result_filepath = self.yt_downloader.get_video_segment(
             url, start_ts, end_ts, force_download, filename
