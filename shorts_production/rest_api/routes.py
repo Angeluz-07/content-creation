@@ -76,3 +76,13 @@ def process_video(input: DownloadParamsInput):
         "status": "success",
         "message": f"Procesamiento iniciado para {input.filename}"
     }
+
+
+@router.get("/download-params/last")
+def get_last_download_params():
+
+    result = downloader_service.get_last_download()
+    return {
+        "status": "success",
+        "value": result
+    }

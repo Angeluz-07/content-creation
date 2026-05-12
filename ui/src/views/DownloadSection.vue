@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive } from 'vue'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { DownloadParams } from '../types/config'
 import { toDownloadParamsPayload } from '../mappers/config'
 import api from '@/api/client'
@@ -42,6 +42,22 @@ const refreshVideo = () => {
   const filename = form.fileName
   videoUrl.value = `http://localhost:8000/video/raw/${filename}?t=${timestamp}`
 }
+
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/download-params/last');
+    if (data.value) {
+      const params = data.value;
+      form.url = params.url;
+      form.startSegment = params.start_segment;
+      form.endSegment = params.end_segment;
+      form.fileName = params.filename;
+    }
+    
+  } catch (error) {
+    console.error('Failed to load options:', error);
+  }
+});
 </script>
 
 <template>

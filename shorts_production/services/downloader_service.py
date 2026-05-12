@@ -25,3 +25,9 @@ class DownloaderService:
         params = DownloadParams(**params)
 
         self.download_params_repo.add(params)
+
+    def get_last_download(self):
+        params = self.download_params_repo.get_all()
+        if len(params) > 0:
+            return params[-1]
+        return {}
