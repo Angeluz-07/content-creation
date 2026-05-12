@@ -16,21 +16,21 @@ const form = reactive<ShortProductionParams>({
   fontName: 'GoogleSans-Medium',
 })
 
-const fileNames= ref([]);
+const fileNames = ref([])
 
 onMounted(async () => {
   try {
-    const { data } = await api.get('/video/raws/');
-    fileNames.value = data.values;
-    
+    const { data } = await api.get('/video/raws/')
+    fileNames.value = data.values
+
     // // Optional: Pre-select the first item if the list isn't empty
     if (fileNames.value.length > 0) {
-      form.inputFileName = fileNames.value[0];
+      form.inputFileName = fileNames.value[0]
     }
   } catch (error) {
-    console.error('Failed to load options:', error);
+    console.error('Failed to load options:', error)
   }
-});
+})
 const fontList = ref([
   'GoogleSans-Medium',
   'Anton-Regular',
@@ -100,13 +100,21 @@ const refreshVideo = () => {
             <label class="label">
               <span class="label-text font-semibold">Input Filename</span>
             </label>
-            <select v-model="form.inputFileName" class="select select-bordered w-full" required>
-              <option value="" disabled selected>Select a file</option>
-              <!-- Loop through the list of strings -->
-              <option v-for="fileName in fileNames" :key="fileName" :value="fileName">
-                {{ fileName }}
-              </option>
-            </select>
+            <div class="grid grid-cols-6 gap-4">
+              <select v-model="form.inputFileName" class="select select-bordered w-full col-span-5" required>
+                <option value="" disabled selected>Select a file</option>
+                <!-- Loop through the list of strings -->
+                <option v-for="fileName in fileNames" :key="fileName" :value="fileName">
+                  {{ fileName }}
+                </option>
+              </select>
+              <button type="button" class="btn btn-square btn-primary col-span-1">
+                <!-- Icono de Play (SVG) -->
+                <svg xmlns="http://w3.org" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           <div class="form-control w-full">
