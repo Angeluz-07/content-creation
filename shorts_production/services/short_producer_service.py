@@ -42,30 +42,17 @@ class ShortProducer:
         self.short_prod_params_repo = short_prod_params_repo
 
     def run(self, params):
-        #c = Config(**params)
-        #print("Processing ", c.url)
-
-        font_name = params["font_name"]
-        filename = params["filename"]
-        file_id = filename
-        watermark_text = params["watermark_text"]
-        hook_text = params["hook_text"]
-        debug_video_frame = params["debug_video_frame"]
-        frame_ts = params["frame_ts"]
+        print("Processing ", params["filename"])
+      
         # fmt: off
+        font_name         = params["font_name"]
+        filename          = params["filename"]
+        file_id           = filename
+        watermark_text    = params["watermark_text"]
+        hook_text         = params["hook_text"]
+        debug_video_frame = params["debug_video_frame"]
+        frame_ts          = params["frame_ts"]
 
-        #url               = c.url
-        #start_ts          = c.start_segment
-        #end_ts            = c.end_segment
-        #force_download    = c.force_download
-        #file_id           = c.outname
-        # watermark_text    = c.watermark_text
-        # hook_text         = c.hook_text # todo improve
-        # debug_video_frame = c.debug_video_frame
-        # frame_ts          = c.frame_ts
-        # font_name         = c.font_name
-
-        #input_filepath = self.yt_downloader.get_video_segment(url,start_ts,end_ts,force_download,file_id)   
         self.video_builder.font_path = self.font_provider.get_font(font_name)
         input_filepath = self.raw_file_provider.get_filepath(filename)
         result_path    = self.video_builder.build(input_filepath, file_id, watermark_text, hook_text, debug_video_frame, frame_ts)
@@ -75,6 +62,6 @@ class ShortProducer:
         # fmt: on
 
         if not debug_video_frame:                        
-            print("Saving config repo...[none]")
+            print("Saving production params...")
             params = ShortProductionParams(**params)
             self.short_prod_params_repo.add(params)
