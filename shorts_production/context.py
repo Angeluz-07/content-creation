@@ -4,7 +4,7 @@ from dbs.mongo_client import get_mongo_client
 from shorts_production.dbs.mongo_repository import DownloadParamsMongoRepository, ShortProductionParamsMongoRepository
 from config import MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT, MONGO_DB_NAME
 from services.filename_provider import FilenameProvider
-from config import TEMP_DIR
+from config import TEMP_DIR, DOWNLOAD_DIR
 
 # from dbs.interfaces import InMemoryDummyRepository
 # config_repo = InMemoryDummyRepository()
@@ -21,7 +21,7 @@ short_prod_params_repo = ShortProductionParamsMongoRepository(
 
 downloader_service = DownloaderService(download_params_repo=download_params_repo)
 raw_segments_filename_provider = FilenameProvider(
-    directory=str(TEMP_DIR), suffix="segment_raw.mp4"
+    directory=str(DOWNLOAD_DIR), suffix=".mp4"
 )
 short_producer = ShortProducer(
     raw_file_provider=raw_segments_filename_provider,

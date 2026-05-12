@@ -7,7 +7,7 @@ import type { ShortProductionParams, DownloadParams } from '../types/config';
 export interface ShortProductionParamsPayload {
   debug_video_frame: boolean;
   hook_text: string;
-  filename: string;
+  input_filename: string;
   watermark_text: string;
   frame_ts: string;
   font_name: string;
@@ -17,7 +17,7 @@ export const toShortProductionParamsPayload = (data: ShortProductionParams): Sho
   return {
     debug_video_frame: data.debugVideoFrame,
     hook_text: data.hookText,
-    filename: data.fileName,
+    input_filename: data.inputFileName,
     watermark_text: data.watermarkText,
     frame_ts: data.frameTs,
     font_name: data.fontName
@@ -29,7 +29,7 @@ export interface DownloadParamsPayload {
   force_download: boolean;
   start_segment: string;
   end_segment: string;
-  filename: string;
+  output_filename: string;
 }
 
 export const toDownloadParamsPayload = (data: DownloadParams): DownloadParamsPayload => {
@@ -38,6 +38,6 @@ export const toDownloadParamsPayload = (data: DownloadParams): DownloadParamsPay
     force_download: data.forceDownload,
     start_segment: data.startSegment,
     end_segment: data.endSegment,
-    filename: data.fileName,
+    output_filename: data.outputFileName,
   };
 };

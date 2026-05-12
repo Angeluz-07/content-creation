@@ -16,14 +16,14 @@ def hello_world():
 @router.post("/produce-short")
 def process_video(config: ShortProductionParamsInput):
     # Aquí config ya es un objeto con todos los datos validados
-    print(f"Procesando: {config.filename}")# todo: link data to params used for download
+    print(f"Procesando: {config.input_filename}")# todo: link data to params used for download
     print(config.model_dump())
     short_producer.run(config.model_dump())
     # Lógica de negocio aquí...
     
     return {
         "status": "success",
-        "message": f"Procesamiento iniciado para {config.filename}"
+        "message": f"Procesamiento iniciado para {config.input_filename}"
     }
 
 
@@ -49,8 +49,7 @@ def get_video(video_id: str):
 
 @router.get("/video/raw/{video_id}")
 def get_raw_video(video_id: str):
-    file_path = str(TEMP_DIR/ f"{video_id}_segment_raw.mp4")
-    print(file_path)
+    file_path = raw_segments_filename_provider.get_filepath(video_id)
     import os
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Video no encontrado")
@@ -69,12 +68,12 @@ def get_raw_video_names():
 
 @router.post("/download-segment")
 def process_video(input: DownloadParamsInput):
-    print(f"Procesando: {input.filename} desde {input.url}")
+    print(f"Procesando: {input.output_filename} desde {input.url}")
     downloader_service.run(params=input.model_dump())
     
     return {
         "status": "success",
-        "message": f"Procesamiento iniciado para {input.filename}"
+        "message": f"Procesamiento iniciado para {input.output_filename}"
     }
 
 

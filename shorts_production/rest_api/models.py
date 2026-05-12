@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class ShortProductionParamsInput(BaseModel):
-    filename: str
+    input_filename: str
     font_name: str
     watermark_text: str
     frame_ts: str
@@ -15,4 +15,4 @@ class DownloadParamsInput(BaseModel):
     force_download: bool = False
     start_segment: str
     end_segment: str
-    filename: str
+    output_filename: str

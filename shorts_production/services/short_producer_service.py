@@ -27,7 +27,7 @@ class ShortProducer:
         raw_file_provider: FilenameProvider = None,
         short_prod_params_repo: IRepository = None
     ):
-        self.yt_downloader = yt_downloader or YTDownloader(output_path=str(TEMP_DIR))
+        self.yt_downloader = yt_downloader
 
         default_video_builder = VideoBuilderV2(
             output_path=str(OUTPUT_DIR),
@@ -42,11 +42,11 @@ class ShortProducer:
         self.short_prod_params_repo = short_prod_params_repo
 
     def run(self, params):
-        print("Processing ", params["filename"])
+        print("Processing ", params["input_filename"])
       
         # fmt: off
         font_name         = params["font_name"]
-        filename          = params["filename"]
+        filename          = params["input_filename"]
         file_id           = filename
         watermark_text    = params["watermark_text"]
         hook_text         = params["hook_text"]

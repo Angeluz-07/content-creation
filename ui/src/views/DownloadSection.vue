@@ -10,7 +10,7 @@ const form = reactive<DownloadParams>({
   url: 'https://www.youtube.com/watch',
   startSegment: '00:00:10',
   endSegment: '00:00:20',
-  fileName: 'test',
+  outputFileName: 'test',
   forceDownload: false,
 })
 
@@ -39,7 +39,7 @@ const refreshVideo = () => {
   // 2. Construimos la URL solo cuando se llama la función
   // Agregamos el timestamp para evitar que el navegador use caché vieja
   const timestamp = Date.now()
-  const filename = form.fileName
+  const filename = form.outputFileName
   videoUrl.value = `http://localhost:8000/video/raw/${filename}?t=${timestamp}`
 }
 
@@ -51,7 +51,7 @@ onMounted(async () => {
       form.url = params.url;
       form.startSegment = params.start_segment;
       form.endSegment = params.end_segment;
-      form.fileName = params.filename;
+      form.outputFileName = params.filename;
     }
     
   } catch (error) {
@@ -111,10 +111,10 @@ onMounted(async () => {
 
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text">Filename</span>
+              <span class="label-text">Output Filename</span>
             </label>
             <input
-              v-model="form.fileName"
+              v-model="form.outputFileName"
               type="text"
               placeholder="nombre_archivo"
               class="input input-bordered w-full"

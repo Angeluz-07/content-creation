@@ -10,7 +10,7 @@ class FilenameProvider:
 
     def _build_map(self):
         map = {}
-        for file_path in self.directory.glob(f"*_{self.suffix}"):
+        for file_path in self.directory.glob(f"*{self.suffix}"):
             map[file_path.stem] = str(file_path)
         return map
 

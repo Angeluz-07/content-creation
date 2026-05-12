@@ -7,14 +7,14 @@ class DownloadParams:
     url: str
     start_segment: str
     end_segment: str
-    filename: str
+    output_filename: str
     force_download: bool = False
     id: str = field(default_factory=lambda: str(uuid4()))
 
 
 @dataclass
 class ShortProductionParams:
-    filename: str
+    input_filename: str
     font_name: str
     watermark_text: str
     frame_ts: str

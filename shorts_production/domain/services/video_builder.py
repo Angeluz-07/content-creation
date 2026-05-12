@@ -44,7 +44,7 @@ class VideoBuilderV2:
         return result_path
 
     def _resize_video_segment(self, input_filepath: str, file_id: str):
-        resized_filepath = str(Path(self.temp_path) / f"{file_id}_segment_resized.mp4")
+        resized_filepath = str(Path(self.temp_path) / f"{file_id}_resized.mp4")
         resized_file_exists = Path(resized_filepath).is_file()
 
         if not resized_file_exists:
@@ -160,9 +160,9 @@ class VideoBuilderV2:
         logo = ImageClip(logo_path).resized(width=150).with_position((860, 860))
 
         # Watermark
-        frame_zoom_factor = 1.5
+        frame_zoom_factor = 1.3
         pos_y = 1200 # starts at, counting from top to bottom
-        pos_x = -300 # starts at, counting from left to right
+        pos_x = -170 # starts at, counting from left to right
         frame = (
             ImageClip(frame_filepath)
             .resized(width=int(1080 * frame_zoom_factor))
@@ -260,7 +260,7 @@ class VideoBuilderV2:
 
     def _assemble(self, video_input, ui_png, video_output, debug=False):
         salida_imagen = str(Path(self.temp_path) / "debug_frame.png")
-        salida_video = str(Path(self.output_path) / f"{video_output}.mp4")
+        salida_video = str(Path(self.output_path) / f"{video_output}_produced.mp4")
         if debug:
             print("DEBUG MODE: Generating one debug frame...")
             # Comando optimizado solo para extraer 1 imagen

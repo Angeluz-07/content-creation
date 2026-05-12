@@ -1,4 +1,4 @@
-from shorts_production.config import TEMP_DIR
+from shorts_production.config import DOWNLOAD_DIR
 from typing import Dict
 from domain.services.yt_downloader import YTDownloader
 from dbs.interfaces import IRepository
@@ -6,7 +6,7 @@ from domain.models import DownloadParams
 
 class DownloaderService:
     def __init__(self, yt_downloader: YTDownloader = None, download_params_repo: IRepository = None ):
-        self.yt_downloader = yt_downloader or YTDownloader(output_path=str(TEMP_DIR))
+        self.yt_downloader = yt_downloader or YTDownloader(output_path=str(DOWNLOAD_DIR))
         self.download_params_repo = download_params_repo
 
     def run(self, params: Dict):
@@ -14,12 +14,10 @@ class DownloaderService:
         start_ts = params["start_segment"]
         end_ts = params["end_segment"]
         force_download = params["force_download"]
-
-        params["filename"] = f"{params["filename"]}_segment_raw"
-        filename = params["filename"] 
+        output_filename = params["output_filename"] 
 
         result_filepath = self.yt_downloader.get_video_segment(
-            url, start_ts, end_ts, force_download, filename
+            url, start_ts, end_ts, force_download, output_filename
         )
 
         params = DownloadParams(**params)

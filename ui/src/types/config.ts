@@ -1,6 +1,6 @@
 // types/config.ts
 export interface ShortProductionParams {
-  fileName: string;
+  inputFileName: string;
   fontName: string;
   watermarkText: string; 
   frameTs: string;  
@@ -12,6 +12,6 @@ export interface DownloadParams {
   url: string;
   startSegment: string;
   endSegment: string;
-  fileName: string;
+  outputFileName: string;
   forceDownload: boolean;
 }

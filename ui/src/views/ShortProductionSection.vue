@@ -8,12 +8,12 @@ import api from '@/api/client'
 const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT
 
 const form = reactive<ShortProductionParams>({
-  fileName: '',
+  inputFileName: '',
   watermarkText: WATERMARK_TEXT,
   debugVideoFrame: true,
   hookText: 'test',
   frameTs: '00:00:10',
-  fontName: 'CascadiaCode',
+  fontName: 'GoogleSans-Medium',
 })
 
 const fileNames= ref([]);
@@ -25,28 +25,22 @@ onMounted(async () => {
     
     // // Optional: Pre-select the first item if the list isn't empty
     if (fileNames.value.length > 0) {
-      form.fileName = fileNames.value[0];
+      form.inputFileName = fileNames.value[0];
     }
   } catch (error) {
     console.error('Failed to load options:', error);
   }
 });
 const fontList = ref([
+  'GoogleSans-Medium',
   'Anton-Regular',
   'Bangers-Regular',
-  'BowlbyOne-Regular',
   'CascadiaCode',
-  'GoogleSans-Medium',
-  'Kanit-Black',
   'LuckiestGuy-Regular',
   'Montserrat-Bold',
-  'Oswald-Medium',
   'PassionOne-Regular',
-  'Poppins-ExtraBold',
   'ProtestStrike-Regular',
   'RammettoOne-Regular',
-  'Rubik-Black',
-  'Rubik-Medium',
   'SpaceGrotesk-Regular',
 ])
 
@@ -90,8 +84,8 @@ const refreshVideo = () => {
   // 2. Construimos la URL solo cuando se llama la función
   // Agregamos el timestamp para evitar que el navegador use caché vieja
   const timestamp = Date.now()
-  const filename = form.fileName
-  videoUrl.value = `http://localhost:8000/video/${filename}?t=${timestamp}`
+  const filename = form.inputFileName
+  videoUrl.value = `http://localhost:8000/video/${filename}_produced?t=${timestamp}`
 }
 </script>
 
@@ -104,9 +98,9 @@ const refreshVideo = () => {
         <form @submit.prevent="handleSubmit" class="space-y-4">
           <div class="form-control w-full">
             <label class="label">
-              <span class="label-text font-semibold">File name</span>
+              <span class="label-text font-semibold">Input Filename</span>
             </label>
-            <select v-model="form.fileName" class="select select-bordered w-full" required>
+            <select v-model="form.inputFileName" class="select select-bordered w-full" required>
               <option value="" disabled selected>Select a file</option>
               <!-- Loop through the list of strings -->
               <option v-for="fileName in fileNames" :key="fileName" :value="fileName">

@@ -9,9 +9,9 @@ class YTDownloader:
         self.output_path = output_path
 
     def get_video_segment(
-        self, url: str, start_ts: str, end_ts: str, force_download: bool, file_id: str
+        self, url: str, start_ts: str, end_ts: str, force_download: bool, output_filename: str
     ) -> str:
-        raw_filepath = str(Path(self.output_path) / f"{file_id}.mp4")
+        raw_filepath = str(Path(self.output_path) / f"{output_filename}.mp4")
         file_doesnt_exist = not Path(raw_filepath).is_file()
 
         if file_doesnt_exist:
