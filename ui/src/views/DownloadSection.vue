@@ -10,7 +10,7 @@ const form = reactive<DownloadParams>({
   url: 'https://www.youtube.com/watch',
   startSegment: '00:00:10',
   endSegment: '00:00:20',
-  fileName: 'test4',
+  fileName: 'test',
   forceDownload: false,
 })
 
