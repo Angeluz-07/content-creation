@@ -12,7 +12,7 @@ from shorts_production.config import ASSETS_DIR
 from shorts_production.config import TEXT_FONT_PATH
 from shorts_production.config import OUTPUT_DIR  
 
-from domain.models import Config, ShortProductionParams
+from domain.models import ShortProductionParams
 from domain.services.yt_downloader import YTDownloader
 from domain.services.video_builder import VideoBuilderV2
 from domain.services.font_provider import FontProvider
@@ -22,13 +22,11 @@ from services.filename_provider import FilenameProvider
 class ShortProducer:
     def __init__(
         self,
-        config_repo: IRepository,
         yt_downloader: YTDownloader = None,
         video_builder: VideoBuilderV2 = None,
         raw_file_provider: FilenameProvider = None,
         short_prod_params_repo: IRepository = None
     ):
-        self.config_repo = config_repo
         self.yt_downloader = yt_downloader or YTDownloader(output_path=str(TEMP_DIR))
 
         default_video_builder = VideoBuilderV2(
