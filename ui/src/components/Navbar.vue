@@ -29,13 +29,11 @@ const menuItems = [
           tabindex="-1"
           class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
         >
-          <RouterLink v-for="item in menuItems" :key="item.name" :to="item.to">
-            <li>
-              <a>
-                {{ item.name }}
-              </a>
-            </li>
-          </RouterLink>
+          <li v-for="item in menuItems" :key="item.name">
+            <RouterLink :to="item.to" active-class="menu-active">
+              {{ item.name }}
+            </RouterLink>
+          </li>
           <li>
             <a>Parent</a>
             <ul class="p-2">
@@ -51,13 +49,11 @@ const menuItems = [
 
     <div class="navbar-center hidden lg:flex">
       <ul class="menu menu-horizontal px-1">
-        <RouterLink v-for="item in menuItems" :key="item.name" :to="item.to">
-          <li>
-            <a>
-              {{ item.name }}
-            </a>
-          </li>
-        </RouterLink>
+        <li v-for="item in menuItems" :key="item.name">
+          <RouterLink :to="item.to" active-class="menu-active">
+            {{ item.name }}
+          </RouterLink>
+        </li>
         <li>
           <details>
             <summary>Parent</summary>
