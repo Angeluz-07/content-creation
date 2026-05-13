@@ -3,6 +3,7 @@ from typing import Dict
 from domain.services.yt_downloader import YTDownloader
 from dbs.interfaces import IRepository
 from domain.models import DownloadParams
+from pathlib import Path
 
 class DownloaderService:
     def __init__(self, yt_downloader: YTDownloader = None, download_params_repo: IRepository = None ):
@@ -19,10 +20,10 @@ class DownloaderService:
         result_filepath = self.yt_downloader.get_video_segment(
             url, start_ts, end_ts, force_download, output_filename
         )
-
-        params = DownloadParams(**params)
-
-        self.download_params_repo.add(params)
+        
+        if Path(result_filepath).is_file():
+            params = DownloadParams(**params)
+            self.download_params_repo.add(params)
 
     def get_last_download(self):
         params = self.download_params_repo.get_all()
