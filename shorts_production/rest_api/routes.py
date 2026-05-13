@@ -6,14 +6,14 @@ from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from config import TEMP_DIR, OUTPUT_DIR
 
-router = APIRouter(prefix="", tags=["main"])
-
 from workers.download_worker import download_task
 
+router = APIRouter(prefix="", tags=["main"])
+
+
 @router.get("/helloworld")
-async def hello_world():
+def hello_world():
     # .send() pone el mensaje en Redis y regresa de inmediato
-    await download_task.kiq("mR stark")
     return {"message": "hello world"}
 
 @router.post("/produce-short")
@@ -69,14 +69,28 @@ def get_raw_video_names():
         "values": values
     }
 
-@router.post("/download-segment")
-def process_video(input: DownloadParamsInput):
+@router.post("/download-segment/synchronous")
+def download_segment_synchronous(input: DownloadParamsInput):
     print(f"Procesando: {input.output_filename} desde {input.url}")
     downloader_service.run(params=input.model_dump())
     
     return {
         "status": "success",
         "message": f"Procesamiento iniciado para {input.output_filename}"
+    }
+
+
+@router.post("/download-segment")
+async def download_segment(input: DownloadParamsInput):
+    print(f"Sending to queue: {input.output_filename}")
+    
+    # send to worker
+    await download_task.kiq(input.model_dump())
+    
+    return {
+        "status": "queued",
+        "message": f"Tarea enviada al worker para: {input.output_filename}",
+        "filename": input.output_filename
     }
 
 
