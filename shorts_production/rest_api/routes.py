@@ -8,9 +8,12 @@ from config import TEMP_DIR, OUTPUT_DIR
 
 router = APIRouter(prefix="", tags=["main"])
 
+from workers.download_worker import download_task
 
 @router.get("/helloworld")
-def hello_world():
+async def hello_world():
+    # .send() pone el mensaje en Redis y regresa de inmediato
+    await download_task.kiq("mR stark")
     return {"message": "hello world"}
 
 @router.post("/produce-short")
@@ -85,3 +88,4 @@ def get_last_download_params():
         "status": "success",
         "value": result
     }
+

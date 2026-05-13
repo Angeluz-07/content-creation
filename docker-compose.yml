@@ -34,6 +34,21 @@ services:
         limits:
           cpus: '0.25'
           memory: 256M
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis_cc
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
   qdrant:
     image: qdrant/qdrant:v1.17.1
     container_name: qdrant_vector_db
