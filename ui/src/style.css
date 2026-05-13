@@ -2,3 +2,4 @@
 @plugin "daisyui"{
     themes: bumblebee;
 }
+@import 'vue-sonner/style.css'

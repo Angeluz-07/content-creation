@@ -4,7 +4,13 @@ import { ref, computed, onMounted } from 'vue'
 import type { DownloadParams } from '../types/config'
 import { toDownloadParamsPayload } from '../mappers/config'
 import api from '@/api/client'
+import { toast } from 'vue-sonner'
 
+const testToast = () => {
+  toast.success('Descarga iniciada', {
+    description: 'Se ha enviado a descargar el archivo',
+  })
+}
 
 const form = reactive<DownloadParams>({
   url: 'https://www.youtube.com/watch',
@@ -13,7 +19,6 @@ const form = reactive<DownloadParams>({
   outputFileName: 'test',
   forceDownload: false,
 })
-
 
 const isLoading = ref(false)
 
@@ -24,6 +29,7 @@ const handleSubmit = async () => {
 
     const payload = toDownloadParamsPayload(form)
     const { data } = await api.post('/download-segment', payload)
+    testToast()
     refreshVideo()
   } catch (error) {
     console.error('Error al enviar:', error)
@@ -45,24 +51,21 @@ const refreshVideo = () => {
 
 onMounted(async () => {
   try {
-    const { data } = await api.get('/download-params/last');
+    const { data } = await api.get('/download-params/last')
     if (data.value) {
-      const params = data.value;
-      form.url = params.url;
-      form.startSegment = params.start_segment;
-      form.endSegment = params.end_segment;
-      form.outputFileName = params.filename;
+      const params = data.value
+      form.url = params.url
+      form.startSegment = params.start_segment
+      form.endSegment = params.end_segment
     }
-    
   } catch (error) {
-    console.error('Failed to load options:', error);
+    console.error('Failed to load options:', error)
   }
-});
+})
 </script>
 
 <template>
   <div class="max-w-4xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-    
     <div class="card w-full bg-base-100 shadow-xl">
       <div class="card-body">
         <h2 class="card-title mb-4">Params</h2>
@@ -146,7 +149,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    
     <div class="card w-full md:w-fit mx-auto bg-base-100 shadow-xl overflow-hidden">
       <div class="card-body p-4">
         <h2 class="card-title">Video</h2>
