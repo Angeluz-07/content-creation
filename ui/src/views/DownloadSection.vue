@@ -5,6 +5,13 @@ import type { DownloadParams } from '../types/config'
 import { toDownloadParamsPayload } from '../mappers/config'
 import api from '@/api/client'
 import { toast } from 'vue-sonner'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+
+const raw_items = ref([])
+const items = computed(() => {
+  return raw_items.value.map((item) => ({ outputFileName: item }))
+})
 
 const testToast = () => {
   toast.success('Descarga iniciada', {
@@ -49,6 +56,14 @@ const refreshVideo = () => {
   videoUrl.value = `http://localhost:8000/video/raw/${filename}?t=${timestamp}`
 }
 
+const getItems = async () => {
+  try {
+    const { data } = await api.get('/video/raws/')
+    raw_items.value = data.values
+  } catch (error) {
+    console.error('Failed to load options:', error)
+  }
+}
 onMounted(async () => {
   try {
     const { data } = await api.get('/download-params/last')
@@ -61,12 +76,13 @@ onMounted(async () => {
   } catch (error) {
     console.error('Failed to load options:', error)
   }
+  getItems()
 })
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-    <div class="card w-full bg-base-100 shadow-xl">
+  <div class="max-w-7xl mx-auto p-4 grid md:grid-cols-5 gap-6 items-start">
+    <div class="card w-full bg-base-100 shadow-xl col-span-2">
       <div class="card-body">
         <h2 class="card-title mb-4">Params</h2>
 
@@ -149,24 +165,13 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div class="card w-full md:w-fit mx-auto bg-base-100 shadow-xl overflow-hidden">
+    <div class="card w-full md:w-fit mx-auto bg-base-100 shadow-xl overflow-hidden p-light col-span-2">
       <div class="card-body p-4">
-        <h2 class="card-title">Video</h2>
+        <h2 class="card-title">Descargas</h2>
       </div>
-      <figure class="relative aspect-[16/12] w-full md:w-[600px] bg-black">
-        <div v-if="!isVideoLoaded" class="absolute inset-0 skeleton"></div>
-
-        <video
-          v-if="videoUrl"
-          :key="videoUrl"
-          controls
-          class="absolute inset-0 w-full h-full object-contain"
-          @loadeddata="isVideoLoaded = true"
-        >
-          <source :src="videoUrl" type="video/mp4" />
-          Tu navegador no soporta la etiqueta de video.
-        </video>
-      </figure>
+      <DataTable :value="items" tableStyle="min-width: 50rem" :paginator="true" :rows="10">
+        <Column field="outputFileName" header="Output File Name"></Column>
+      </DataTable>
     </div>
   </div>
 </template>
