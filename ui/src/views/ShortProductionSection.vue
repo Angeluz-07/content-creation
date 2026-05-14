@@ -40,8 +40,6 @@ const fontList = ref([
   'Montserrat-Bold',
   'PassionOne-Regular',
   'ProtestStrike-Regular',
-  'RammettoOne-Regular',
-  'SpaceGrotesk-Regular',
 ])
 
 const isLoading = ref(false)
