@@ -2,7 +2,7 @@ import subprocess
 from pathlib import Path
 from moviepy import TextClip, CompositeVideoClip, ImageClip
 from moviepy.video.tools.drawing import color_gradient
-from domain.services.banner import BasicBanner
+from domain.services.banner import BasicBanner, StackedBanner
 from pathlib import Path
 
 
@@ -154,11 +154,24 @@ class VideoBuilderV2:
         # Hook text
         banner_filepath = str(Path(self.temp_path) / "banner_final.png")
         banner = (
-            BasicBanner(width=1100, height=320, font_path=TEXT_FONT_PATH, text=hook_text)
+            BasicBanner(
+                width=1100, height=320, font_path=TEXT_FONT_PATH, text=hook_text
+            )
             .render()
             .save_img(banner_filepath)
         )
-        # banner_filename = self._generate_social_banner( hook_text,"Arturo y Hache", TEXT_FONT_PATH)
+        # banner = (
+        #     StackedBanner(
+        #         width=1080,
+        #         height=500,
+        #         main_text=hook_text,
+        #         sub_text="Arturo y Hache",
+        #         font_path=TEXT_FONT_PATH,
+        #     )
+        #     .render()
+        #     .save_img(banner_filepath)
+        # )
+
         hook = ImageClip(banner_filepath).with_position(("center", 925))
 
         # Logo
