@@ -154,10 +154,8 @@ class VideoBuilderV2:
         # Hook text
         banner_filepath = str(Path(self.temp_path) / "banner_final.png")
         banner = (
-            BasicBanner(width=1100, height=320)
-            .build_background()
-            .with_font(TEXT_FONT_PATH)
-            .with_text(hook_text)
+            BasicBanner(width=1100, height=320, font_path=TEXT_FONT_PATH, text=hook_text)
+            .render()
             .save_img(banner_filepath)
         )
         # banner_filename = self._generate_social_banner( hook_text,"Arturo y Hache", TEXT_FONT_PATH)

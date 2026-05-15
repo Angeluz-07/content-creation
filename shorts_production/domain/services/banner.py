@@ -19,22 +19,15 @@ class SkiaCanvas:
 
     # --- Métodos de Geometría (Construyen la forma) ---
 
-    def build_rectangle(self):
+    def add_rectangle(self):
         """Define un rectángulo que ocupa todo el canvas"""
         self._current_path = skia.Path()
         self._current_path.addRect(skia.Rect(0, 0, self.width, self.height))
         return self
 
-    def with_rounded_rectangle(self, radius=40):
-        """Define un rectángulo redondeado"""
-        self._current_path = skia.Path()
-        rect = skia.Rect.MakeXYWH(0, 0, self.width, self.height)
-        self._current_path.addRoundRect(rect, radius, radius)
-        return self
-
     # --- Métodos de Estilo (Pintan la forma guardada) ---
 
-    def with_background_color(self, color_or_gradient):
+    def add_background_color(self, color_or_gradient):
         """Aplica color o degradado a la forma construida previamente"""
         if self._current_path is None:
             raise ValueError(
@@ -76,7 +69,7 @@ class BasicBanner(SkiaCanvas):
     Basic rectangle banner with white text and black background
     """
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, text, font_path):
         self.params = {
             "width": width,
             "height": height,
@@ -89,9 +82,19 @@ class BasicBanner(SkiaCanvas):
             # "background_color": "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%) "
         }
         super().__init__(self.params["width"], self.params["height"])
-        self.font = None
 
-    def with_font(self, font_path: str):
+        self.text = text
+        self.font_path = font_path
+
+    def set_background_color(self, color_or_gradient):
+        self.params["background_color"] = color_or_gradient
+        return self
+
+    def set_text_color(self, color):
+        self.params["text_color"] = color
+        return self
+
+    def add_font(self, font_path):
         typeface = skia.Typeface.MakeFromFile(font_path)
         self.font = skia.Font(typeface, self.params["font_size"])
         self.font.setSubpixel(True)
@@ -99,7 +102,7 @@ class BasicBanner(SkiaCanvas):
         self.font.setEmbolden(True)
         return self
 
-    def with_text(self, text: str):
+    def add_text(self, text: str):
         if self.font is None:
             raise ValueError("Must call with_font first")
 
@@ -124,13 +127,13 @@ class BasicBanner(SkiaCanvas):
 
         return self
 
-    def build_background(self):
-        # todo: improve strcuture to include with_background_color here
-        # in the class and set new background color
-        result = self.build_rectangle().with_background_color(
-            self.params["background_color"]
+    def render(self):
+        return (
+            self.add_rectangle()
+            .add_background_color(self.params["background_color"])
+            .add_font(self.font_path)
+            .add_text(self.text)
         )
-        return result
 
     def _get_wrapped_lines(self, text_content: str):
         """
