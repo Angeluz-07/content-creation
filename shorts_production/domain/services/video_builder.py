@@ -2,12 +2,11 @@ import subprocess
 from pathlib import Path
 from moviepy import TextClip, CompositeVideoClip, ImageClip
 from moviepy.video.tools.drawing import color_gradient
-
+from domain.services.banner import BasicBanner
 from html2image import Html2Image
 from PIL import ImageFont
 
 from pathlib import Path
-import resvg_py
 import re
 import skia
 
@@ -136,20 +135,6 @@ class VideoBuilderV2:
         except subprocess.CalledProcessError as e:
             print(f"Error al capturar el frame: {e}")
 
-
-    def _generate_banner_from_svg(self, text: str):
-        output_path = Path(self.temp_path) / "banner_final.png"
-        template_path = Path(self.assets_path) / "banner_template.svg"
-        
-        with open(template_path, "r", encoding="utf-8") as f:
-            svg_data = f.read().replace("HOOK_TEXT", text)
-
-        # Renderizado directo sin dependencias externas
-        png_bytes = resvg_py.svg_to_bytes(svg_data)
-        with open(output_path, "wb") as f:
-            f.write(png_bytes)
-      
-        return "banner_final.png"
 
     def _generate_banner_from_skia(self, text: str, font_path: str):
         # --- CONFIGURACIÓN PARAMETRIZADA ---
@@ -362,10 +347,18 @@ class VideoBuilderV2:
         )
 
         # Hook text
-        banner_filename = self._generate_banner_from_html(hook_text, TEXT_FONT_PATH)
+        banner_filepath = str(Path(self.temp_path) / "banner_final.png")
+        banner = (
+            BasicBanner(width=1100, height=320)                   
+            .build_background()    
+            .with_font(TEXT_FONT_PATH)
+            .with_text(hook_text)
+            .save_img(banner_filepath)
+        )
+        #banner_filename = self._generate_banner_from_html(hook_text, TEXT_FONT_PATH)
         #banner_filename = self._generate_banner_from_skia(hook_text, TEXT_FONT_PATH)
         #banner_filename = self._generate_social_banner( hook_text,"Arturo y Hache", TEXT_FONT_PATH)
-        banner_filepath = str(Path(self.temp_path) / banner_filename)
+        #banner_filepath = str(Path(self.temp_path) / banner_filename)
         hook = ImageClip(banner_filepath).with_position(("center", 925))
 
         # Logo
