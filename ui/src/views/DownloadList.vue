@@ -3,24 +3,23 @@ import { ref, computed, onMounted } from 'vue'
 import api from '@/api/client'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import { useApi } from '@/composables/useApi'
+import { toast } from 'vue-sonner'
 
 const raw_items = ref([])
 const items = computed(() => {
   return raw_items.value.map((item) => ({ outputFileName: item }))
 })
 
+const { loading: loadingItems, get: getItems } = useApi()
 
-const getItems = async () => {
-  try {
-    const { data } = await api.get('/video/raws/')
+const loadItems = async () => {
+  const { data } = await getItems('/video/raws/')
+  if (data) {
     raw_items.value = data.values
-  } catch (error) {
-    console.error('Failed to load options:', error)
   }
+
 }
-onMounted(async () => {
-  getItems()
-})
 
 const modalForInputVideo = ref(null) // Referencia al elemento <dialog>
 const videoUrl_in = ref('')
@@ -33,6 +32,11 @@ const handleModalForInputVideo = (filename) => {
   videoUrl_in.value = `http://localhost:8000/video/raw/${filename}?t=${timestamp}`
   modalForInputVideo.value.showModal()
 }
+
+onMounted(() => {
+  loadItems()
+})
+
 </script>
 <template>
   <div
