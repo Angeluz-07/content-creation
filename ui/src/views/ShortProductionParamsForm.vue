@@ -4,6 +4,7 @@ import type { ShortProductionParams } from '../types/config'
 import { toShortProductionParamsPayload } from '../mappers/config'
 import { reactive, ref, onMounted } from 'vue'
 import ModalVideoPlayer from './ModalVideoPlayer.vue'
+import { useVideoStore } from '@/stores/useVideoStore'
 
 const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT
 
@@ -30,12 +31,15 @@ const fontList = ref([
 const fileNames = ref([])
 const { loading: isSubmitting, post: sendForm } = useApi()
 const { loading: loadingVideoFileNames, get: getVideoFileNames } = useApi()
+const videoStore= useVideoStore();
 
 const handleSubmit = async () => {
   const payload = toShortProductionParamsPayload(form)
   const { success, data } = await sendForm('/produce-short', payload)
-  //refreshImage()
-  //refreshVideo()
+  if (success) {
+    videoStore.setLastProductionTs(Date.now().toString());
+    videoStore.setFinishedVideo(`${form.inputFileName}`)
+  }
 }
 
 async function loadVideoFileNames() {
