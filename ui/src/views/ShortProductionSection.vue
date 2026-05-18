@@ -1,27 +1,24 @@
 <script setup lang="ts">
-import { reactive } from 'vue'
 import { ref, onMounted, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-
-import api from '@/api/client'
 import ShortProductionParamsForm from './ShortProductionParamsForm.vue'
 import { useVideoStore } from '@/stores/useVideoStore'
-import ShortPreview from './ShortPreview.vue'
+import ShortPreviewVideo from './ShortPreviewVideo.vue'
+import ShortPreviewImg from './ShortPreviewImg.vue'
 
 const videoStore = useVideoStore()
 const { lastProductionTs, latestVideoId } = storeToRefs(videoStore)
-const imageId = ref(`/images/`)
+const imageId = ref(`images/`)
+const videoId = ref('')
 
 const refreshImage = () => {
   const timestamp = Date.now()
-  imageId.value = `/images/?ts=${timestamp}`
+  imageId.value = `images/?ts=${timestamp}`
 }
 
 const refreshVideo = (filename: string) => {
-  // 2. Construimos la URL solo cuando se llama la función
-  // Agregamos el timestamp para evitar que el navegador use caché vieja
   const timestamp = Date.now()
-  videoUrl.value = `http://localhost:8000/video/${filename}?t=${timestamp}`
+  videoId.value = `${filename}/?t=${timestamp}`
 }
 
 watch(lastProductionTs, (newTs) => {
@@ -31,34 +28,13 @@ watch(lastProductionTs, (newTs) => {
   }
 })
 
-
-const isVideoLoaded = ref(true)
-const videoUrl = ref('')
 </script>
 
 <template>
   <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
     <ShortProductionParamsForm></ShortProductionParamsForm>
-    <ShortPreview :src="imageId"></ShortPreview>
-    <div class="card w-full md:w-fit mx-auto bg-base-100 shadow-xl overflow-hidden">
-      <div class="card-body p-4">
-        <h2 class="card-title">Video</h2>
-      </div>
-      <figure class="relative aspect-[9/16] w-full md:w-[400px] bg-black">
-        <div v-if="!isVideoLoaded" class="absolute inset-0 skeleton"></div>
-
-        <video
-          v-if="videoUrl"
-          :key="videoUrl"
-          controls
-          class="absolute inset-0 w-full h-full object-contain"
-          @loadeddata="isVideoLoaded = true"
-        >
-          <source :src="videoUrl" type="video/mp4" />
-          Tu navegador no soporta la etiqueta de video.
-        </video>
-      </figure>
-    </div>
+    <ShortPreviewImg :src="imageId"></ShortPreviewImg>
+    <ShortPreviewVideo :src="videoId"></ShortPreviewVideo>
   </div>
 </template>
 
