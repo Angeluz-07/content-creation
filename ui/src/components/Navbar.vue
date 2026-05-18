@@ -34,17 +34,17 @@ const menuItems = [
               {{ item.name }}
             </RouterLink>
           </li>
-          <li>
+          <!--li>
             <a>Parent</a>
             <ul class="p-2">
               <li><a>Submenu 1</a></li>
               <li><a>Submenu 2</a></li>
             </ul>
           </li>
-          <li><a>Item 3</a></li>
+          <li><a>Item 3</a></li-->
         </ul>
       </div>
-      <a class="btn btn-ghost text-xl">CC </a>
+      <a class="btn btn-ghost text-xl">CC</a>
     </div>
 
     <div class="navbar-center hidden lg:flex">
@@ -54,7 +54,7 @@ const menuItems = [
             {{ item.name }}
           </RouterLink>
         </li>
-        <li>
+        <!--li>
           <details>
             <summary>Parent</summary>
             <ul class="p-2 bg-base-100 w-40 z-1">
@@ -63,12 +63,12 @@ const menuItems = [
             </ul>
           </details>
         </li>
-        <li><a>Item 3</a></li>
+        <li><a>Item 3</a></li-->
       </ul>
     </div>
 
     <div class="navbar-end">
-      <a class="btn">Button</a>
+      <a class="btn">Login</a>
     </div>
   </div>
 </template>
