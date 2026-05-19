@@ -34,7 +34,7 @@ class BaseMongoRepository(IRepository):
 
     def get_by_id(self, entity_id: str) -> Optional[Any]:
         try:
-            doc = self._collection.find_one({"_id": ObjectId(entity_id)})
+            doc = self._collection.find_one({"_id": entity_id})
             return self._map_to_object(doc)
         except Exception:
             # Manejo de IDs inválidos de MongoDB
@@ -46,7 +46,7 @@ class BaseMongoRepository(IRepository):
         example usage: self.update_fields("id_123", {"path": "/vid.mp4", "size": 1024})
         """
         result = self._collection.update_one(
-            {"_id": ObjectId(entity_id)},
+            {"_id": entity_id},
             {"$set": fields}
         )
         return result.matched_count > 0
