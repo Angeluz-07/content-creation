@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter
 from rest_api.models import ShortProductionParamsInput, DownloadParamsInput
 from context import (
@@ -24,14 +25,11 @@ def hello_world():
 
 @router.post("/produce-short")
 def process_video(config: ShortProductionParamsInput):
-    # Aquí config ya es un objeto con todos los datos validados
     print(
         f"Procesando: {config.input_filename}"
     )  # todo: link data to params used for download
-    print(config.model_dump())
-    short_producer.run(config.model_dump())
-    # Lógica de negocio aquí...
 
+    short_producer.run(config.model_dump())
     return {
         "status": "success",
         "message": f"Procesamiento iniciado para {config.input_filename}",
@@ -52,9 +50,6 @@ def get_image():
 @router.get("/video/{video_id}")
 def get_video(video_id: str):
     file_path = str(OUTPUT_DIR / f"{video_id}.mp4")
-    print(file_path)
-    import os
-
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Video no encontrado")
 
@@ -77,7 +72,6 @@ def get_raw_video(video_id: str):
 @router.get("/video/raws/")
 def get_raw_video_names():
     values = raw_segments_filename_provider.get_filenames()
-    print(values)
     return {"status": "success", "values": values}
 
 
@@ -98,6 +92,11 @@ def get_last_download_params():
     result = downloader_service.get_last_download()
     return {"status": "success", "value": result}
 
+
+@router.get("/tasks")
+def get_tasks():
+    result = task_service.get_all()
+    return {"status": "success", "value": result}
 
 # --- Asynchronous tasks ---
 @router.post("/download-segment")

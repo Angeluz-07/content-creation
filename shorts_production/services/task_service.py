@@ -2,10 +2,15 @@
 from dbs.mongo_repository import TaskMongoRepository
 from domain.models import Task, TaskStatus
 from uuid import uuid4
+from typing import List
+
 class TaskService:
 
     def __init__(self, task_repo):
         self.task_repo: TaskMongoRepository = task_repo
+
+    def get_all(self) -> List[Task]:
+        return self.task_repo.get_all()
 
     def create_task(self, target_id: str):
         task = Task(target_id=target_id)
