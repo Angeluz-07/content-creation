@@ -30,7 +30,7 @@ class BaseMongoRepository(IRepository):
     def add(self, entity: Any) -> None:
         doc = self._map_to_dict(entity)
         result = self._collection.insert_one(doc)
-        entity.id = str(result.inserted_id)
+        return entity
 
     def get_by_id(self, entity_id: str) -> Optional[Any]:
         try:

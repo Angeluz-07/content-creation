@@ -2,13 +2,14 @@ from shorts_production.config import DOWNLOAD_DIR
 from typing import Dict
 from domain.services.yt_downloader import YTDownloader
 from dbs.interfaces import IRepository
+from dbs.mongo_repository import DownloadParamsMongoRepository
 from domain.models import DownloadParams
 from pathlib import Path
 
 class DownloaderService:
     def __init__(self, yt_downloader: YTDownloader = None, download_params_repo: IRepository = None ):
         self.yt_downloader = yt_downloader or YTDownloader(output_path=str(DOWNLOAD_DIR))
-        self.download_params_repo = download_params_repo
+        self.download_params_repo: DownloadParamsMongoRepository = download_params_repo
 
     def run(self, params: Dict):
         url = params["url"]
@@ -20,10 +21,11 @@ class DownloaderService:
         result_filepath = self.yt_downloader.get_video_segment(
             url, start_ts, end_ts, force_download, output_filename
         )
-        
-        if Path(result_filepath).is_file():
-            params = DownloadParams(**params)
-            self.download_params_repo.add(params)
+ 
+    def create_download(self, params: Dict) -> DownloadParams:
+        params = DownloadParams(**params)
+        item = self.download_params_repo.add(params)
+        return item
 
     def get_last_download(self):
         params = self.download_params_repo.get_all()

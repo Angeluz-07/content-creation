@@ -31,7 +31,7 @@ class TaskService:
     def create_task(self, target_id: str):
         task = Task(target_id=target_id)
         self.task_repo.add(task)
-        return task.id
+        return task
     
     def _update_status(self, task_id: str, status: TaskStatus) -> None:
         """Método privado que centraliza la actualización."""
@@ -45,6 +45,3 @@ class TaskService:
     
     def mark_as_failed(self, task_id: str) -> None:
         self._update_status(task_id, TaskStatus.FAILED)
-
-    def generate_uuid(self) -> str:
-        return str(uuid4())  # ID de tu modelo de negocio de descargas
