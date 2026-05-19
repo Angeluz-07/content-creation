@@ -36,10 +36,10 @@ const loadItems = async () => {
 }
 
 const statusSeverityMap = {
-  PENDING: 'secondary', 
-  PROCESSING: 'info', 
+  PENDING: 'secondary',
+  PROCESSING: 'info',
   COMPLETED: 'success',
-  FAILED: 'warn', 
+  FAILED: 'warn',
 }
 
 onMounted(() => {
@@ -77,6 +77,13 @@ onMounted(() => {
             :value="slotProps.data.status"
             :severity="statusSeverityMap[slotProps.data.status] || null"
           />
+        </template>
+      </Column>
+      <Column field="" header="Play">
+        <template #body="slotProps">
+          <template v-if="slotProps.data.status == 'COMPLETED'">
+            <ModalVideoPlayer :fileName="slotProps.data.outputFileName"></ModalVideoPlayer>
+          </template>
         </template>
       </Column>
     </DataTable>
