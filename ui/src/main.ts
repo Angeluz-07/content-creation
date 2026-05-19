@@ -7,6 +7,7 @@ import PrimeVue from 'primevue/config'
 import Aura from '@primeuix/themes/aura'
 
 import './style.css'
+import 'primeicons/primeicons.css'
 
 const app = createApp(App)
 

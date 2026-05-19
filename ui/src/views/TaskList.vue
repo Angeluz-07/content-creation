@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import { Button } from 'primevue'
 import { useApi } from '@/composables/useApi'
 import ModalVideoPlayer from './ModalVideoPlayer.vue'
 import { useDownloadStore } from '@/stores/useDownloadStore'
@@ -41,11 +42,28 @@ onMounted(() => {
   <div
     class="card w-full md:w-fit mx-auto bg-base-100 shadow-xl overflow-hidden p-light col-span-2"
   >
-    <div class="card-body p-4">
-      <h2 class="card-title">Tareas</h2>
-    </div>
-    <DataTable :value="items" tableStyle="min-width: 50rem" scrollable scrollHeight="500px">
-      <Column field="outputFileName" header="Output Filename"></Column>
+  
+    <DataTable
+      :value="items"
+      :loading="loadingItems"
+      tableStyle="min-width: 50rem"
+      scrollable
+      scrollHeight="500px"
+    >
+      <template #header>
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <span class="text-xl font-bold">Tareas</span>
+          <Button
+            @click="loadItems()"
+            icon="pi pi-sync"
+            rounded
+            raised
+            outlined
+            severity="secondary"
+          />
+        </div>
+      </template>
+      <Column field="outputFileName" header="Output Filename"> <Skeleton /> </Column>
       <Column field="status" header="Status"></Column>
     </DataTable>
   </div>
