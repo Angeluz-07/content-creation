@@ -37,5 +37,5 @@ short_producer = ShortProducer(
 task_repo = TaskMongoRepository(
     client=mongo_client, db_name=MONGO_DB_NAME, collection_name="tasks"
 )
-
-task_service = TaskService(task_repo=task_repo)
+download_repo = download_params_repo
+task_service = TaskService(task_repo=task_repo, download_repo=download_repo)

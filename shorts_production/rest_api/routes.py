@@ -98,6 +98,11 @@ def get_tasks():
     result = task_service.get_all()
     return {"status": "success", "value": result}
 
+@router.get("/tasks/agg")
+def get_tasks_aggregated():
+    result = task_service.get_all_aggregated()
+    return {"status": "success", "value": result}
+
 # --- Asynchronous tasks ---
 @router.post("/download-segment")
 async def download_segment(input: DownloadParamsInput):

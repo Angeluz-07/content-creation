@@ -4,6 +4,9 @@ import type { DownloadParams } from '@/types/config'
 import { toDownloadParamsPayload } from '@/mappers/config'
 import { toast } from 'vue-sonner'
 import { useApi } from '@/composables/useApi'
+import { useDownloadStore } from '@/stores/useDownloadStore'
+
+const downloadStore = useDownloadStore()
 
 const form = reactive<DownloadParams>({
   url: 'https://www.youtube.com/watch',
@@ -36,6 +39,7 @@ const handleSubmit = async () => {
     toast.success('Descarga iniciada', {
       description: 'Se ha enviado a descargar el archivo',
     })
+    downloadStore.downloadTaskSent()
   }
 }
 
