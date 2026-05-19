@@ -1,11 +1,19 @@
 from services.short_producer_service import ShortProducer
 from services.downloader_service import DownloaderService
 from services.task_service import TaskService
+from services.sse_service import SSEService
 from dbs.mongo_client import get_mongo_client
 from shorts_production.dbs.mongo_repository import DownloadParamsMongoRepository
 from shorts_production.dbs.mongo_repository import ShortProductionParamsMongoRepository
 from shorts_production.dbs.mongo_repository import TaskMongoRepository
-from config import MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT, MONGO_DB_NAME
+from config import (
+    MONGO_USER,
+    MONGO_PASS,
+    MONGO_HOST,
+    MONGO_PORT,
+    MONGO_DB_NAME,
+    REDIS_HOST,
+)
 from services.filename_provider import FilenameProvider
 from config import TEMP_DIR, DOWNLOAD_DIR
 
@@ -38,4 +46,7 @@ task_repo = TaskMongoRepository(
     client=mongo_client, db_name=MONGO_DB_NAME, collection_name="tasks"
 )
 download_repo = download_params_repo
-task_service = TaskService(task_repo=task_repo, download_repo=download_repo)
+sse_service = SSEService(redis_url=REDIS_HOST)
+task_service = TaskService(
+    task_repo=task_repo, download_repo=download_repo, sse_service=sse_service
+)

@@ -7,6 +7,7 @@ broker = RedisStreamBroker("redis://localhost:6379")
 
 @broker.task
 async def download_task(task_id: str, params: dict):
+    # todo: check if using asyncion.to_thread for all calls, performs better
     task_service.mark_as_processing(task_id=task_id)
 
     output_filename = params.get('output_filename')

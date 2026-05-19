@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { Button } from 'primevue'
@@ -8,6 +8,7 @@ import { useApi } from '@/composables/useApi'
 import ModalVideoPlayer from './ModalVideoPlayer.vue'
 import { useDownloadStore } from '@/stores/useDownloadStore'
 import { storeToRefs } from 'pinia'
+import { useTaskStream } from '@/composables/useTaskStream'
 
 const downloadStore = useDownloadStore()
 const { lastDownloadTs } = storeToRefs(downloadStore)
@@ -41,9 +42,14 @@ const statusSeverityMap = {
   COMPLETED: 'success',
   FAILED: 'warn',
 }
+const { connect, disconnect } = useTaskStream()
 
 onMounted(() => {
   loadItems()
+  connect('tasks/stream', loadItems)
+})
+onUnmounted(() => {
+  disconnect()
 })
 </script>
 <template>

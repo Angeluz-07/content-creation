@@ -11,7 +11,8 @@ from context import (
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from config import TEMP_DIR, OUTPUT_DIR
-
+from sse_starlette.sse import EventSourceResponse
+from context import sse_service
 from workers.download_worker import download_task
 
 router = APIRouter(prefix="", tags=["main"])
@@ -122,3 +123,8 @@ async def download_segment(input: DownloadParamsInput):
         "task_id": task.id,
         "download_id": download.id,
     }
+
+
+@router.get("/tasks/stream")
+async def tasks_stream():
+    return EventSourceResponse(sse_service.listen_task_updates_async())
