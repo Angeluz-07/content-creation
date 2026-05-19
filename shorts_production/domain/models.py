@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from uuid import uuid4
+from enum import Enum
 
 
 @dataclass
@@ -20,4 +21,18 @@ class ShortProductionParams:
     frame_ts: str
     hook_text: str
     debug_video_frame: bool = True
+    id: str = field(default_factory=lambda: str(uuid4()))
+
+
+class TaskStatus(str, Enum):
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+@dataclass
+class Task:
+    target_id: str  # ID de la entidad de negocio afectada (ej: download_id, user_id)
+    status: TaskStatus = TaskStatus.PENDING
     id: str = field(default_factory=lambda: str(uuid4()))
