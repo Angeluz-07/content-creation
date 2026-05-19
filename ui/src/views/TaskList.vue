@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { Button } from 'primevue'
+import { Tag } from 'primevue'
 import { useApi } from '@/composables/useApi'
 import ModalVideoPlayer from './ModalVideoPlayer.vue'
 import { useDownloadStore } from '@/stores/useDownloadStore'
@@ -34,6 +35,13 @@ const loadItems = async () => {
   }
 }
 
+const statusSeverityMap = {
+  PENDING: 'secondary', 
+  PROCESSING: 'info', 
+  COMPLETED: 'success',
+  FAILED: 'warn', 
+}
+
 onMounted(() => {
   loadItems()
 })
@@ -42,7 +50,6 @@ onMounted(() => {
   <div
     class="card w-full md:w-fit mx-auto bg-base-100 shadow-xl overflow-hidden p-light col-span-2"
   >
-  
     <DataTable
       :value="items"
       :loading="loadingItems"
@@ -63,8 +70,15 @@ onMounted(() => {
           />
         </div>
       </template>
-      <Column field="outputFileName" header="Output Filename"> <Skeleton /> </Column>
-      <Column field="status" header="Status"></Column>
+      <Column field="outputFileName" header="Output Filename"></Column>
+      <Column field="status" header="Status">
+        <template #body="slotProps">
+          <Tag
+            :value="slotProps.data.status"
+            :severity="statusSeverityMap[slotProps.data.status] || null"
+          />
+        </template>
+      </Column>
     </DataTable>
   </div>
 </template>
