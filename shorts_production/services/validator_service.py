@@ -18,7 +18,6 @@ class DownloadValidatorService:
         Ejecuta todas las reglas ad-hoc de forma secuencial.
         Lanza RuleValidationError si alguna falla.
         """
-        self._validate_unique_segment(params)
         self._validate_filename_not_exists(params)
         # Aquí puedes agregar más reglas en el futuro sin tocar el downloader_service
 

@@ -39,6 +39,7 @@ class YTDownloader:
             "--external-downloader-args", "ffmpeg:-loglevel error", # hides extra logs
             "--postprocessor-args", "ffmpeg:-loglevel error",  # hides extra logs
             # "--list-formats", # for debug only
+            "--no-playlist",
             "--cookies",
             "my_cookies.txt",
             "--js-runtimes",
@@ -73,5 +74,7 @@ class YTDownloader:
 
         except subprocess.CalledProcessError as e:
             print(f"Error while downloading with subprocess: {e}")
+            raise e
         except Exception as e:
             print(f"General error: {e}")
+            raise e
