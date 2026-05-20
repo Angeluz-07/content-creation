@@ -65,15 +65,15 @@ onUnmounted(() => {
     >
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="text-xl font-bold">Tareas</span>
-          <Button
+          <span class="text-xl font-bold">Descargas</span>
+          <!--Button
             @click="loadItems()"
             icon="pi pi-sync"
             rounded
             raised
             outlined
             severity="secondary"
-          />
+          /-->
         </div>
       </template>
       <Column field="outputFileName" header="Output Filename"></Column>
