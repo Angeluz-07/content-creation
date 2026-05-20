@@ -107,22 +107,26 @@ def get_tasks_aggregated():
 # --- Asynchronous tasks ---
 @router.post("/download-segment")
 async def download_segment(input: DownloadParamsInput):
-    params = input.model_dump()
-    download = downloader_service.create_download(params)
-    output_filename = download.output_filename
-    task = task_service.create_task(target_id=download.id)
+    try: 
+        params = input.model_dump()
+        download = downloader_service.create_download(params)
+        output_filename = download.output_filename
+        task = task_service.create_task(target_id=download.id)
 
-    print(f"Sending to queue: {output_filename}")
+        print(f"Sending to queue: {output_filename}")
 
-    # send to worker
-    await download_task.kiq(task.id, params)
+        # send to worker
+        await download_task.kiq(task.id, params)
+              
+        return {
+            "status": "queued",
+            "message": f"Tarea enviada al worker para: {output_filename}",
+            "task_id": task.id,
+            "download_id": download.id,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
-    return {
-        "status": "queued",
-        "message": f"Tarea enviada al worker para: {output_filename}",
-        "task_id": task.id,
-        "download_id": download.id,
-    }
 
 
 @router.get("/tasks/stream")

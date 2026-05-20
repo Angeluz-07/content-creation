@@ -45,11 +45,9 @@ class BaseMongoRepository(IRepository):
         """
         example usage: self.update_fields("id_123", {"path": "/vid.mp4", "size": 1024})
         """
-        result = self._collection.update_one(
-            {"_id": entity_id},
-            {"$set": fields}
-        )
+        result = self._collection.update_one({"_id": entity_id}, {"$set": fields})
         return result.matched_count > 0
+
 
 class DownloadParamsMongoRepository(BaseMongoRepository):
 
@@ -59,6 +57,22 @@ class DownloadParamsMongoRepository(BaseMongoRepository):
         # Ya no necesitas str(doc.pop("_id")) porque ya es un string
         doc["id"] = doc.pop("_id")
         return DownloadParams(**doc)
+
+    def exists_by_segment_params(
+        self, url: str, start_segment: str, end_segment: str
+    ) -> bool:
+        document = self._collection.find_one(
+            {"url": url, "start_segment": start_segment, "end_segment": end_segment},
+            projection={"_id": 1},  # <--- Eficiencia pura: solo trae el ID
+        )
+        return document is not None
+
+    def exists_by_filename(self, filename: str) -> bool:
+        document = self._collection.find_one(
+            {"filename": filename},
+            projection={"_id": 1},  # <--- Eficiencia pura: solo trae el ID
+        )
+        return document is not None
 
 
 class ShortProductionParamsMongoRepository(BaseMongoRepository):

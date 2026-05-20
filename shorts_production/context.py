@@ -2,6 +2,7 @@ from services.short_producer_service import ShortProducer
 from services.downloader_service import DownloaderService
 from services.task_service import TaskService
 from services.sse_service import SSEService
+from services.validator_service import DownloadValidatorService
 from dbs.mongo_client import get_mongo_client
 from shorts_production.dbs.mongo_repository import DownloadParamsMongoRepository
 from shorts_production.dbs.mongo_repository import ShortProductionParamsMongoRepository
@@ -27,7 +28,10 @@ mongo_client = get_mongo_client(MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT)
 download_params_repo = DownloadParamsMongoRepository(
     client=mongo_client, db_name=MONGO_DB_NAME, collection_name="download_params"
 )
-downloader_service = DownloaderService(download_params_repo=download_params_repo)
+validator_service = DownloadValidatorService(download_repo=download_params_repo)
+downloader_service = DownloaderService(
+    download_params_repo=download_params_repo, validator_service=validator_service
+)
 
 # Short Production
 short_prod_params_repo = ShortProductionParamsMongoRepository(
