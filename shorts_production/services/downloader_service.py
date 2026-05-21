@@ -6,9 +6,10 @@ from dbs.mongo_repository import DownloadParamsMongoRepository
 from domain.models import DownloadParams
 from pathlib import Path
 from services.validator_service import DownloadValidatorService
+from uuid import uuid4
 
 
-class DownloaderService:
+class DownloadService:
     def __init__(
         self,
         yt_downloader: YTDownloader = None,
@@ -32,11 +33,14 @@ class DownloaderService:
             url, start_ts, end_ts, force_download, output_filename
         )
 
-        download = DownloadParams(**params)
-        return download.id
+    def validate(self, params):
+        self.validator_service.validate(params)
 
     def get_last_download(self):
         params = self.download_params_repo.get_all()
         if len(params) > 0:
             return params[-1]
         return {}
+
+    def get_new_uuid(self):
+        return str(uuid4())

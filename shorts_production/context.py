@@ -1,5 +1,5 @@
 from services.short_producer_service import ShortProducer
-from services.downloader_service import DownloaderService
+from services.downloader_service import DownloadService
 from services.task_service import TaskService
 from services.sse_service import SSEService
 from services.validator_service import DownloadValidatorService
@@ -9,7 +9,7 @@ from dbs.mongo_client import get_mongo_client
 from shorts_production.dbs.mongo_repository import DownloadParamsMongoRepository
 from shorts_production.dbs.mongo_repository import ShortProductionParamsMongoRepository
 from shorts_production.dbs.mongo_repository import TaskMongoRepository
-from shorts_production.dbs.mongo_repository import TaskEventMongoRepository
+from shorts_production.dbs.mongo_repository import EventMongoRepository
 
 from config import (
     MONGO_USER,
@@ -33,7 +33,7 @@ download_params_repo = DownloadParamsMongoRepository(
     client=mongo_client, db_name=MONGO_DB_NAME, collection_name="download_params"
 )
 validator_service = DownloadValidatorService(download_repo=download_params_repo)
-downloader_service = DownloaderService(
+download_service = DownloadService(
     download_params_repo=download_params_repo, validator_service=validator_service
 )
 
@@ -60,7 +60,7 @@ task_service = TaskService(
 )
 
 # TaskEvents
-event_repo = TaskEventMongoRepository(
+event_repo = EventMongoRepository(
     client=mongo_client, db_name=MONGO_DB_NAME, collection_name="events"
 )
 event_service = EventService(event_repo=event_repo)

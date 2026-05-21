@@ -1,11 +1,11 @@
-from dbs.mongo_repository import TaskEventMongoRepository, DownloadParamsMongoRepository
+from dbs.mongo_repository import EventMongoRepository, DownloadParamsMongoRepository
 from domain.models import DownloadParams
 
 
 class DownloadProjector:
 
     def __init__(self, event_repo, download_repo):
-        self.event_repo: TaskEventMongoRepository = event_repo
+        self.event_repo: EventMongoRepository = event_repo
         self.download_repo: DownloadParamsMongoRepository = download_repo
 
     def project(self, task_id: str):

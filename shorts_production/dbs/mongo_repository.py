@@ -2,7 +2,7 @@ from bson import ObjectId
 from pymongo import MongoClient
 from dbs.interfaces import IRepository
 from typing import List, Optional, Any, Dict
-from domain.models import DownloadParams, ShortProductionParams, Task, TaskEvent
+from domain.models import DownloadParams, ShortProductionParams, Task, Event
 
 
 class BaseMongoRepository(IRepository):
@@ -94,11 +94,11 @@ class TaskMongoRepository(BaseMongoRepository):
         doc["id"] = doc.pop("_id")
         return Task(**doc)
 
-class TaskEventMongoRepository(BaseMongoRepository):
+class EventMongoRepository(BaseMongoRepository):
 
     def _map_to_object(self, doc: dict) -> Any:
         if not doc:
             return None
         # Ya no necesitas str(doc.pop("_id")) porque ya es un string
         doc["id"] = doc.pop("_id")
-        return TaskEvent(**doc)
+        return Event(**doc)

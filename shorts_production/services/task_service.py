@@ -5,6 +5,8 @@ from typing import List, Dict
 from dataclasses import asdict
 from services.sse_service import SSEService
 
+# todo: make method to group by target_entity_type
+
 
 class TaskService:
 
@@ -19,19 +21,16 @@ class TaskService:
         return result
 
     def get_all_aggregated(self) -> List[Dict]:
-        tasks = self.task_repo.get_all()
-        result = []
-        for task in tasks:
-            download = self.download_repo.get_by_id(task.target_id)
-            task_json = asdict(task)
-            if download:
-                task_json["target"] = asdict(download)
-            result.append(task_json)
+        result = self.task_repo.get_all()
         result.reverse()
         return result
 
-    def create_task(self):
-        task = Task()
+    def create_task(self, entity_type, payload=None):
+        task = Task(
+            target_entity_id=payload["id"],
+            target_entity_type=entity_type,
+            payload=(payload or {}),
+        )
         self.task_repo.add(task)
         return task
 

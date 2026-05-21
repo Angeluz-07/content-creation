@@ -34,15 +34,23 @@ class TaskStatus(str, Enum):
 
 @dataclass
 class Task:
-    target_id: str = (
-        None  # ID de la entidad de negocio afectada (ej: download_id, user_id)
-    )
+    """
+    Entity to track asychronous tasks
+    """
+
+    target_entity_id: str  # linked domain model
+    target_entity_type: str
     status: TaskStatus = TaskStatus.PENDING
+    payload: dict = field(default_factory=dict)
     id: str = field(default_factory=lambda: str(uuid4()))
 
 
 @dataclass
-class TaskEvent:
+class Event:
+    """
+    Entity to track events during the workflow of asychronous task.
+    """
+
     task_id: str
     event_type: str
     payload: dict = field(default_factory=dict)

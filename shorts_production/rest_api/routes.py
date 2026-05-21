@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from rest_api.models import ShortProductionParamsInput, DownloadParamsInput
 from context import (
     short_producer,
-    downloader_service,
+    download_service,
     raw_segments_filename_provider,
     task_service,
 )
@@ -79,7 +79,7 @@ def get_raw_video_names():
 @router.post("/download-segment/synchronous")
 def download_segment_synchronous(input: DownloadParamsInput):
     print(f"Procesando: {input.output_filename} desde {input.url}")
-    downloader_service.run(params=input.model_dump())
+    download_service.run(params=input.model_dump())
 
     return {
         "status": "success",
@@ -90,7 +90,7 @@ def download_segment_synchronous(input: DownloadParamsInput):
 @router.get("/download-params/last")
 def get_last_download_params():
 
-    result = downloader_service.get_last_download()
+    result = download_service.get_last_download()
     return {"status": "success", "value": result}
 
 
@@ -109,10 +109,11 @@ def get_tasks_aggregated():
 async def download_segment(input: DownloadParamsInput):
     try: 
         params = input.model_dump()
-        downloader_service.validator_service.validate(params)#todo improve
+        download_service.validate(params)
+        params["id"] = download_service.get_new_uuid()
 
         output_filename = params["output_filename"]
-        task = task_service.create_task()
+        task = task_service.create_task(entity_type="download", payload=params)
 
         print(f"Sending to queue: {output_filename}")
 

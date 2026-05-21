@@ -19,7 +19,6 @@ class DownloadValidatorService:
         Lanza RuleValidationError si alguna falla.
         """
         self._validate_filename_not_exists(params)
-        # Aquí puedes agregar más reglas en el futuro sin tocar el downloader_service
 
     def _validate_unique_segment(self, params: Dict[str, Any]) -> None:
         exists = self.download_repo.exists_by_segment_params(
