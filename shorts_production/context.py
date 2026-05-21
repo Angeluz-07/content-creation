@@ -3,10 +3,13 @@ from services.downloader_service import DownloaderService
 from services.task_service import TaskService
 from services.sse_service import SSEService
 from services.validator_service import DownloadValidatorService
+from services.event_service import EventService
 from dbs.mongo_client import get_mongo_client
 from shorts_production.dbs.mongo_repository import DownloadParamsMongoRepository
 from shorts_production.dbs.mongo_repository import ShortProductionParamsMongoRepository
 from shorts_production.dbs.mongo_repository import TaskMongoRepository
+from shorts_production.dbs.mongo_repository import TaskEventMongoRepository
+
 from config import (
     MONGO_USER,
     MONGO_PASS,
@@ -54,3 +57,9 @@ sse_service = SSEService(redis_url=REDIS_HOST)
 task_service = TaskService(
     task_repo=task_repo, download_repo=download_repo, sse_service=sse_service
 )
+
+# TaskEvents
+event_repo = TaskEventMongoRepository(
+    client=mongo_client, db_name=MONGO_DB_NAME, collection_name="events"
+)
+event_service = EventService(event_repo=event_repo)

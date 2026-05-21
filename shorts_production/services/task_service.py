@@ -30,8 +30,8 @@ class TaskService:
         result.reverse()
         return result
 
-    def create_task(self, target_id: str):
-        task = Task(target_id=target_id)
+    def create_task(self):
+        task = Task()
         self.task_repo.add(task)
         return task
 

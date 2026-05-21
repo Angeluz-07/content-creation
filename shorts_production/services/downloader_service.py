@@ -32,11 +32,8 @@ class DownloaderService:
             url, start_ts, end_ts, force_download, output_filename
         )
 
-    def create_download(self, params: Dict) -> DownloadParams:
-        self.validator_service.validate(params)
-        params = DownloadParams(**params)
-        item = self.download_params_repo.add(params)
-        return item
+        download = DownloadParams(**params)
+        return download.id
 
     def get_last_download(self):
         params = self.download_params_repo.get_all()

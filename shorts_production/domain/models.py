@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from uuid import uuid4
 from enum import Enum
+from datetime import datetime, timezone
 
 
 @dataclass
@@ -33,6 +34,17 @@ class TaskStatus(str, Enum):
 
 @dataclass
 class Task:
-    target_id: str  # ID de la entidad de negocio afectada (ej: download_id, user_id)
+    target_id: str = (
+        None  # ID de la entidad de negocio afectada (ej: download_id, user_id)
+    )
     status: TaskStatus = TaskStatus.PENDING
+    id: str = field(default_factory=lambda: str(uuid4()))
+
+
+@dataclass
+class TaskEvent:
+    task_id: str
+    event_type: str
+    payload: dict = field(default_factory=dict)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     id: str = field(default_factory=lambda: str(uuid4()))
