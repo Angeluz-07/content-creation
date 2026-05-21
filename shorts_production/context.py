@@ -4,6 +4,7 @@ from services.task_service import TaskService
 from services.sse_service import SSEService
 from services.validator_service import DownloadValidatorService
 from services.event_service import EventService
+from services.download_projector import DownloadProjector
 from dbs.mongo_client import get_mongo_client
 from shorts_production.dbs.mongo_repository import DownloadParamsMongoRepository
 from shorts_production.dbs.mongo_repository import ShortProductionParamsMongoRepository
@@ -63,3 +64,9 @@ event_repo = TaskEventMongoRepository(
     client=mongo_client, db_name=MONGO_DB_NAME, collection_name="events"
 )
 event_service = EventService(event_repo=event_repo)
+
+# Projector
+download_repo = download_params_repo
+download_projector = DownloadProjector(
+    event_repo=event_repo, download_repo=download_repo
+)
