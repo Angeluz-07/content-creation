@@ -3,6 +3,7 @@ from services.downloader_service import DownloadService
 from services.task_service import TaskService
 from services.sse_service import SSEService
 from services.validator_service import DownloadValidatorService
+from services.short_production_validator import ShortProductionValidator
 from services.event_service import EventService
 from services.download_projector import DownloadProjector
 from services.short_production_projector import ShortProductionProjector
@@ -45,9 +46,12 @@ short_prod_params_repo = ShortProductionParamsMongoRepository(
 raw_segments_filename_provider = FilenameProvider(
     directory=str(DOWNLOAD_DIR), suffix=".mp4"
 )
+short_prod_validator = ShortProductionValidator(short_prod_repo=short_prod_params_repo)
+
 short_producer = ShortProducer(
     raw_file_provider=raw_segments_filename_provider,
     short_prod_params_repo=short_prod_params_repo,
+    validator=short_prod_validator,
 )
 
 # Tasks

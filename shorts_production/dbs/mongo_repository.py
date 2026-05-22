@@ -84,6 +84,13 @@ class ShortProductionParamsMongoRepository(BaseMongoRepository):
         doc["id"] = doc.pop("_id")
         return ShortProductionParams(**doc)
 
+    def exists_by_filename(self, filename: str) -> bool:
+        document = self._collection.find_one(
+            {"output_filename": filename},
+            projection={"_id": 1},  # <--- Eficiencia pura: solo trae el ID
+        )
+        return document is not None
+
 
 class TaskMongoRepository(BaseMongoRepository):
 

@@ -143,6 +143,7 @@ async def download_segment(config: ShortProductionParamsInput):
     try:
         params = config.model_dump()
         params["id"] = short_producer.get_new_uuid()
+        short_producer.validator.validate(params)
 
         task = task_service.create_task(entity_type="short_production", payload=params)
 

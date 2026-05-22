@@ -17,6 +17,7 @@ from domain.services.yt_downloader import YTDownloader
 from domain.services.video_builder import VideoBuilderV2
 from domain.services.font_provider import FontProvider
 from services.filename_provider import FilenameProvider
+from services.short_production_validator import ShortProductionValidator
 from uuid import uuid4
 
 
@@ -27,6 +28,7 @@ class ShortProducer:
         video_builder: VideoBuilderV2 = None,
         raw_file_provider: FilenameProvider = None,
         short_prod_params_repo: IRepository = None,
+        validator: ShortProductionValidator = None,
     ):
         self.yt_downloader = yt_downloader
 
@@ -41,6 +43,8 @@ class ShortProducer:
 
         self.raw_file_provider = raw_file_provider
         self.short_prod_params_repo = short_prod_params_repo
+
+        self.validator = validator
 
     def run(self, params):
         print("Processing ", params["input_filename"])

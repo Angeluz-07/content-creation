@@ -3,6 +3,7 @@ from context import (
     task_service,
     event_service,
     short_producer,
+    short_production_projector
 )
 import traceback
 from workers.broker import broker
@@ -29,7 +30,7 @@ async def short_production_task(task_id: str, params: dict):
             event_type="SHORT_PRODUCTION_COMPLETED",
             payload={"params": params},
         )
-        # short_production_projector.project(task_id=task_id)
+        short_production_projector.project(task_id=task_id)
         task_service.mark_as_completed(task_id=task_id)
 
     except Exception as e:
