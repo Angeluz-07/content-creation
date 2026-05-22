@@ -34,7 +34,7 @@ watch(lastProductionTs, (newTs) => {
   <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
     <ShortProductionParamsForm></ShortProductionParamsForm>
     <ShortPreviewImg :src="imageId"></ShortPreviewImg>
-    <ShortPreviewVideo :src="videoId"></ShortPreviewVideo>
+    <!--ShortPreviewVideo :src="videoId"></ShortPreviewVideo-->
   </div>
 </template>
 

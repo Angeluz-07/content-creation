@@ -8,8 +8,8 @@ export const useDownloadStore = defineStore('download', () => {
     lastDownloadTs.value = ts
   }
 
-  function downloadTaskSent() {
+  function taskDownloadSent() {
     setLastDownloadTs(Date.now().toString())
   }
-  return { lastDownloadTs, setLastDownloadTs , downloadTaskSent}
+  return { lastDownloadTs, setLastDownloadTs , taskDownloadSent}
 })

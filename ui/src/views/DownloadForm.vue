@@ -39,7 +39,7 @@ const handleSubmit = async () => {
     toast.success('Descarga iniciada', {
       description: 'Se ha enviado a descargar el archivo',
     })
-    downloadStore.downloadTaskSent()
+    downloadStore.taskDownloadSent()
   } 
 }
 
