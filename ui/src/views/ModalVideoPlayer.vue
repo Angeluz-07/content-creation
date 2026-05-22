@@ -1,5 +1,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import api from '@/api/client'
+
+const props = defineProps({
+  fileName: {
+    type: String,
+    required: true,
+  },
+  url: {
+    type: String,
+    required: true,
+  },
+})
 
 const modalForInputVideo = ref(null) // Referencia al elemento <dialog>
 const videoUrl_in = ref('')
@@ -9,14 +21,9 @@ const handleModalForInputVideo = (filename) => {
   // 2. Construimos la URL solo cuando se llama la función
   // Agregamos el timestamp para evitar que el navegador use caché vieja
   const timestamp = Date.now()
-  videoUrl_in.value = `http://localhost:8000/video/raw/${filename}?t=${timestamp}`
+  videoUrl_in.value = `${api.defaults.baseURL}${props.url}/${filename}?t=${timestamp}`
   modalForInputVideo.value.showModal()
 }
-const props = defineProps({
-  fileName: {
-    type: String,
-  },
-})
 </script>
 <template>
   <button

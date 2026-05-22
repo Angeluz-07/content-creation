@@ -7,7 +7,7 @@ const props = defineProps({
 })
 
 const isVideoLoaded = ref(false)
-const fullSrc = computed(() => `${api.defaults.baseURL}video/${props.src}`)
+const fullSrc = computed(() => `${api.defaults.baseURL}/video/${props.src}`)
 
 // Cuando la prop cambie, reiniciamos el estado de carga inmediatamente
 watch(() => props.src, () => {

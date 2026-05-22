@@ -1,13 +1,11 @@
 import asyncio
-from taskiq_redis import RedisStreamBroker
 from context import (
     task_service,
     event_service,
     short_producer,
 )
 import traceback
-
-broker = RedisStreamBroker("redis://localhost:6379")
+from workers.broker import broker
 
 
 @broker.task

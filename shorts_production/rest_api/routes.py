@@ -35,7 +35,7 @@ def get_image():
 
     return FileResponse(file_path)
 
-
+# todo: improve, this endpoint is actually for produced videos
 @router.get("/video/{video_id}")
 def get_video(video_id: str):
     file_path = str(OUTPUT_DIR / f"{video_id}.mp4")

@@ -88,7 +88,7 @@ onUnmounted(() => {
       <Column field="" header="Play">
         <template #body="slotProps">
           <template v-if="slotProps.data.status == 'COMPLETED'">
-            <ModalVideoPlayer :fileName="slotProps.data.outputFileName"></ModalVideoPlayer>
+            <ModalVideoPlayer url="/video/raw" :fileName="slotProps.data.outputFileName"></ModalVideoPlayer>
           </template>
         </template>
       </Column>

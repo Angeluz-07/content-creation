@@ -8,7 +8,7 @@ const props = defineProps({
 })
 
 const isLoaded = ref(false)
-const fullSrc = computed(() => `${api.defaults.baseURL}${props.src}`)
+const fullSrc = computed(() => `${api.defaults.baseURL}/${props.src}`)
 
 watch(() => props.src, () => {
   isLoaded.value = false

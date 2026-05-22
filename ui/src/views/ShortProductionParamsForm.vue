@@ -95,7 +95,7 @@ onMounted(async () => {
                 {{ fileName }}
               </option>
             </select>
-            <ModalVideoPlayer :fileName="form.inputFileName"></ModalVideoPlayer>
+            <ModalVideoPlayer url="/video/raw" :fileName="form.inputFileName"></ModalVideoPlayer>
           </div>
         </div>
 

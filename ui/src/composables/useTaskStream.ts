@@ -11,7 +11,7 @@ export function useTaskStream() {
     // Evitamos duplicar conexiones si ya existe una activa
     if (eventSource.value) return
 
-    eventSource.value = new EventSource(`${api.defaults.baseURL}${url}`)
+    eventSource.value = new EventSource(`${api.defaults.baseURL}/${url}`)
     isConnected.value = true
 
     eventSource.value.addEventListener('update', () => {

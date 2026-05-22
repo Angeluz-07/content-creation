@@ -1,2 +1,4 @@
-
-taskiq worker workers.download_worker:broker --workers 2
+taskiq worker workers.broker:broker ^
+  workers.download_worker ^
+  workers.short_production_worker ^
+  --workers 2
