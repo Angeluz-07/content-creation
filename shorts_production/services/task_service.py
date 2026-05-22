@@ -20,8 +20,9 @@ class TaskService:
         result.reverse()
         return result
 
-    def get_all_aggregated(self) -> List[Dict]:
-        result = self.task_repo.get_all()
+    def get_all_filtered_by_type(self, target_entity_type: str) -> List[Dict]:
+        result: List[Task] = self.task_repo.get_all()
+        result = [x for x in result if x.target_entity_type == target_entity_type]
         result.reverse()
         return result
 

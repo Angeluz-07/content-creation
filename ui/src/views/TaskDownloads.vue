@@ -29,7 +29,7 @@ const items = computed(() => {
 const { loading: loadingItems, get: getItems } = useApi()
 
 const loadItems = async () => {
-  const { data } = await getItems('/tasks/agg')
+  const { data } = await getItems('/tasks?target_entity_type=download')
   if (data) {
     console.log(data)
     raw_items.value = data.value

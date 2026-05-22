@@ -72,15 +72,15 @@ def get_last_download_params():
 
 
 @router.get("/tasks")
-def get_tasks():
-    result = task_service.get_all()
+def get_tasks(target_entity_type: str = None):
+    if target_entity_type:
+        result = task_service.get_all_filtered_by_type(
+            target_entity_type=target_entity_type
+        )
+    else:
+        result = task_service.get_all()
     return {"status": "success", "value": result}
 
-
-@router.get("/tasks/agg")
-def get_tasks_aggregated():
-    result = task_service.get_all_aggregated()
-    return {"status": "success", "value": result}
 
 
 # --- Explicit Synchronous tasks ---
