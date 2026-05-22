@@ -36,7 +36,7 @@ watch(lastProductionTs, (newTs) => {
     <!-- name of each tab group should be unique -->
     <div class="tabs tabs-box md:col-span-2">
       <label class="tab">
-        <input type="radio" name="my_tabs_4" />
+        <input type="radio" name="my_tabs_4" checked="checked" />
         <i class="pi pi-eye me-2"> </i>
 
         Vista Previa
@@ -46,7 +46,7 @@ watch(lastProductionTs, (newTs) => {
       </div>
 
       <label class="tab">
-        <input type="radio" name="my_tabs_4" checked="checked" />
+        <input type="radio" name="my_tabs_4" />
         <i class="pi pi-video me-2"> </i>
         Productions
       </label>

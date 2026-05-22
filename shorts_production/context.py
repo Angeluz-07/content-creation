@@ -5,6 +5,7 @@ from services.sse_service import SSEService
 from services.validator_service import DownloadValidatorService
 from services.event_service import EventService
 from services.download_projector import DownloadProjector
+from services.short_production_projector import ShortProductionProjector
 from dbs.mongo_client import get_mongo_client
 from shorts_production.dbs.mongo_repository import DownloadParamsMongoRepository
 from shorts_production.dbs.mongo_repository import ShortProductionParamsMongoRepository
@@ -65,8 +66,13 @@ event_repo = EventMongoRepository(
 )
 event_service = EventService(event_repo=event_repo)
 
-# Projector
+# Projectors
 download_repo = download_params_repo
 download_projector = DownloadProjector(
     event_repo=event_repo, download_repo=download_repo
+)
+
+short_prod_repo = short_prod_params_repo
+short_production_projector = ShortProductionProjector(
+    event_repo=event_repo, short_production_repo=short_prod_repo
 )

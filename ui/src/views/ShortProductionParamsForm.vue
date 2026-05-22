@@ -5,6 +5,7 @@ import { toShortProductionParamsPayload } from '../mappers/config'
 import { reactive, ref, onMounted, computed, watch } from 'vue'
 import ModalVideoPlayer from './ModalVideoPlayer.vue'
 import { useVideoStore } from '@/stores/useVideoStore'
+import { toast } from 'vue-sonner'
 
 const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT
 
@@ -52,6 +53,10 @@ const handleSubmit = async () => {
   } else {
     const { success, data } = await sendForm('/produce-short', payload)
   }
+  toast.success('Producción iniciada', {
+    description: 'Se ha enviado a producir el video',
+  })
+  //downloadStore.taskDownloadSent()
 }
 
 async function loadVideoFileNames() {

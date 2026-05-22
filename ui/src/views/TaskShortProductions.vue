@@ -53,41 +53,41 @@ onUnmounted(() => {
 })
 </script>
 <template>
-    <DataTable
-      :value="items"
-      :loading="loadingItems"
-      tableStyle="min-width: 45rem"
-      scrollable
-      scrollHeight="500px"
-    >
-      <template #header>
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="text-xl font-bold">Productions</span>
-          <!--Button
-            @click="loadItems()"
-            icon="pi pi-sync"
-            rounded
-            raised
-            outlined
-            severity="secondary"
-          /-->
-        </div>
+  <DataTable
+    :value="items"
+    :loading="loadingItems"
+    tableStyle="min-width: 45rem"
+    scrollable
+    scrollHeight="500px"
+  >
+    <template #header>
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span class="text-xl font-bold">Productions</span>
+        <Button
+          @click="loadItems()"
+          icon="pi pi-sync"
+          rounded
+          raised
+          outlined
+          severity="secondary"
+        />
+      </div>
+    </template>
+    <Column field="outputFileName" header="Output Filename"></Column>
+    <Column field="status" header="Status">
+      <template #body="slotProps">
+        <Tag
+          :value="slotProps.data.status"
+          :severity="statusSeverityMap[slotProps.data.status] || null"
+        />
       </template>
-      <Column field="outputFileName" header="Output Filename"></Column>
-      <Column field="status" header="Status">
-        <template #body="slotProps">
-          <Tag
-            :value="slotProps.data.status"
-            :severity="statusSeverityMap[slotProps.data.status] || null"
-          />
+    </Column>
+    <Column field="" header="Play">
+      <template #body="slotProps">
+        <template v-if="slotProps.data.status == 'COMPLETED'">
+          <ModalVideoPlayer :fileName="slotProps.data.outputFileName"></ModalVideoPlayer>
         </template>
-      </Column>
-      <Column field="" header="Play">
-        <template #body="slotProps">
-          <template v-if="slotProps.data.status == 'COMPLETED'">
-            <ModalVideoPlayer :fileName="slotProps.data.outputFileName"></ModalVideoPlayer>
-          </template>
-        </template>
-      </Column>
-    </DataTable>
+      </template>
+    </Column>
+  </DataTable>
 </template>

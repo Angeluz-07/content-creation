@@ -14,6 +14,7 @@ from config import TEMP_DIR, OUTPUT_DIR
 from sse_starlette.sse import EventSourceResponse
 from context import sse_service
 from workers.download_worker import download_task
+from workers.short_production_worker import short_production_task
 
 router = APIRouter(prefix="", tags=["main"])
 
@@ -81,6 +82,7 @@ def get_tasks_aggregated():
     result = task_service.get_all_aggregated()
     return {"status": "success", "value": result}
 
+
 # --- Explicit Synchronous tasks ---
 @router.post("/download-segment/synchronous")
 def download_segment_synchronous(input: DownloadParamsInput):
@@ -134,3 +136,24 @@ async def download_segment(input: DownloadParamsInput):
 @router.get("/tasks/stream")
 async def tasks_stream():
     return EventSourceResponse(sse_service.listen_task_updates_async())
+
+
+@router.post("/produce-short")
+async def download_segment(config: ShortProductionParamsInput):
+    try:
+        params = config.model_dump()
+        params["id"] = short_producer.get_new_uuid()
+
+        task = task_service.create_task(entity_type="short_production", payload=params)
+
+        print(f"Sending to short_production queue: {config.input_filename}")
+
+        await short_production_task.kiq(task.id, params)
+
+        return {
+            "status": "queued",
+            "message": f"Tarea enviada al worker para: {config.input_filename}",
+            "task_id": task.id,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

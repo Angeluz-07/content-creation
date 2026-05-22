@@ -23,8 +23,7 @@ class DownloadProjector:
         )
 
         if not success_event:
-            # No success event means it either failed or is running. Do nothing.
-            return
+            raise RuntimeError("No success event found")
 
         # Extract the verified facts from the event payload
         params = success_event.payload["download"]

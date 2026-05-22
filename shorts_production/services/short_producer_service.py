@@ -7,16 +7,17 @@ sys.path.append(str(grandparent))
 
 from dbs.interfaces import IRepository
 
-from shorts_production.config import TEMP_DIR  
-from shorts_production.config import ASSETS_DIR 
+from shorts_production.config import TEMP_DIR
+from shorts_production.config import ASSETS_DIR
 from shorts_production.config import TEXT_FONT_PATH
-from shorts_production.config import OUTPUT_DIR  
+from shorts_production.config import OUTPUT_DIR
 
 from domain.models import ShortProductionParams
 from domain.services.yt_downloader import YTDownloader
 from domain.services.video_builder import VideoBuilderV2
 from domain.services.font_provider import FontProvider
 from services.filename_provider import FilenameProvider
+from uuid import uuid4
 
 
 class ShortProducer:
@@ -25,7 +26,7 @@ class ShortProducer:
         yt_downloader: YTDownloader = None,
         video_builder: VideoBuilderV2 = None,
         raw_file_provider: FilenameProvider = None,
-        short_prod_params_repo: IRepository = None
+        short_prod_params_repo: IRepository = None,
     ):
         self.yt_downloader = yt_downloader
 
@@ -43,7 +44,7 @@ class ShortProducer:
 
     def run(self, params):
         print("Processing ", params["input_filename"])
-      
+
         # fmt: off
         font_name         = params["font_name"]
         filename          = params["input_filename"]
@@ -64,7 +65,5 @@ class ShortProducer:
 
         # fmt: on
 
-        if not debug_video_frame:                        
-            print("Saving production params...")
-            params = ShortProductionParams(**params)
-            self.short_prod_params_repo.add(params)
+    def get_new_uuid(self):
+        return str(uuid4())
