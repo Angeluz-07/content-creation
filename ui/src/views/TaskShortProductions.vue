@@ -62,7 +62,7 @@ onUnmounted(() => {
     >
       <template #header>
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="text-xl font-bold">Descargas</span>
+          <span class="text-xl font-bold">Productions</span>
           <!--Button
             @click="loadItems()"
             icon="pi pi-sync"

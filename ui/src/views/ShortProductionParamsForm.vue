@@ -2,7 +2,7 @@
 import { useApi } from '@/composables/useApi'
 import type { ShortProductionParams } from '../types/config'
 import { toShortProductionParamsPayload } from '../mappers/config'
-import { reactive, ref, onMounted, computed , watch} from 'vue'
+import { reactive, ref, onMounted, computed, watch } from 'vue'
 import ModalVideoPlayer from './ModalVideoPlayer.vue'
 import { useVideoStore } from '@/stores/useVideoStore'
 
@@ -15,15 +15,15 @@ const form = reactive<ShortProductionParams>({
   hookText: 'test',
   frameTs: '00:00:03',
   fontName: 'GoogleSans-Medium',
-  outputFileName: ''
+  outputFileName: '',
 })
 
 watch(
   () => form.inputFileName,
   (fileName) => {
-    form.outputFileName = `${fileName}_produced`;
-  }
-);
+    form.outputFileName = `${fileName}_produced`
+  },
+)
 const fontList = ref([
   'GoogleSans-Medium',
   'Anton-Regular',
@@ -42,10 +42,15 @@ const videoStore = useVideoStore()
 
 const handleSubmit = async () => {
   const payload = toShortProductionParamsPayload(form)
-  const { success, data } = await sendForm('/produce-short', payload)
-  if (success) {
-    videoStore.setLastProductionTs(Date.now().toString())
-    videoStore.setFinishedVideo(form.outputFileName)
+  const debugMode = form.debugVideoFrame
+  if (debugMode) {
+    const { success, data } = await sendForm('/produce-short/synchronous', payload)
+    if (success) {
+      videoStore.setLastProductionTs(Date.now().toString())
+      //videoStore.setFinishedVideo(form.outputFileName)
+    }
+  } else {
+    const { success, data } = await sendForm('/produce-short', payload)
   }
 }
 

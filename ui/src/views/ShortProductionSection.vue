@@ -48,7 +48,7 @@ watch(lastProductionTs, (newTs) => {
       <label class="tab">
         <input type="radio" name="my_tabs_4" checked="checked" />
         <i class="pi pi-video me-2"> </i>
-        Producción
+        Productions
       </label>
       <div class="tab-content bg-base-100 p-6">
         <div class="card w-full md:w-fit mx-auto bg-base-100 overflow-hidden p-light col-span-2">

@@ -24,19 +24,6 @@ def hello_world():
     return {"message": "hello world"}
 
 
-@router.post("/produce-short")
-def process_video(config: ShortProductionParamsInput):
-    print(
-        f"Procesando: {config.input_filename}"
-    )  # todo: link data to params used for download
-
-    short_producer.run(config.model_dump())
-    return {
-        "status": "success",
-        "message": f"Procesamiento iniciado para {config.input_filename}",
-    }
-
-
 @router.get("/images/")
 def get_image():
     file_path = str(TEMP_DIR / f"debug_frame.png")
@@ -76,17 +63,6 @@ def get_raw_video_names():
     return {"status": "success", "values": values}
 
 
-@router.post("/download-segment/synchronous")
-def download_segment_synchronous(input: DownloadParamsInput):
-    print(f"Procesando: {input.output_filename} desde {input.url}")
-    download_service.run(params=input.model_dump())
-
-    return {
-        "status": "success",
-        "message": f"Procesamiento iniciado para {input.output_filename}",
-    }
-
-
 @router.get("/download-params/last")
 def get_last_download_params():
 
@@ -99,15 +75,41 @@ def get_tasks():
     result = task_service.get_all()
     return {"status": "success", "value": result}
 
+
 @router.get("/tasks/agg")
 def get_tasks_aggregated():
     result = task_service.get_all_aggregated()
     return {"status": "success", "value": result}
 
+# --- Explicit Synchronous tasks ---
+@router.post("/download-segment/synchronous")
+def download_segment_synchronous(input: DownloadParamsInput):
+    print(f"Procesando: {input.output_filename} desde {input.url}")
+    download_service.run(params=input.model_dump())
+
+    return {
+        "status": "success",
+        "message": f"Procesamiento iniciado para {input.output_filename}",
+    }
+
+
+@router.post("/produce-short/synchronous")
+def process_video(config: ShortProductionParamsInput):
+    print(
+        f"Procesando: {config.input_filename}"
+    )  # todo: link data to params used for download
+
+    short_producer.run(config.model_dump())
+    return {
+        "status": "success",
+        "message": f"Procesamiento iniciado para {config.input_filename}",
+    }
+
+
 # --- Asynchronous tasks ---
 @router.post("/download-segment")
 async def download_segment(input: DownloadParamsInput):
-    try: 
+    try:
         params = input.model_dump()
         download_service.validate(params)
         params["id"] = download_service.get_new_uuid()
@@ -119,7 +121,7 @@ async def download_segment(input: DownloadParamsInput):
 
         # send to worker
         await download_task.kiq(task.id, params)
-              
+
         return {
             "status": "queued",
             "message": f"Tarea enviada al worker para: {output_filename}",
@@ -127,7 +129,6 @@ async def download_segment(input: DownloadParamsInput):
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
 
 
 @router.get("/tasks/stream")
