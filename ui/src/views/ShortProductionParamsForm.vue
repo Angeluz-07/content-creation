@@ -64,7 +64,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="card w-full bg-base-100 shadow-xl">
+  <div class="card w-full md:w-fit bg-base-100 shadow-xl">
     <div class="card-body">
       <h2 class="card-title mb-4">Params</h2>
 

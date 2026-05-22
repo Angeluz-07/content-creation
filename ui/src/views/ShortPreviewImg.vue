@@ -16,10 +16,7 @@ watch(() => props.src, () => {
 
 </script>
 <template>
-    <div class="card w-full md:w-fit mx-auto bg-base-100 shadow-xl overflow-hidden">
-      <div class="card-body p-4">
-        <h2 class="card-title">Vista previa</h2>
-      </div>
+    <div class="card w-full md:w-fit mx-auto bg-base-100 overflow-hidden">
       <figure class="relative aspect-[9/16] w-full md:w-[400px] bg-base-200">
         <div v-if="!isLoaded" class="absolute inset-0 skeleton"></div>
 
