@@ -52,10 +52,13 @@ class ShortProducer:
         hook_text         = params["hook_text"]
         debug_video_frame = params["debug_video_frame"]
         frame_ts          = params["frame_ts"]
+        output_filename   = params["output_filename"]
 
         self.video_builder.font_path = self.font_provider.get_font(font_name)
         input_filepath = self.raw_file_provider.get_filepath(filename)
-        result_path    = self.video_builder.build(input_filepath, file_id, watermark_text, hook_text, debug_video_frame, frame_ts)
+        result_path    = self.video_builder.build(
+            input_filepath, file_id, watermark_text, hook_text, debug_video_frame, frame_ts, output_filename
+        )
 
         print("Video produced at ", result_path)
 

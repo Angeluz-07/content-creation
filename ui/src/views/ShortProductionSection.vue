@@ -24,7 +24,7 @@ const refreshVideo = (filename: string) => {
 watch(lastProductionTs, (newTs) => {
   if (newTs) {
     refreshImage()
-    refreshVideo(`${latestVideoId.value}_produced`)
+    refreshVideo(latestVideoId.value)
   }
 })
 

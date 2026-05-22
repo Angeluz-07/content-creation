@@ -33,6 +33,7 @@ class VideoBuilderV2:
         hook_text: str,
         debug_video_frame: str,
         frame_ts: str,
+        output_filename: str, 
     ):
         hook_text_cleaned = hook_text.replace(r"\n", "\n")
 
@@ -40,7 +41,7 @@ class VideoBuilderV2:
         resized_filepath     = self._resize_video_segment(input_filepath, file_id)
         frame_filepath       = self._get_video_frame(input_filepath, frame_ts)
         fixed_layer_filepath = self._generate_fixed_layer(watermark_text, hook_text_cleaned, frame_filepath)
-        result_path          = self._assemble(resized_filepath, fixed_layer_filepath, file_id, debug_video_frame)
+        result_path          = self._assemble(resized_filepath, fixed_layer_filepath, output_filename, debug_video_frame)
         # fmt: on
         return result_path
 
@@ -179,9 +180,9 @@ class VideoBuilderV2:
         logo = ImageClip(logo_path).resized(width=150).with_position((860, 860))
 
         # Watermark
-        frame_zoom_factor = 1.6
+        frame_zoom_factor = 1.3
         pos_y = 1200  # starts at, counting from top to bottom
-        pos_x = -320  # starts at, counting from left to right
+        pos_x = -110  # starts at, counting from left to right
 
         frame = (
             ImageClip(frame_filepath)
@@ -202,9 +203,9 @@ class VideoBuilderV2:
         ui_composite.save_frame(output_png, t=0)
         return output_png
 
-    def _assemble(self, video_input, ui_png, video_output, debug=False):
+    def _assemble(self, video_input, ui_png, output_filename, debug=False):
         salida_imagen = str(Path(self.temp_path) / "debug_frame.png")
-        salida_video = str(Path(self.output_path) / f"{video_output}_produced.mp4")
+        salida_video = str(Path(self.output_path) / f"{output_filename}.mp4")
         if debug:
             print("DEBUG MODE: Generating one debug frame...")
             # Comando optimizado solo para extraer 1 imagen
@@ -288,13 +289,14 @@ class VideoBuilderV1:
         watermark_text: str,
         hook_text: str,
         debug_video_frame: str,
+        output_filename: str
     ):
         hook_text_cleaned = hook_text.replace(r"\n", "\n")
 
         # fmt: off
         resized_filepath     = self._resize_video_segment(input_filepath, file_id)
         fixed_layer_filepath = self._generate_fixed_layer(watermark_text, hook_text_cleaned)
-        result_path          = self._assemble(resized_filepath, fixed_layer_filepath, file_id, debug_video_frame)
+        result_path          = self._assemble(resized_filepath, fixed_layer_filepath, output_filename, debug_video_frame)
         # fmt: on
         return result_path
 
@@ -402,9 +404,9 @@ class VideoBuilderV1:
         ui_composite.save_frame(output_png, t=0)
         return output_png
 
-    def _assemble(self, video_input, ui_png, video_output, debug=False):
+    def _assemble(self, video_input, ui_png, output_filename, debug=False):
         salida_imagen = str(Path(self.temp_path) / "debug_frame.png")
-        salida_video = str(Path(self.output_path) / f"{video_output}.mp4")
+        salida_video = str(Path(self.output_path) / f"{output_filename}.mp4")
         if debug:
             print("DEBUG MODE: Generating one debug frame...")
             # Comando optimizado solo para extraer 1 imagen

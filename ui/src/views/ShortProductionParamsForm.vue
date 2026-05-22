@@ -2,7 +2,7 @@
 import { useApi } from '@/composables/useApi'
 import type { ShortProductionParams } from '../types/config'
 import { toShortProductionParamsPayload } from '../mappers/config'
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed , watch} from 'vue'
 import ModalVideoPlayer from './ModalVideoPlayer.vue'
 import { useVideoStore } from '@/stores/useVideoStore'
 
@@ -15,8 +15,15 @@ const form = reactive<ShortProductionParams>({
   hookText: 'test',
   frameTs: '00:00:03',
   fontName: 'GoogleSans-Medium',
+  outputFileName: ''
 })
 
+watch(
+  () => form.inputFileName,
+  (fileName) => {
+    form.outputFileName = `${fileName}_produced`;
+  }
+);
 const fontList = ref([
   'GoogleSans-Medium',
   'Anton-Regular',
@@ -31,14 +38,14 @@ const fontList = ref([
 const fileNames = ref([])
 const { loading: isSubmitting, post: sendForm } = useApi()
 const { loading: loadingVideoFileNames, get: getVideoFileNames } = useApi()
-const videoStore= useVideoStore();
+const videoStore = useVideoStore()
 
 const handleSubmit = async () => {
   const payload = toShortProductionParamsPayload(form)
   const { success, data } = await sendForm('/produce-short', payload)
   if (success) {
-    videoStore.setLastProductionTs(Date.now().toString());
-    videoStore.setFinishedVideo(`${form.inputFileName}`)
+    videoStore.setLastProductionTs(Date.now().toString())
+    videoStore.setFinishedVideo(form.outputFileName)
   }
 }
 
@@ -133,7 +140,15 @@ onMounted(async () => {
             />
           </div>
         </div>
-
+        <div class="form-control w-full">
+          <label class="label"><span class="label-text">Output Filename</span></label>
+          <input
+            v-model="form.outputFileName"
+            type="text"
+            class="input input-bordered w-full"
+            required
+          />
+        </div>
         <div class="flex flex-col md:flex-row gap-6 pt-4">
           <div class="form-control">
             <label class="label cursor-pointer justify-start gap-3">

@@ -11,6 +11,7 @@ export interface ShortProductionParamsPayload {
   watermark_text: string;
   frame_ts: string;
   font_name: string;
+  output_filename: string;
 }
 
 export const toShortProductionParamsPayload = (data: ShortProductionParams): ShortProductionParamsPayload => {
@@ -20,7 +21,8 @@ export const toShortProductionParamsPayload = (data: ShortProductionParams): Sho
     input_filename: data.inputFileName,
     watermark_text: data.watermarkText,
     frame_ts: data.frameTs,
-    font_name: data.fontName
+    font_name: data.fontName,
+    output_filename: data.outputFileName
   };
 };
 

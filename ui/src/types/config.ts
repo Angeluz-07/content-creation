@@ -6,6 +6,7 @@ export interface ShortProductionParams {
   frameTs: string;  
   hookText: string;
   debugVideoFrame: boolean;
+  outputFileName: string;
 }
 
 export interface DownloadParams {
