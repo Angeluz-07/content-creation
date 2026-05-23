@@ -32,7 +32,7 @@ mongo_client = get_mongo_client(MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT)
 
 # Downloads
 download_params_repo = DownloadParamsMongoRepository(
-    client=mongo_client, db_name=MONGO_DB_NAME, collection_name="download_params"
+    client=mongo_client, db_name=MONGO_DB_NAME, collection_name="downloads"
 )
 validator_service = DownloadValidatorService(download_repo=download_params_repo)
 download_service = DownloadService(
@@ -41,7 +41,7 @@ download_service = DownloadService(
 
 # Short Production
 short_prod_params_repo = ShortProductionParamsMongoRepository(
-    client=mongo_client, db_name=MONGO_DB_NAME, collection_name="short_prod_params"
+    client=mongo_client, db_name=MONGO_DB_NAME, collection_name="short_productions"
 )
 raw_segments_filename_provider = FilenameProvider(
     directory=str(DOWNLOAD_DIR), suffix=".mp4"
