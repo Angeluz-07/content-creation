@@ -1,7 +1,6 @@
 from typing import Dict, Any
 from fastapi import HTTPException, status
-from dbs.mongo_repository import DownloadParamsMongoRepository
-
+from dbs.interfaces import IRepository
 
 class DownloadValidationError(Exception):
     """Raises when a condition is not me to start a download"""
@@ -11,7 +10,7 @@ class DownloadValidationError(Exception):
 
 class DownloadValidatorService:
     def __init__(self, download_repo):
-        self.download_repo: DownloadParamsMongoRepository = download_repo
+        self.download_repo: IRepository = download_repo
 
     def validate(self, params: Dict[str, Any]) -> None:
         """

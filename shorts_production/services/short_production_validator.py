@@ -1,6 +1,6 @@
 from typing import Dict, Any
 from fastapi import HTTPException, status
-from dbs.mongo_repository import ShortProductionParamsMongoRepository
+from dbs.interfaces import IRepository
 
 
 class ShortProductionValidationError(Exception):
@@ -10,8 +10,8 @@ class ShortProductionValidationError(Exception):
 
 
 class ShortProductionValidator:
-    def __init__(self, short_prod_repo):
-        self.short_prod_repo: ShortProductionParamsMongoRepository = short_prod_repo
+    def __init__(self, short_production_repo):
+        self.short_production_repo: IRepository = short_production_repo
 
     def validate(self, params: Dict[str, Any]) -> None:
         """
@@ -22,7 +22,7 @@ class ShortProductionValidator:
 
     def _validate_filename_not_exists(self, params: Dict[str, Any]) -> None:
         filename = params.get("output_filename")
-        exists = self.short_prod_repo.exists_by_filename(filename)
+        exists = self.short_production_repo.exists_by_filename(filename)
         if exists:
             raise ShortProductionValidationError(
                 f"El archivo '{filename}' ya existe en la base de datos."

@@ -49,7 +49,7 @@ class BaseMongoRepository(IRepository):
         return result.matched_count > 0
 
 
-class DownloadParamsMongoRepository(BaseMongoRepository):
+class DownloadMongoRepository(BaseMongoRepository):
 
     def _map_to_object(self, doc: dict) -> Any:
         if not doc:
@@ -75,7 +75,7 @@ class DownloadParamsMongoRepository(BaseMongoRepository):
         return document is not None
 
 
-class ShortProductionParamsMongoRepository(BaseMongoRepository):
+class ShortProductionMongoRepository(BaseMongoRepository):
 
     def _map_to_object(self, doc: dict) -> Any:
         if not doc:

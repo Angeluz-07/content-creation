@@ -27,7 +27,7 @@ class ShortProducer:
         yt_downloader: YTDownloader = None,
         video_builder: VideoBuilderV2 = None,
         raw_file_provider: FilenameProvider = None,
-        short_prod_params_repo: IRepository = None,
+        short_production_repo: IRepository = None,
         validator: ShortProductionValidator = None,
     ):
         self.yt_downloader = yt_downloader
@@ -42,7 +42,7 @@ class ShortProducer:
         self.font_provider = FontProvider(str(ASSETS_DIR))
 
         self.raw_file_provider = raw_file_provider
-        self.short_prod_params_repo = short_prod_params_repo
+        self.short_production_repo = short_production_repo
 
         self.validator = validator
 

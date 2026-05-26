@@ -1,15 +1,14 @@
 from dbs.mongo_repository import (
-    EventMongoRepository,
-    ShortProductionParamsMongoRepository,
+    EventMongoRepository
 )
 from domain.models import ShortProductionParams
-
+from dbs.interfaces import IRepository
 
 class ShortProductionProjector:
 
     def __init__(self, event_repo, short_production_repo):
         self.event_repo: EventMongoRepository = event_repo
-        self.short_production_repo: ShortProductionParamsMongoRepository = (
+        self.short_production_repo: IRepository = (
             short_production_repo
         )
 
