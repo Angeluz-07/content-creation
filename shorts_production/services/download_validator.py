@@ -8,7 +8,7 @@ class DownloadValidationError(Exception):
     pass
 
 
-class DownloadValidatorService:
+class DownloadValidator:
     def __init__(self, download_repo):
         self.download_repo: IRepository = download_repo
 

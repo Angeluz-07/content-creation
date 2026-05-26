@@ -21,7 +21,7 @@ from services.short_production_validator import ShortProductionValidator
 from uuid import uuid4
 
 
-class ShortProducer:
+class ShortProductionService:
     def __init__(
         self,
         yt_downloader: YTDownloader = None,
