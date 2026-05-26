@@ -3,15 +3,15 @@ from fastapi import HTTPException, status
 from dbs.interfaces import IRepository
 
 
-class ShortProductionValidationError(Exception):
-    """Raises when a condition is not me to start a download"""
+class ProductionValidationError(Exception):
+    """Raises when a condition is not me to start a video production"""
 
     pass
 
 
-class ShortProductionValidator:
-    def __init__(self, short_production_repo):
-        self.short_production_repo: IRepository = short_production_repo
+class ProductionValidator:
+    def __init__(self, production_repo):
+        self.production_repo: IRepository = production_repo
 
     def validate(self, params: Dict[str, Any]) -> None:
         """
@@ -24,6 +24,6 @@ class ShortProductionValidator:
         filename = params.get("output_filename")
         exists = self.short_production_repo.exists_by_filename(filename)
         if exists:
-            raise ShortProductionValidationError(
+            raise ProductionValidationError(
                 f"El archivo '{filename}' ya existe en la base de datos."
             )

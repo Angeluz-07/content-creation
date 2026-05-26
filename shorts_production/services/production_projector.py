@@ -1,16 +1,13 @@
-from dbs.mongo_repository import (
-    EventMongoRepository
-)
+from dbs.mongo_repository import EventMongoRepository
 from domain.models import ShortProductionParams
 from dbs.interfaces import IRepository
 
-class ShortProductionProjector:
 
-    def __init__(self, event_repo, short_production_repo):
+class ProductionProjector:
+
+    def __init__(self, event_repo, production_repo):
         self.event_repo: EventMongoRepository = event_repo
-        self.short_production_repo: IRepository = (
-            short_production_repo
-        )
+        self.production_repo: IRepository = production_repo
 
     def project(self, task_id: str):
         """
@@ -32,4 +29,4 @@ class ShortProductionProjector:
         # Extract the verified facts from the event payload
         params = success_event.payload["params"]
         item = ShortProductionParams(**params)
-        self.short_production_repo.add(item)
+        self.production_repo.add(item)

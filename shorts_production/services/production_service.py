@@ -17,18 +17,16 @@ from domain.services.yt_downloader import YTDownloader
 from domain.services.video_builder import VideoBuilderV2
 from domain.services.font_provider import FontProvider
 from services.filename_provider import FilenameProvider
-from services.short_production_validator import ShortProductionValidator
 from uuid import uuid4
 
 
-class ShortProductionService:
+class ProductionService:
     def __init__(
         self,
         yt_downloader: YTDownloader = None,
         video_builder: VideoBuilderV2 = None,
         raw_file_provider: FilenameProvider = None,
-        short_production_repo: IRepository = None,
-        validator: ShortProductionValidator = None,
+        validator=None,
     ):
         self.yt_downloader = yt_downloader
 
@@ -42,7 +40,6 @@ class ShortProductionService:
         self.font_provider = FontProvider(str(ASSETS_DIR))
 
         self.raw_file_provider = raw_file_provider
-        self.short_production_repo = short_production_repo
 
         self.validator = validator
 
