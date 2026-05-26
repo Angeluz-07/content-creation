@@ -37,20 +37,25 @@ class RepositoryHub:
 
 
 class ServiceHub:
-    def __init__(self, repos: RepositoryHub):
+    def __init__(self, r: RepositoryHub):
+        download_repo = r.download_repo
+        production_repo = r.production_repo
+        task_repo = r.task_repo
+        event_repo = r.event_repo
+
         # fmt: off
-        self.download_validator = DownloadValidator(download_repo=repos.download_repo)
-        self.download_service   = DownloadService(download_repo=repos.download_repo, validator_service=self.download_validator) # exposed
-        self.download_projector = DownloadProjector(event_repo=repos.event_repo, download_repo=repos.download_repo)#exposed
+        download_validator      = DownloadValidator(download_repo)
+        self.download_service   = DownloadService(download_repo, download_validator) 
+        self.download_projector = DownloadProjector(event_repo, download_repo) 
 
         self.filename_provider    = FilenameProvider(directory=str(DOWNLOAD_DIR), suffix=".mp4") 
-        self.production_validator = ProductionValidator(production_repo=repos.production_repo)
-        self.production_service   = ProductionService(raw_file_provider=self.filename_provider, validator=self.production_validator) # exposed        
-        self.production_projector = ProductionProjector(event_repo=repos.event_repo, production_repo=repos.production_repo)#exposed
+        production_validator      = ProductionValidator(production_repo)
+        self.production_service   = ProductionService(self.filename_provider, production_validator)    
+        self.production_projector = ProductionProjector(event_repo, production_repo)
         
-        self.event_service = EventService(event_repo=repos.event_repo)
-        self.sse_service  = SSEService(redis_url=REDIS_HOST)# exposed
-        self.task_service = TaskService(task_repo=repos.task_repo, download_repo=repos.download_repo, sse_service=self.sse_service) #exposed
+        self.event_service = EventService(event_repo)
+        self.sse_service   = SSEService(redis_url=REDIS_HOST) # exposed
+        self.task_service  = TaskService(task_repo, self.sse_service) #exposed
         # fmt : on
 
 

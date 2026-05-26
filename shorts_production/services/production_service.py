@@ -21,11 +21,11 @@ from uuid import uuid4
 
 class ProductionService:
     def __init__(
-        self,
+        self,        
+        raw_file_provider: FilenameProvider = None,        
+        validator=None,
         yt_downloader: YTDownloader = None,
         video_builder: VideoBuilderV2 = None,
-        raw_file_provider: FilenameProvider = None,
-        validator=None,
     ):
         self.yt_downloader = yt_downloader
 

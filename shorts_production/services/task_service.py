@@ -11,9 +11,8 @@ from services.sse_service import SSEService
 
 class TaskService:
 
-    def __init__(self, task_repo, download_repo, sse_service):
+    def __init__(self, task_repo, sse_service):
         self.task_repo: TaskMongoRepository = task_repo
-        self.download_repo: IRepository = download_repo
         self.sse_service: SSEService = sse_service
 
     def get_all(self) -> List[Task]:

@@ -7,10 +7,10 @@ from uuid import uuid4
 
 class DownloadService:
     def __init__(
-        self,
-        yt_downloader: YTDownloader = None,
-        download_repo: IRepository = None,
+        self,        
+        download_repo: IRepository = None,        
         validator_service=None,
+        yt_downloader: YTDownloader = None,
     ):
         self.yt_downloader = yt_downloader or YTDownloader(
             output_path=str(DOWNLOAD_DIR)
