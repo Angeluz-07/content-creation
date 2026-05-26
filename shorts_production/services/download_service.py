@@ -2,8 +2,6 @@ from shorts_production.config import DOWNLOAD_DIR
 from typing import Dict
 from domain.services.yt_downloader import YTDownloader
 from dbs.interfaces import IRepository
-from domain.models import DownloadParams
-from pathlib import Path
 from uuid import uuid4
 
 

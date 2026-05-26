@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 
 @dataclass
-class DownloadParams:
+class Download:
     url: str
     start_segment: str
     end_segment: str
@@ -15,7 +15,7 @@ class DownloadParams:
 
 
 @dataclass
-class ShortProductionParams:
+class Production:
     input_filename: str
     output_filename: str
     font_name: str

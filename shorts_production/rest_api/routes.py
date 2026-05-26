@@ -1,6 +1,6 @@
 import os
 from fastapi import APIRouter
-from rest_api.models import ShortProductionParamsInput, DownloadParamsInput
+from rest_api.models import ProductionInput, DownloadParamsInput
 from context import (
     short_producer,
     download_service,
@@ -96,7 +96,7 @@ def download_segment_synchronous(input: DownloadParamsInput):
 
 
 @router.post("/produce-short/synchronous")
-def process_video(config: ShortProductionParamsInput):
+def process_video(config: ProductionInput):
     print(
         f"Procesando: {config.input_filename}"
     )  # todo: link data to params used for download
@@ -139,7 +139,7 @@ async def tasks_stream():
 
 
 @router.post("/produce-short")
-async def download_segment(config: ShortProductionParamsInput):
+async def download_segment(config: ProductionInput):
     try:
         params = config.model_dump()
         params["id"] = short_producer.get_new_uuid()

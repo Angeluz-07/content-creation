@@ -2,7 +2,7 @@ from bson import ObjectId
 from pymongo import MongoClient
 from dbs.interfaces import IRepository
 from typing import List, Optional, Any, Dict
-from domain.models import DownloadParams, ShortProductionParams, Task, Event
+from domain.models import Download, Production, Task, Event
 
 
 class BaseMongoRepository(IRepository):
@@ -56,7 +56,7 @@ class DownloadMongoRepository(BaseMongoRepository):
             return None
         # Ya no necesitas str(doc.pop("_id")) porque ya es un string
         doc["id"] = doc.pop("_id")
-        return DownloadParams(**doc)
+        return Download(**doc)
 
     def exists_by_segment_params(
         self, url: str, start_segment: str, end_segment: str
@@ -75,14 +75,14 @@ class DownloadMongoRepository(BaseMongoRepository):
         return document is not None
 
 
-class ShortProductionMongoRepository(BaseMongoRepository):
+class ProductionMongoRepository(BaseMongoRepository):
 
     def _map_to_object(self, doc: dict) -> Any:
         if not doc:
             return None
         # Ya no necesitas str(doc.pop("_id")) porque ya es un string
         doc["id"] = doc.pop("_id")
-        return ShortProductionParams(**doc)
+        return Production(**doc)
 
     def exists_by_filename(self, filename: str) -> bool:
         document = self._collection.find_one(

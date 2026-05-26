@@ -12,7 +12,6 @@ from shorts_production.config import ASSETS_DIR
 from shorts_production.config import TEXT_FONT_PATH
 from shorts_production.config import OUTPUT_DIR
 
-from domain.models import ShortProductionParams
 from domain.services.yt_downloader import YTDownloader
 from domain.services.video_builder import VideoBuilderV2
 from domain.services.font_provider import FontProvider

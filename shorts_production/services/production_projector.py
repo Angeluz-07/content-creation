@@ -1,5 +1,5 @@
 from dbs.mongo_repository import EventMongoRepository
-from domain.models import ShortProductionParams
+from domain.models import Production
 from dbs.interfaces import IRepository
 
 
@@ -28,5 +28,5 @@ class ProductionProjector:
 
         # Extract the verified facts from the event payload
         params = success_event.payload["params"]
-        item = ShortProductionParams(**params)
+        item = Production(**params)
         self.production_repo.add(item)

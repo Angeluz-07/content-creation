@@ -1,6 +1,6 @@
 from dbs.mongo_repository import EventMongoRepository
 from dbs.interfaces import IRepository
-from domain.models import DownloadParams
+from domain.models import Download
 
 
 class DownloadProjector:
@@ -28,5 +28,5 @@ class DownloadProjector:
 
         # Extract the verified facts from the event payload
         params = success_event.payload["download"]
-        item = DownloadParams(**params)
+        item = Download(**params)
         self.download_repo.add(item)

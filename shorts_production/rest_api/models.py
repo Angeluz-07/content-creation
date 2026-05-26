@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 
 
-class ShortProductionParamsInput(BaseModel):
+class ProductionInput(BaseModel):
     input_filename: str
     font_name: str
     watermark_text: str
