@@ -22,7 +22,7 @@ class ProductionValidator:
 
     def _validate_filename_not_exists(self, params: Dict[str, Any]) -> None:
         filename = params.get("output_filename")
-        exists = self.short_production_repo.exists_by_filename(filename)
+        exists = self.production_repo.exists_by_filename(filename)
         if exists:
             raise ProductionValidationError(
                 f"El archivo '{filename}' ya existe en la base de datos."

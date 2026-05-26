@@ -3,13 +3,13 @@ from dotenv import load_dotenv
 import os
 
 PROJECT_DIR = Path(__file__).resolve().parent
-DATA_DIR =  PROJECT_DIR / ".data"
-ASSETS_DIR = DATA_DIR / "assets"
-OUTPUT_DIR = DATA_DIR / "output_videos"
-TEMP_DIR = DATA_DIR / "temp"
-DOWNLOAD_DIR = DATA_DIR / "downloads"
-TEXT_FONT_PATH = ASSETS_DIR / "ProtestStrike-Regular.ttf"
 
+DATA_DIR =  PROJECT_DIR / ".data"
+DOWNLOAD_DIR = str(DATA_DIR / "downloads")
+OUTPUT_DIR = str(DATA_DIR / "output_videos")
+TEMP_DIR = str(DATA_DIR / "temp")
+ASSETS_DIR = str(DATA_DIR / "assets")
+TEXT_FONT_PATH = str(DATA_DIR / "assets" / "ProtestStrike-Regular.ttf")
 
 
 ENV_DIR = Path(__file__).resolve().parent.parent / ".env"

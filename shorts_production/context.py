@@ -22,7 +22,10 @@ from config import (
     REDIS_HOST,
 )
 from services.filename_provider import FilenameProvider
-from config import TEMP_DIR, DOWNLOAD_DIR
+from config import TEMP_DIR, DOWNLOAD_DIR, OUTPUT_DIR, ASSETS_DIR
+from domain.services.video_builder.v2 import VideoBuilderV2
+from domain.services.font_provider import FontProvider
+from domain.services.yt_downloader import YTDownloader
 
 
 class RepositoryHub:
@@ -45,17 +48,20 @@ class ServiceHub:
 
         # fmt: off
         download_validator      = DownloadValidator(download_repo)
-        self.download_service   = DownloadService(download_repo, download_validator) 
+        yt_downloader           = YTDownloader(DOWNLOAD_DIR)
+        self.download_service   = DownloadService(download_repo, download_validator, yt_downloader) 
         self.download_projector = DownloadProjector(event_repo, download_repo) 
 
-        self.filename_provider    = FilenameProvider(directory=str(DOWNLOAD_DIR), suffix=".mp4") 
+        video_builder             = VideoBuilderV2(OUTPUT_DIR, TEMP_DIR)
+        self.filename_provider    = FilenameProvider(DOWNLOAD_DIR, suffix=".mp4") 
+        fontpath_provider         = FontProvider(ASSETS_DIR)
         production_validator      = ProductionValidator(production_repo)
-        self.production_service   = ProductionService(self.filename_provider, production_validator)    
+        self.production_service   = ProductionService(video_builder, self.filename_provider, fontpath_provider, production_validator)
         self.production_projector = ProductionProjector(event_repo, production_repo)
         
         self.event_service = EventService(event_repo)
-        self.sse_service   = SSEService(redis_url=REDIS_HOST) # exposed
-        self.task_service  = TaskService(task_repo, self.sse_service) #exposed
+        self.sse_service   = SSEService(redis_url=REDIS_HOST)
+        self.task_service  = TaskService(task_repo, self.sse_service)
         # fmt : on
 
 

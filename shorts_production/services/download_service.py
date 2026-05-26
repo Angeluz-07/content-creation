@@ -1,4 +1,3 @@
-from shorts_production.config import DOWNLOAD_DIR
 from typing import Dict
 from domain.services.yt_downloader import YTDownloader
 from dbs.interfaces import IRepository
@@ -8,13 +7,11 @@ from uuid import uuid4
 class DownloadService:
     def __init__(
         self,        
-        download_repo: IRepository = None,        
+        download_repo: IRepository = None,
         validator_service=None,
         yt_downloader: YTDownloader = None,
     ):
-        self.yt_downloader = yt_downloader or YTDownloader(
-            output_path=str(DOWNLOAD_DIR)
-        )
+        self.yt_downloader = yt_downloader 
         self.download_repo = download_repo
         self.validator_service = validator_service
 

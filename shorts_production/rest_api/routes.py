@@ -15,6 +15,7 @@ from sse_starlette.sse import EventSourceResponse
 from context import sse_service
 from workers.download_worker import download_task
 from workers.short_production_worker import short_production_task
+from pathlib import Path
 
 router = APIRouter(prefix="", tags=["main"])
 
@@ -27,7 +28,7 @@ def hello_world():
 
 @router.get("/images/")
 def get_image():
-    file_path = str(TEMP_DIR / f"debug_frame.png")
+    file_path = str(Path(TEMP_DIR) / f"debug_frame.png")
     import os
 
     if not os.path.exists(file_path):
@@ -38,7 +39,7 @@ def get_image():
 # todo: improve, this endpoint is actually for produced videos
 @router.get("/video/{video_id}")
 def get_video(video_id: str):
-    file_path = str(OUTPUT_DIR / f"{video_id}.mp4")
+    file_path = str(Path(OUTPUT_DIR) / f"{video_id}.mp4")
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="Video no encontrado")
 
