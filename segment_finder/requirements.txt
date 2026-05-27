@@ -1,0 +1,7 @@
+qdrant-client 
+sentence-transformers
+
+openai-whisper
+ffmpeg-python
+
+webvtt-py
