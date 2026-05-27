@@ -9,7 +9,12 @@ class YTDownloader:
         self.output_path = output_path
 
     def get_video_segment(
-        self, url: str, start_ts: str, end_ts: str, force_download: bool, output_filename: str
+        self,
+        url: str,
+        start_ts: str,
+        end_ts: str,
+        force_download: bool,
+        output_filename: str,
     ) -> str:
         raw_filepath = str(Path(self.output_path) / f"{output_filename}.mp4")
         file_doesnt_exist = not Path(raw_filepath).is_file()
@@ -33,35 +38,27 @@ class YTDownloader:
     ):
         print(f"Starting download raw segment (via Subprocess): {start_ts} - {end_ts}")
 
+        # fmt: off
         command = [
-            "yt-dlp",
-            url,            
+            "yt-dlp", url,
             "--external-downloader-args", "ffmpeg:-loglevel error", # hides extra logs
             "--postprocessor-args", "ffmpeg:-loglevel error",  # hides extra logs
-            # "--list-formats", # for debug only
+            #"--list-formats", # for debug only 
             "--no-playlist",
-            "--cookies",
-            "my_cookies.txt",
-            "--js-runtimes",
-            "node",
-            "--remote-components",
-            "ejs:github",
+            "--cookies", "my_cookies.txt",
+            "--js-runtimes", "node",
+            "--remote-components", "ejs:github",
             # Filter 1080/720
-            "-f",
-            "bestvideo[height=1080][ext=mp4]+bestaudio[ext=m4a] / bestvideo[height=720][ext=mp4]+bestaudio[ext=m4a] / best[height=1080][ext=mp4] / best[height=720][ext=mp4]",
-            # Segment
-            "--download-sections",
-            f"*{start_ts}-{end_ts}",
+            "-f", "bestvideo[height=1080]+bestaudio/bestvideo[height=720]+bestaudio/best[height=1080]/best[height=720]",
+            "--download-sections", f"*{start_ts}-{end_ts}",
             "--force-keyframes-at-cuts",
-            "-o",
-            output_path,
-            "--merge-output-format",
-            "mp4",
-            # Evitar SABR forzando clientes móviles
+            "-o", output_path,
+            "--merge-output-format", "mp4",
             "--extractor-args",
-            "youtube:player_client=web,tv",
+            "youtube:player_client=default",
             #"--verbose",  # for debug only
         ]
+        # fmt: on
 
         try:
             start_time = time.perf_counter()
