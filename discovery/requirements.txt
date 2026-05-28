@@ -5,3 +5,7 @@ openai-whisper
 ffmpeg-python
 
 webvtt-py
+
+# for rest api interface
+fastapi[standard]
+uvicorn[standard]
