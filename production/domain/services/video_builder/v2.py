@@ -109,7 +109,7 @@ class VideoBuilderV2:
         # fmt: on
         try:
             print(f"Capturando frame en {timestamp}...")
-            subprocess.run(ffmpeg_cmd, check=True)
+            #subprocess.run(ffmpeg_cmd, check=True)
             print(f"Imagen guardada en: {output_image_path}")
             return output_image_path
         except subprocess.CalledProcessError as e:
@@ -158,7 +158,7 @@ class VideoBuilderV2:
 
         frame_zoom_factor = 1.3
         pos_y = 1200  # starts at, counting from top to bottom
-        pos_x = -210  # starts at, counting from left to right
+        pos_x = 0  # starts at, counting from left to right
 
         frame = (
             ImageClip(frame_filepath)

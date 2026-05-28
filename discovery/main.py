@@ -53,8 +53,6 @@ class VideoSegmentRetriever:
 
 
 # -------
-
-
 def feed_db(model_whisper, directorio_videos, retriever):
     video_files = glob.glob(os.path.join(directorio_videos, "*.mp4"))
 

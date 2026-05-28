@@ -79,7 +79,7 @@ class BasicBanner(SkiaCanvas):
             "letter_spacing": 0.05,
             "text_color": "#E0E0E0",
             "background_color": "#000000",
-            # "background_color": "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%) "
+            #"background_color": "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%)",
         }
         super().__init__(self.params["width"], self.params["height"])
 
@@ -161,11 +161,11 @@ class BasicBanner(SkiaCanvas):
         return final_lines
 
 
-
 class StackedBanner(SkiaCanvas):
     """
     Banner de capas apiladas con efecto de profundidad (Estilo Farándula)
     """
+
     def __init__(self, width, height, main_text, sub_text, font_path):
         self.params = {
             "width": width,
@@ -173,16 +173,16 @@ class StackedBanner(SkiaCanvas):
             "padding": 80,
             "font_size_main": 85,
             "font_size_sub": 70,
-            "color_back": "#1C1A19",   # Capa de fondo (desfasada)
-            "color_front": "#3D3A38",  # Capa principal
-            "color_tag": "#FFFFFF",    # Capa del sujeto
+            "color_back": "#327EC8",  # Capa de fondo (desfasada)
+            "color_front": "#EE33A7",  # Capa principal
+            "color_tag": "#FFFFFF",  # Capa del sujeto
             "text_color_main": "#FFFFFF",
             "text_color_sub": "#000000",
             "line_spacing": 1.1,
-            "letter_spacing": 0.05
+            "letter_spacing": 0.05,
         }
         super().__init__(self.params["width"], self.params["height"])
-        
+
         self.main_text = main_text
         self.sub_text = sub_text
         self.font_path = font_path
@@ -191,8 +191,7 @@ class StackedBanner(SkiaCanvas):
 
         # Filtro de sombra preconfigurado
         self.shadow = skia.ImageFilters.DropShadow(
-            dx=8, dy=8, sigmaX=12, sigmaY=12, 
-            color=skia.ColorSetARGB(150, 0, 0, 0)
+            dx=8, dy=8, sigmaX=12, sigmaY=12, color=skia.ColorSetARGB(150, 0, 0, 0)
         )
 
     def add_fonts(self, font_path):
@@ -202,7 +201,7 @@ class StackedBanner(SkiaCanvas):
         self.sk_font_main.setSubpixel(True)
         self.sk_font_main.setEdging(skia.Font.Edging.kAntiAlias)
         self.sk_font_main.setEmbolden(True)
-        
+
         # Fuente Secundaria (Tag)
         self.sk_font_sub = skia.Font(typeface, self.params["font_size_sub"])
         self.sk_font_sub.setSubpixel(True)
@@ -210,32 +209,40 @@ class StackedBanner(SkiaCanvas):
         return self
 
     def _draw_stacked_containers(self):
-        # 1. Capa de Fondo (Amarilla/Oscura desfasada)
+        # 1. Capa de Fondo 
         paint_back = skia.Paint(
-            AntiAlias=True, 
+            AntiAlias=True,
             Color=self._hex_to_color(self.params["color_back"]),
-            ImageFilter=self.shadow
+            ImageFilter=self.shadow,
         )
         rect_back = skia.Rect.MakeXYWH(100, 100, self.width - 200, self.height - 220)
         self.canvas.drawRoundRect(rect_back, 40, 40, paint_back)
 
-        # 2. Capa Frontal (Fucsia/Gris principal)
+        # 2. Capa Frontal 
         paint_front = skia.Paint(
-            AntiAlias=True, 
-            Color=self._hex_to_color(self.params["color_front"])
+            AntiAlias=True, Color=self._hex_to_color(self.params["color_front"])
         )
         rect_front = skia.Rect.MakeXYWH(80, 80, self.width - 200, self.height - 240)
         self.canvas.drawRoundRect(rect_front, 30, 30, paint_front)
-        
-        return rect_front # Retornamos para saber dónde escribir el texto
+
+        return rect_front  # Retornamos para saber dónde escribir el texto
 
     def _draw_main_text(self, container_rect):
-        lines = self._get_wrapped_lines(self.main_text.upper(), self.sk_font_main, container_rect.width() - 80)
-        paint = skia.Paint(AntiAlias=True, Color=self._hex_to_color(self.params["text_color_main"]))
-        
+        lines = self._get_wrapped_lines(
+            self.main_text, self.sk_font_main, container_rect.width() - 80
+        )
+        paint = skia.Paint(
+            AntiAlias=True, Color=self._hex_to_color(self.params["text_color_main"])
+        )
+
         line_h = self.sk_font_main.getSize() * self.params["line_spacing"]
         # Posición inicial centrada en el contenedor frontal
-        y_ptr = container_rect.fTop + (container_rect.height() / 2) - ((len(lines)-1) * line_h / 2) + 20
+        y_ptr = (
+            container_rect.fTop
+            + (container_rect.height() / 2)
+            - ((len(lines) - 1) * line_h / 2)
+            + 20
+        )
 
         for line in lines:
             line_w = self.sk_font_main.measureText(line)
@@ -248,34 +255,36 @@ class StackedBanner(SkiaCanvas):
         text_w = self.sk_font_sub.measureText(self.sub_text)
         tag_w = text_w + 100
         tag_h = 100
-        
+
         paint_tag = skia.Paint(
-            AntiAlias=True, 
+            AntiAlias=True,
             Color=self._hex_to_color(self.params["color_tag"]),
-            ImageFilter=self.shadow
+            ImageFilter=self.shadow,
         )
-        
+
         x_tag = (self.width - tag_w) / 2
-        y_tag = 310 # Posición que "pisa" el borde inferior
-        
+        y_tag = 310  # Posición que "pisa" el borde inferior
+
         rect_tag = skia.Rect.MakeXYWH(x_tag, y_tag, tag_w, tag_h)
         self.canvas.drawRoundRect(rect_tag, 20, 20, paint_tag)
-        
+
         # Texto del Tag
-        paint_txt = skia.Paint(AntiAlias=True, Color=self._hex_to_color(self.params["text_color_sub"]))
+        paint_txt = skia.Paint(
+            AntiAlias=True, Color=self._hex_to_color(self.params["text_color_sub"])
+        )
         self.canvas.drawSimpleText(
-            self.sub_text, 
-            x_tag + (tag_w - text_w) / 2, 
-            y_tag + 70, 
-            self.sk_font_sub, 
-            paint_txt
+            self.sub_text,
+            x_tag + (tag_w - text_w) / 2,
+            y_tag + 70,
+            self.sk_font_sub,
+            paint_txt,
         )
 
     def render(self):
         self.add_fonts(self.font_path)
         front_rect = self._draw_stacked_containers()
         self._draw_main_text(front_rect)
-        self._draw_tag()
+        #self._draw_tag()
         return self
 
     def _get_wrapped_lines(self, text, font, max_w):
@@ -290,6 +299,7 @@ class StackedBanner(SkiaCanvas):
                 if font.measureText(test) > max_w:
                     final_lines.append(curr)
                     curr = w
-                else: curr = test
+                else:
+                    curr = test
             final_lines.append(curr)
         return final_lines

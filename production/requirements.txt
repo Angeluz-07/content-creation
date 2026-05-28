@@ -2,11 +2,11 @@
 yt-dlp==2026.3.17
 
 #video manipulation
-moviepy
+moviepy==2.2.1
 
 #text fonts
-Pillow
-skia-python
+Pillow==11.3.0
+skia-python==144.0.post2
 
 # for rest api interface
 fastapi[standard]
@@ -17,8 +17,11 @@ pymongo==4.16.0
 python-dotenv==1.2.2
 
 # for distributed asynchronous tasks
-taskiq 
-taskiq-redis
+taskiq==0.12.4
+taskiq-redis==1.2.2
+
+# for sse
+sse-starlette==3.4.4
 
 # for svg rendering
 resvg-py
