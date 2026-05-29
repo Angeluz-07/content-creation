@@ -1,6 +1,6 @@
 qdrant-client 
-sentence-transformers
 
+# for audio transcription
 openai-whisper
 ffmpeg-python
 
@@ -9,3 +9,12 @@ webvtt-py
 # for rest api interface
 fastapi[standard]
 uvicorn[standard]
+
+# for embeddings
+sentence-transformers[onnx]
+
+# for entity recognition
+spacy
+
+# notebooks
+ipykernel

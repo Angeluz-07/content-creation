@@ -1,1 +1,1 @@
-fastapi dev rest_api/main.py --port 8001
+fastapi dev api/main.py --port 8001

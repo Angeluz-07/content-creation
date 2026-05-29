@@ -1,6 +1,5 @@
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance
-from sentence_transformers import SentenceTransformer
 
 import whisper
 import os
@@ -169,7 +168,6 @@ def find_candidates(vtt_path, retriever, threshold=0.77):
     # 1. Extraer (Solo CPU)
     bloques = extraer_bloques(vtt_path)
     textos = [b["texto"] for b in bloques]
-
     # 2. Inferencia Batch (Un solo round-trip de red)
     vectores = retriever.embedding_service.get_vectors(textos)
 
@@ -188,6 +186,7 @@ def find_candidates(vtt_path, retriever, threshold=0.77):
                     "end": bloque["end"],
                     "score": mejor_resultado.score,
                     "match": mejor_resultado.payload.get("archivo"),
+                    "texto": bloque["texto"]
                 }
             )
     return candidatos
