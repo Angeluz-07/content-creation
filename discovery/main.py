@@ -110,18 +110,6 @@ class VideoSegmentRetriever:
 
 
 # -----
-import webvtt
-
-
-def vtt_time_to_seconds(timestamp):
-    """Convierte formato VTT (HH:MM:SS.mmm) a segundos (float)."""
-    parts = timestamp.split(":")
-    # Maneja HH:MM:SS.mmm
-    h, m = int(parts[0]), int(parts[1])
-    s, ms = map(float, parts[2].split("."))
-    return h * 3600 + m * 60 + s + (ms / 1000)
-
-
 import requests
 
 
@@ -144,29 +132,96 @@ class EmbeddingService:
         return response.json()["dimension"]
 
 
-def extraer_bloques(vtt_path):
-    vtt = webvtt.read(vtt_path)
+import webvtt
+
+
+def vtt_time_to_seconds(timestamp):
+    parts = timestamp.split(":")
+    h, m = int(parts[0]), int(parts[1])
+    s, ms = map(float, parts[2].split("."))
+    return h * 3600 + m * 60 + s + (ms / 1000)
+
+from difflib import SequenceMatcher
+
+def clean_vtt(archivo_vtt):
+    vtt = webvtt.read(archivo_vtt)
+    resultado = []
+    texto_previo = ""
+
+    for c in vtt:
+        texto_actual = c.text.replace('\n', ' ').strip()
+        
+        # 1. Encontrar el solapamiento exacto entre el bloque anterior y el actual
+        # (Busca la coincidencia más larga al final de uno y al inicio del otro)
+        matcher = SequenceMatcher(None, texto_previo, texto_actual)
+        match = matcher.find_longest_match(0, len(texto_previo), 0, len(texto_actual))
+        
+        # 2. Si el solapamiento ocurre al final del texto previo, lo recortamos
+        if match.a + match.size == len(texto_previo):
+            novedad = texto_actual[match.b + match.size:].strip()
+        else:
+            # Si no hay solapamiento claro, el bloque es texto nuevo completo
+            novedad = texto_actual
+
+        # 3. Guardar el resultado si aporta texto nuevo
+        if novedad:
+            resultado.append({
+                "start": c.start,
+                "end": c.end,
+                "text": novedad
+            })
+            texto_previo = texto_actual
+            
+    return resultado
+
+
+def vtt_time_to_seconds(timestamp):
+    parts = timestamp.split(":")
+    h, m = int(parts[0]), int(parts[1])
+    s, ms = map(float, parts[2].split("."))
+    return h * 3600 + m * 60 + s + (ms / 1000)
+
+def group_fragments(fragmentos_limpios):
     bloques = []
-    texto_actual = ""
+    acumulador_texto = []
     start_ts = None
+    end_ts = None
 
-    for caption in vtt:
+    for frag in fragmentos_limpios:
         if start_ts is None:
-            start_ts = caption.start
-        texto_actual += caption.text + " "
+            start_ts = frag["start"]
+        
+        acumulador_texto.append(frag["text"])
+        end_ts = frag["end"]  # Actualizamos el final con el fragmento actual
 
-        if (vtt_time_to_seconds(caption.end) - vtt_time_to_seconds(start_ts)) >= 30:
-            bloques.append(
-                {"texto": texto_actual.strip(), "start": start_ts, "end": caption.end}
-            )
-            texto_actual = ""
-            start_ts = None
+        # Calcular la duración actual del bloque en segundos
+        duracion = vtt_time_to_seconds(end_ts) - vtt_time_to_seconds(start_ts)
+
+        # Si alcanzamos o superamos los 30 segundos, cerramos el bloque
+        if duracion >= 30.0:
+            bloques.append({
+                "texto": " ".join(acumulador_texto),
+                "start": start_ts,
+                "end": end_ts
+            })
+            acumulador_texto = []
+            start_ts = None  # Reiniciamos la ventana temporal
+
+    # Guardar el residuo final si quedó texto sin completar los últimos 30s
+    if acumulador_texto and start_ts and end_ts:
+        bloques.append({
+            "texto": " ".join(acumulador_texto),
+            "start": start_ts,
+            "end": end_ts
+        })
+
     return bloques
 
 
 def find_candidates(vtt_path, retriever, threshold=0.77):
     # 1. Extraer (Solo CPU)
-    bloques = extraer_bloques(vtt_path)
+    bloques = clean_vtt(vtt_path)
+    bloques = group_fragments(bloques)
     textos = [b["texto"] for b in bloques]
     # 2. Inferencia Batch (Un solo round-trip de red)
     vectores = retriever.embedding_service.get_vectors(textos)
@@ -186,7 +241,7 @@ def find_candidates(vtt_path, retriever, threshold=0.77):
                     "end": bloque["end"],
                     "score": mejor_resultado.score,
                     "match": mejor_resultado.payload.get("archivo"),
-                    "texto": bloque["texto"]
+                    "texto": bloque["texto"],
                 }
             )
     return candidatos
@@ -208,6 +263,9 @@ vtt_path = r"C:\Users\rmena\Desktop\dev\content-creation\discovery\test2.es.vtt"
 vtt_path = str(Path(vtt_path))
 result = find_candidates(vtt_path, retriever)
 from pprint import pprint
+
 pprint(result)
-import pdb; pdb.set_trace()
+import pdb
+
+pdb.set_trace()
 # todo: improve network overheard by sending all points either to embed or to db
