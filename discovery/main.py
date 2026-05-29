@@ -26,28 +26,6 @@ def get_client(embedding_dimension, collection_name):
     return client
 
 
-class VideoSegmentRetriever:
-    def __init__(self, client, collection_name, embedding_service):
-        self.client = client
-        self.collection_name = collection_name
-        self.embedding_service = embedding_service
-
-    def add_segment(self, id, text, metadata):
-        vector: list[float] = self.embedding_service.get_vector(text)
-        self.client.upsert(
-            collection_name=self.collection_name,
-            points=[{"id": id, "vector": vector, "payload": metadata}],
-        )
-
-    def search(self, text, top_k=5):
-        """Busca segmentos similares a un texto dado."""        
-        query_vector: list[float] = self.embedding_service.get_vector(text)
-        results = self.client.query_points(
-            collection_name=self.collection_name, query=query_vector, limit=top_k
-        )
-        return results
-
-
 # -------
 def feed_db(model_whisper, directorio_videos, retriever):
     video_files = glob.glob(os.path.join(directorio_videos, "*.mp4"))
@@ -100,6 +78,38 @@ def feed_db(model_whisper, directorio_videos, retriever):
     print("Indexación finalizada.")
 
 
+# ---
+
+
+class VideoSegmentRetriever:
+    def __init__(self, client, collection_name, embedding_service):
+        self.client = client
+        self.collection_name = collection_name
+        self.embedding_service = embedding_service
+
+    def add_segment(self, id, text, metadata):
+        vector: list[float] = self.embedding_service.get_vector(text)
+        self.client.upsert(
+            collection_name=self.collection_name,
+            points=[{"id": id, "vector": vector, "payload": metadata}],
+        )
+
+    def search(self, text, top_k=5):
+        """Busca segmentos similares a un texto dado."""
+        query_vector: list[float] = self.embedding_service.get_vector(text)
+        results = self.client.query_points(
+            collection_name=self.collection_name, query=query_vector, limit=top_k
+        )
+        return results
+
+    def search_by_vector(self, query_vector, top_k=5):
+        """Busca segmentos similares a un texto dado."""
+        results = self.client.query_points(
+            collection_name=self.collection_name, query=query_vector, limit=top_k
+        )
+        return results
+
+
 # -----
 import webvtt
 
@@ -113,48 +123,6 @@ def vtt_time_to_seconds(timestamp):
     return h * 3600 + m * 60 + s + (ms / 1000)
 
 
-def find_candidates(vtt_path, retriever, threshold=0.75):
-    vtt = webvtt.read(vtt_path)
-
-    bloque_texto = ""
-    start_ts_str = None
-    candidatos = []
-
-    for caption in vtt:
-        if start_ts_str is None:
-            start_ts_str = caption.start
-
-        bloque_texto += caption.text + " "
-
-        # Convertimos a segundos para la comparación
-        start_sec = vtt_time_to_seconds(start_ts_str)
-        end_sec = vtt_time_to_seconds(caption.end)
-
-        if (end_sec - start_sec) >= 30:
-            # 2. BÚSQUEDA
-            resultados = retriever.search(bloque_texto, top_k=1)
-            puntos = resultados.points if hasattr(resultados, "points") else resultados
-
-            if puntos:
-                mejor_resultado = puntos[0]
-                # 3. Filtrar por confianza (Threshold)
-                # NOTA: En versiones modernas, el score está en mejor_resultado.score
-                if mejor_resultado.score >= threshold:
-                    candidatos.append(
-                        {
-                            "source_start": start_ts_str,
-                            "source_end": caption.end,
-                            "match_file": mejor_resultado.payload.get("archivo", "N/A"),
-                            "score": mejor_resultado.score,
-                        }
-                    )
-            # Reset
-            bloque_texto = ""
-            start_ts_str = None
-
-    return candidatos
-
-
 import requests
 
 
@@ -164,12 +132,65 @@ class EmbeddingService:
         self.url = "http://localhost:8001"
 
     def get_vector(self, text):
+        # better use batch to process list of texts to avoid network overhead
         response = requests.post(f"{self.url}/embed", json={"text": text})
         return response.json()["vector"]
+
+    def get_vectors(self, texts: list[str]):
+        response = requests.post(f"{self.url}/embed_batch", json={"texts": texts})
+        return response.json()["vectors"]
 
     def get_dimension(self):
         response = requests.get(f"{self.url}/dimension")
         return response.json()["dimension"]
+
+
+def extraer_bloques(vtt_path):
+    vtt = webvtt.read(vtt_path)
+    bloques = []
+    texto_actual = ""
+    start_ts = None
+
+    for caption in vtt:
+        if start_ts is None:
+            start_ts = caption.start
+        texto_actual += caption.text + " "
+
+        if (vtt_time_to_seconds(caption.end) - vtt_time_to_seconds(start_ts)) >= 30:
+            bloques.append(
+                {"texto": texto_actual.strip(), "start": start_ts, "end": caption.end}
+            )
+            texto_actual = ""
+            start_ts = None
+    return bloques
+
+
+def find_candidates(vtt_path, retriever, threshold=0.77):
+    # 1. Extraer (Solo CPU)
+    bloques = extraer_bloques(vtt_path)
+    textos = [b["texto"] for b in bloques]
+
+    # 2. Inferencia Batch (Un solo round-trip de red)
+    vectores = retriever.embedding_service.get_vectors(textos)
+
+    # 3. Procesamiento final
+    candidatos = []
+    for i, bloque in enumerate(bloques):
+        # Aquí puedes usar retriever.search_by_vector si tu retriever lo permite
+        # para evitar volver a calcular el embedding
+        resultados = retriever.search_by_vector(vectores[i], top_k=1)
+        points = resultados.points if hasattr(resultados, "points") else resultados
+        mejor_resultado = points[0]
+        if mejor_resultado.score >= threshold:
+            candidatos.append(
+                {
+                    "start": bloque["start"],
+                    "end": bloque["end"],
+                    "score": mejor_resultado.score,
+                    "match": mejor_resultado.payload.get("archivo"),
+                }
+            )
+    return candidatos
 
 
 es = EmbeddingService()
@@ -183,15 +204,11 @@ retriever = VideoSegmentRetriever(client, collection_name, es)
 # video_folder = r"C:\Users\rmena\Desktop\dev\content-creation\segment_finder\.data\batch1_video_segments"
 # feed_db(model_whisper, str(Path(video_folder)), retriever)
 
-# checking retrieve
-# result = retriever.search("el taka taka taka")
-
-# import pdb; pdb.set_trace()
-
 # find candidates
-vtt_path = r"C:\Users\rmena\Desktop\dev\content-creation\discovery\test.es.vtt"
+vtt_path = r"C:\Users\rmena\Desktop\dev\content-creation\discovery\test2.es.vtt"
 vtt_path = str(Path(vtt_path))
 result = find_candidates(vtt_path, retriever)
+from pprint import pprint
+pprint(result)
 import pdb; pdb.set_trace()
-
 # todo: improve network overheard by sending all points either to embed or to db

@@ -25,3 +25,5 @@ sse-starlette==3.4.4
 
 # for svg rendering
 resvg-py
+
+ipykernel
