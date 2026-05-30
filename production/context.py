@@ -22,7 +22,7 @@ from config import (
     REDIS_HOST,
 )
 from services.filename_provider import FilenameProvider
-from config import TEMP_DIR, DOWNLOAD_DIR, OUTPUT_DIR, ASSETS_DIR
+from config import TEMP_DIR, DOWNLOAD_DIR, OUTPUT_DIR, ASSETS_DIR, COOKIES_PATH
 from domain.services.video_builder.v2 import VideoBuilderV2
 from domain.services.font_provider import FontProvider
 from domain.services.yt_downloader import YTDownloader
@@ -48,7 +48,7 @@ class ServiceHub:
 
         # fmt: off
         download_validator      = DownloadValidator(download_repo)
-        yt_downloader           = YTDownloader(DOWNLOAD_DIR)
+        yt_downloader           = YTDownloader(DOWNLOAD_DIR, COOKIES_PATH)
         self.download_service   = DownloadService(download_repo, download_validator, yt_downloader) 
         self.download_projector = DownloadProjector(event_repo, download_repo) 
 

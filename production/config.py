@@ -11,6 +11,7 @@ TEMP_DIR = str(DATA_DIR / "temp")
 ASSETS_DIR = str(DATA_DIR / "assets")
 TEXT_FONT_PATH = str(DATA_DIR / "assets" / "ProtestStrike-Regular.ttf")
 
+COOKIES_PATH = str(PROJECT_DIR.parent / "cookies.txt")
 
 ENV_DIR = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=ENV_DIR)

@@ -5,8 +5,9 @@ import subprocess
 
 
 class YTDownloader:
-    def __init__(self, output_path: str):
+    def __init__(self, output_path: str, cookies_path: str):
         self.output_path = output_path
+        self.cookies_path = cookies_path
 
     def get_video_segment(
         self,
@@ -41,7 +42,7 @@ class YTDownloader:
             "--force-overwrites",
             #"--list-formats", # for debug only
             "--no-playlist",
-            "--cookies", "my_cookies.txt",
+            "--cookies", self.cookies_path,
             "--js-runtimes", "node",
             "--remote-components", "ejs:github",
             # Filter 1080/720
@@ -99,7 +100,7 @@ class YTDownloader:
             "--postprocessor-args", "ffmpeg:-loglevel error",  # hides extra logs
             "--force-overwrites",
             "--no-playlist",
-            "--cookies", "my_cookies.txt",
+            "--cookies", self.cookies_path,
             "--js-runtimes", "node",
             "--remote-components", "ejs:github",
             "--write-subs",
