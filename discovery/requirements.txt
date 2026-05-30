@@ -13,8 +13,9 @@ uvicorn[standard]
 # for embeddings
 sentence-transformers[onnx]
 
-# for entity recognition
-spacy
 
 # notebooks
 ipykernel
+
+# llm
+ollama
