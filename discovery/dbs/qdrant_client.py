@@ -1,8 +1,7 @@
 from qdrant_client import QdrantClient
-from qdrant_client.models import VectorParams, Distance
 
 
-def get_qdrant_client(embedding_dimension, collection_name):
+def get_qdrant_client():
     # 2. Conexión a Qdrant
     client = QdrantClient(host="localhost", port=6333)
     try:

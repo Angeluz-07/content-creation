@@ -7,7 +7,7 @@ class Finder:
         self.retriever = retriever
         self.embedder = embedder
 
-    def find_candidates(self, vtt_path, threshold=0.8):
+    def find_candidates(self, vtt_path, threshold=0.75):
         # 1. Extraer (Solo CPU)
         bloques = self.clean_vtt(vtt_path)
         bloques = self.group_fragments(bloques)
@@ -78,7 +78,7 @@ class Finder:
             end_ts = frag["end"]  # Actualizamos el final con el fragmento actual
 
             # Calcular la duración actual del bloque en segundos
-            duracion = self.vtt_time_to_seconds(end_ts) - self.vtt_time_to_seconds(
+            duracion = self._vtt_time_to_seconds(end_ts) - self._vtt_time_to_seconds(
                 start_ts
             )
 

@@ -1,8 +1,8 @@
-from dbs.qdrant_client import get_qdrant_client
-from dbs.qdrant_retriever import QdrantVectorRetriever
-from services.embedding import EmbeddingService
-from services.something import Something
-from services.finder import Finder
+from discovery.dbs.qdrant_client import get_qdrant_client
+from discovery.dbs.qdrant_retriever import QdrantVectorRetriever
+from discovery.services.embedding import EmbeddingService
+from discovery.services.something import Something
+from discovery.services.finder import Finder
 from pathlib import Path
 
 es = EmbeddingService()
