@@ -1,8 +1,8 @@
-from discovery.dbs.interfaces import IVectorRetriever
+from discovery.dbs.interfaces import IVectorStore
 
 
 class Something:
-    def __init__(self, retriever: IVectorRetriever, embedder):
+    def __init__(self, retriever: IVectorStore, embedder):
         self.retriever = retriever
         self.embedder = embedder
 

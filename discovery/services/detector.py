@@ -1,12 +1,12 @@
 import webvtt
 from difflib import SequenceMatcher
 
-class Finder:
-    def __init__(self, retriever, embedder):
-        self.retriever = retriever
+class Detector:
+    def __init__(self, qdrant_store, embedder):
+        self.qdrant_store = qdrant_store
         self.embedder = embedder
 
-    def find_candidates(self, vtt_path, min_score=0.70, min_words=90):
+    def scan_vtt(self, vtt_path, sensitivity=0.70, min_words=90):
         """
         Escanea el VTT usando el Detector de Calor Semántico.
         Retorna segmentos continuos fusionados que superen la temperatura mínima.
@@ -27,7 +27,7 @@ class Finder:
         # 4. Medidor de Temperatura Semántica
         bloques_calientes = []
         for i, bloque in enumerate(bloques):
-            resultados = self.retriever.search_by_vector(vectores[i], top_k=1)
+            resultados = self.qdrant_store.search(vectores[i], top_k=1)
             points = resultados.points if hasattr(resultados, "points") else resultados
             
             if points and len(points) > 0:
@@ -35,7 +35,7 @@ class Finder:
                 score = mejor_resultado.score
                 
                 # Evaluamos si entra en Zona Templada o Caliente
-                if score >= min_score:
+                if score >= sensitivity:
                     bloques_calientes.append({
                         "start": bloque["start"],
                         "end": bloque["end"],
