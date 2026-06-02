@@ -1,9 +1,9 @@
 qdrant-client 
 
-# for audio transcription
-openai-whisper
-ffmpeg-python
+# external audio transcription
+groq 
 
+# vtt parser
 webvtt-py
 
 # for rest api interface

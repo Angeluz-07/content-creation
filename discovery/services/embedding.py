@@ -1,7 +1,7 @@
 import requests
 
 
-class EmbeddingService:
+class Embedder:
 
     def __init__(self):
         self.url = "http://localhost:8001"

@@ -116,14 +116,17 @@ class YTDownloader:
         try:
             start_time = time.perf_counter()
 
-            result = subprocess.run(command, check=True, text=True)
-
+            result = subprocess.run(command, check=True, capture_output=True, text=True)
             end_time = time.perf_counter()
             print(f"Elapsed time: {end_time - start_time:.4f} seconds")
             print("Raw segment downloaded successfully via Subprocess")
 
         except subprocess.CalledProcessError as e:
             print(f"Error while downloading with subprocess: {e}")
+            print(f"Command Failed: {e.cmd}")
+            print(f"Exit Code:     {e.returncode}")
+            print(f"Standard Out:  {e.stdout}")
+            print(f"Standard Error: {e.stderr}")
             raise e
         except Exception as e:
             print(f"General error: {e}")

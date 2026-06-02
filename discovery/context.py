@@ -1,17 +1,19 @@
 from discovery.dbs.qdrant_client import get_qdrant_client
 from discovery.dbs.qdrant_store import QdrantVectorStore
-from discovery.services.embedding import EmbeddingService
-from discovery.services.something import Something
-from discovery.services.detector import Detector
-from pathlib import Path
+from discovery.services.embedding import Embedder
+from discovery.services.ingestion import Ingester
+from discovery.services.detection import Detector
+from discovery.services.transcription import GroqAudioTranscriber
+from discovery.config import GROQ_API_KEY
 
-es = EmbeddingService()
-vector_size = es.get_dimension()
-collection_name = "video_segments" # change to 'moments'
+embedder = Embedder()
+vector_size = embedder.get_dimension()
+collection_name = "test1"  # change to 'moments'
 client = get_qdrant_client()
 
 qvs = QdrantVectorStore(client, collection_name, vector_size)
 qvs.ensure_collection_exists()
 
-s = Something(retriever=qvs, embedder=es)
-metal_detector = Detector(qdrant_store=qvs, embedder=es)
+transcriber = GroqAudioTranscriber(GROQ_API_KEY)
+ingestor = Ingester(vector_store=qvs, embedder=embedder, transcriber=transcriber)
+metal_detector = Detector(vector_store=qvs, embedder=embedder)

@@ -2,8 +2,8 @@ import webvtt
 from difflib import SequenceMatcher
 
 class Detector:
-    def __init__(self, qdrant_store, embedder):
-        self.qdrant_store = qdrant_store
+    def __init__(self, vector_store, embedder):
+        self.vector_store = vector_store
         self.embedder = embedder
 
     def scan_vtt(self, vtt_path, sensitivity=0.70, min_words=90):
@@ -27,7 +27,7 @@ class Detector:
         # 4. Medidor de Temperatura Semántica
         bloques_calientes = []
         for i, bloque in enumerate(bloques):
-            resultados = self.qdrant_store.search(vectores[i], top_k=1)
+            resultados = self.vector_store.search(vectores[i], top_k=1)
             points = resultados.points if hasattr(resultados, "points") else resultados
             
             if points and len(points) > 0:
