@@ -19,3 +19,6 @@ ipykernel
 
 # llm
 ollama
+
+# env 
+python-dotenv==1.2.2
