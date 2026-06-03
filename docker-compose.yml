@@ -13,10 +13,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'     # Máximo 50% de un núcleo de CPU
-          memory: 512M    # Máximo 512MB de RAM
+          cpus: "0.50" # Máximo 50% de un núcleo de CPU
+          memory: 512M # Máximo 512MB de RAM
         reservations:
-          memory: 128M    # Garantiza al menos 128MB
+          memory: 128M # Garantiza al menos 128MB
   compass:
     image: haohanyang/compass-web:latest
     container_name: compass_web_panel
@@ -32,7 +32,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 256M
   redis:
     image: redis:7.2-alpine
@@ -47,15 +47,15 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.25'
+          cpus: "0.25"
           memory: 256M
   qdrant:
     image: qdrant/qdrant:v1.17.1
     container_name: qdrant_vector_db
     restart: always
     ports:
-      - "6333:6333"       # API REST y Web Dashboard
-      - "6334:6334"       # gRPC (por si lo necesitas más adelante)
+      - "6333:6333" # API REST y Web Dashboard
+      - "6334:6334" # gRPC (por si lo necesitas más adelante)
     environment:
       - QDRANT__SERVICE__ENABLE_PROFILING=true
     volumes:
@@ -63,10 +63,30 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.50'    # Máximo 50% de un núcleo de CPU
-          memory: 512M    # Máximo 512MB de RAM (ideal para tus colecciones de testing)
+          cpus: "0.50" # Máximo 50% de un núcleo de CPU
+          memory: 512M # Máximo 512MB de RAM (ideal para tus colecciones de testing)
         reservations:
-          memory: 128M    # Garantiza al menos 128MB
+          memory: 128M # Garantiza al menos 128MB
+  # CUSTOM SERVICES
+  embedding_engine:
+    image: angeluz07/embedding:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./engines/embedding/Dockerfile
+    container_name: embedding_engine
+    ports:
+      - "8001:8001"
+    environment:
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
+    volumes:
+      - ./engines/embedding/.data:/app/.data:z
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1536M
+        reservations:
+          memory: 256M
   # neo4j:
   #   image: neo4j:5.18.0-community
   #   container_name: neo4j_graph_db
