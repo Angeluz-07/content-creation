@@ -6,14 +6,6 @@ groq
 # vtt parser
 webvtt-py
 
-# for rest api interface
-fastapi[standard]
-uvicorn[standard]
-
-# for embeddings
-sentence-transformers[onnx]
-
-
 # notebooks
 ipykernel
 
