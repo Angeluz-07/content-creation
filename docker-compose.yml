@@ -68,18 +68,18 @@ services:
         reservations:
           memory: 128M # Garantiza al menos 128MB
   # CUSTOM SERVICES
-  embedding_engine:
+  embedding:
     image: angeluz07/embedding:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./engines/embedding/Dockerfile
-    container_name: embedding_engine
+      dockerfile: ./services/embedding/Dockerfile
+    container_name: embedding
     ports:
       - "8001:8001"
     environment:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
     volumes:
-      - ./engines/embedding/.data:/app/.data:z
+      - ./services/embedding/.data:/app/.data:z
     deploy:
       resources:
         limits:
