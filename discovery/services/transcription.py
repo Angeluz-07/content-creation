@@ -19,6 +19,8 @@ class GroqAudioTranscriber(ITranscriber):
     def __init__(self, api_key: str):
         # API Key desde las variables de entorno de Windows
         self.client = Groq(api_key=api_key)
+        print("Iniciando Groq transcriber...")
+        self.name = "groq"
         self.model = "whisper-large-v3-turbo"
 
         # El Transcriber ahora es el dueño y protector de su propio ritmo

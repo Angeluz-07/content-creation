@@ -13,14 +13,14 @@ class Ingester:
         self.embedder = embedder
         self.transcriber = transcriber
 
-
-    def add_segment(self, id, text, metadata):
-        vector = self.embedder.get_vector(text)
-        self.vector_store.add(id, vector, metadata)
-
     def save_transcriptions(self, transcriptions):
-        for t in transcriptions:
-            self.add_segment(t["id"], t["metadata"]["text"], t["metadata"])
+        texts = [t["metadata"]["text"] for t in transcriptions]
+        vectors = self.embedder.get_vectors(texts)
+        for i, t in enumerate(transcriptions):
+            id = t["id"]
+            vector = vectors[i]
+            metadata = t["metadata"]
+            self.vector_store.add(id, vector, metadata)
 
     def transcribe_video(self, video_path: str) -> dict:
         """
@@ -28,21 +28,6 @@ class Ingester:
         Devuelve el texto completo y los segmentos nativos.
         """
         print(f"Procesando archivo: {os.path.basename(video_path)}...")
-
-        # PROMPT: Añade aquí términos comunes de tus videos para guiar al modelo
-        initial_prompt = (
-            "Transcripción clara, con buena puntuación y ortografía. "
-            "¡Hola! Bienvenidos de nuevo. ¿Qué tal? Ok, de acuerdo, pasemos al siguiente punto. "
-            "Captura expresiones y gritos"
-        )
-
-        # Configuración para maximizar calidad
-        options = {
-            "fp16": False,
-            "language": "es",  # Fuerza el idioma para evitar falsos arranques
-            "initial_prompt": initial_prompt,
-            "temperature": 0.0,  # 0.0 es más determinista y enfocado
-        }
 
         # Transcripción nativa
         transcription = self.transcriber.transcribe(video_path)
@@ -52,7 +37,6 @@ class Ingester:
             "text": transcription["text"],
             "segments": transcription["segments"],
         }
-    
 
     def generate_transcriptions(self, directorio_videos: str) -> list:
         """
@@ -79,6 +63,7 @@ class Ingester:
                             if data["segments"]
                             else 0
                         ),
+                        "transcriber": self.transcriber.name,
                     },
                 }
             )
