@@ -1,0 +1,3 @@
+fastapi[standard]==0.135.3
+uvicorn[standard]==0.24.0
+sentence-transformers[onnx]==5.5.1

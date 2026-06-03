@@ -13,6 +13,11 @@
 # neo4j local data
 .neo4j_data
 
+# data folders
+.data
+
+__pycache__
+
 # txt
 map.txt
 cookies.txt
