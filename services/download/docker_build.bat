@@ -1,0 +1,1 @@
+docker build -t angeluz07/cc-download:0.0.1 .
