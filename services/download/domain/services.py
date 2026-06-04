@@ -1,13 +1,24 @@
 from pathlib import Path
 import time
 import subprocess
-
+from typing import Dict
 
 class YTDownloader:
     def __init__(self, output_path: str, cookies_path: str):
         self.output_path = output_path
         self.cookies_path = cookies_path
 
+    def run(self, params: Dict):
+        url = params["url"]
+        start_ts = params["start_segment"]
+        end_ts = params["end_segment"]
+        force_download = params["force_download"]
+        output_filename = params["output_filename"]
+
+        result_filepath = self.get_video_segment(
+            url, start_ts, end_ts, force_download, output_filename
+        )
+    
     def get_video_segment(
         self,
         url: str,

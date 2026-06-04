@@ -49,6 +49,22 @@ services:
         limits:
           cpus: "0.25"
           memory: 256M
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight_cc
+    ports:
+      - "5540:5540"
+    environment:
+      # Configura la conexión automática apuntando al contenedor de arriba
+      - REDIS_EXTERNAL_URL=redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
   qdrant:
     image: qdrant/qdrant:v1.17.1
     container_name: qdrant_vector_db
