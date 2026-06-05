@@ -1,4 +1,5 @@
 services:
+  # --- Base Services ---
   mongodb:
     image: mongo:7.0.8
     container_name: mongo_cc
@@ -17,6 +18,8 @@ services:
           memory: 512M # Máximo 512MB de RAM
         reservations:
           memory: 128M # Garantiza al menos 128MB
+    profiles:
+      - base
   compass:
     image: haohanyang/compass-web:latest
     container_name: compass_web_panel
@@ -34,6 +37,8 @@ services:
         limits:
           cpus: "0.25"
           memory: 256M
+    profiles:
+      - base
   redis:
     image: redis:7.2-alpine
     container_name: redis_cc
@@ -49,6 +54,8 @@ services:
         limits:
           cpus: "0.25"
           memory: 256M
+    profiles:
+      - base
   redisinsight:
     image: redis/redisinsight:latest
     container_name: redisinsight_cc
@@ -65,6 +72,8 @@ services:
         limits:
           cpus: "0.25"
           memory: 256M
+    profiles:
+      - base
   qdrant:
     image: qdrant/qdrant:v1.17.1
     container_name: qdrant_vector_db
@@ -83,7 +92,9 @@ services:
           memory: 512M # Máximo 512MB de RAM (ideal para tus colecciones de testing)
         reservations:
           memory: 128M # Garantiza al menos 128MB
-  # CUSTOM SERVICES
+    profiles:
+      - base
+  # --- Custom Services ---
   embedding:
     image: angeluz07/embedding:0.0.1 # use local if exists
     build: # if doesnt, build it
@@ -103,6 +114,53 @@ services:
           memory: 1536M
         reservations:
           memory: 256M
+    profiles:
+      - custom
+  downloadapi:
+    image: angeluz07/cc-download:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./services/download/Dockerfile
+    container_name: download_api
+    ports:
+      - "8002:8002"
+    environment:
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-false}      
+      - REDIS_URI=redis://redis:6379
+    volumes:
+      - ./services/download/.data:/app/.data:z
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1536M
+        reservations:
+          memory: 256M
+    profiles:
+      - custom
+  downloadworker:
+    image: angeluz07/cc-download:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./services/download/Dockerfile
+    container_name: download_worker
+    environment:
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
+      - REDIS_URI=redis://redis:6379
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./services/download/.data:/app/.data:z
+    command: taskiq worker workers.broker:broker workers.download --workers 2
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1536M
+        reservations:
+          memory: 256M
+    profiles:
+      - custom
+
   # neo4j:
   #   image: neo4j:5.18.0-community
   #   container_name: neo4j_graph_db
