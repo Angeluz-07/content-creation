@@ -29,3 +29,5 @@ resvg-py
 ipykernel
 
 faststream[redis]
+
+requests

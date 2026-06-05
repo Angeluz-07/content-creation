@@ -115,20 +115,21 @@ async def download_segment(input: DownloadParamsInput):
     try:
         params = input.model_dump()
         download_service.validate(params)
-        params["id"] = download_service.get_new_uuid()
+        download_service.trigger(params)
+        #params["id"] = download_service.get_new_uuid()
 
         output_filename = params["output_filename"]
-        task = task_service.create_task(entity_type="download", payload=params)
+        #task = task_service.create_task(entity_type="download", payload=params)
 
-        print(f"Sending to queue: {output_filename}")
+        #print(f"Sending to queue: {output_filename}")
 
         # send to worker
-        await download_task.kiq(task.id, params)
+        #await download_task.kiq(task.id, params)
 
         return {
-            "status": "queued",
-            "message": f"Tarea enviada al worker para: {output_filename}",
-            "task_id": task.id,
+            #"status": "queued",
+            "message": f"Sent to download: {output_filename}",
+            #"task_id": task.id,
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

@@ -7,8 +7,8 @@ router = RedisRouter()
 async def create_task(payload: dict):
     task_id = payload["task_id"]
     params = payload["params"]
-    params["id"] = task_id
-    task_service.create_task(entity_type="download", payload=params)
+    params["id"] = task_service.get_new_uuid() # todo: improve, not intuitive
+    task_service.create_task(task_id=task_id, entity_type="download", payload=params)
 
 @router.subscriber("download:started")
 async def mask_task_as_processing(payload: dict):

@@ -1,7 +1,7 @@
 from dbs.mongo_repository import EventMongoRepository
 from dbs.interfaces import IRepository
 from domain.models import Download
-
+from typing import Dict
 
 class DownloadProjector:
 
@@ -28,5 +28,9 @@ class DownloadProjector:
 
         # Extract the verified facts from the event payload
         params = success_event.payload["download"]
+        item = Download(**params)
+        self.download_repo.add(item)
+
+    def project_direct(self, params: Dict):
         item = Download(**params)
         self.download_repo.add(item)
