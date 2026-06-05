@@ -13,7 +13,6 @@ from fastapi.responses import FileResponse
 from config import TEMP_DIR, OUTPUT_DIR
 from sse_starlette.sse import EventSourceResponse
 from context import sse_service
-from workers.download_worker import download_task
 from workers.short_production_worker import short_production_task
 from pathlib import Path
 
@@ -83,19 +82,6 @@ def get_tasks(target_entity_type: str = None):
     return {"status": "success", "value": result}
 
 
-
-# --- Explicit Synchronous tasks ---
-@router.post("/download-segment/synchronous")
-def download_segment_synchronous(input: DownloadParamsInput):
-    print(f"Procesando: {input.output_filename} desde {input.url}")
-    download_service.run(params=input.model_dump())
-
-    return {
-        "status": "success",
-        "message": f"Procesamiento iniciado para {input.output_filename}",
-    }
-
-
 @router.post("/produce-short/synchronous")
 def process_video(config: ProductionInput):
     print(
@@ -116,20 +102,9 @@ async def download_segment(input: DownloadParamsInput):
         params = input.model_dump()
         download_service.validate(params)
         download_service.trigger(params)
-        #params["id"] = download_service.get_new_uuid()
-
         output_filename = params["output_filename"]
-        #task = task_service.create_task(entity_type="download", payload=params)
-
-        #print(f"Sending to queue: {output_filename}")
-
-        # send to worker
-        #await download_task.kiq(task.id, params)
-
         return {
-            #"status": "queued",
             "message": f"Sent to download: {output_filename}",
-            #"task_id": task.id,
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

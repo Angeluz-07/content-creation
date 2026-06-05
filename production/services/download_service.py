@@ -1,5 +1,4 @@
 from typing import Dict
-from domain.services.yt_downloader import YTDownloader
 from dbs.interfaces import IRepository
 from uuid import uuid4
 
@@ -11,13 +10,10 @@ class DownloadService:
         self,
         download_repo: IRepository = None,
         validator_service=None,
-        yt_downloader: YTDownloader = None,
     ):
-        self.yt_downloader = yt_downloader
         self.download_repo = download_repo
         self.validator_service = validator_service
         self.url = "http://localhost:8002"
-
 
     def trigger(self, params: Dict):
         url = params["url"]
@@ -35,17 +31,6 @@ class DownloadService:
                 "end_segment": end_ts,
                 "output_filename": output_filename,
             },
-        )
-
-    def run(self, params: Dict):
-        url = params["url"]
-        start_ts = params["start_segment"]
-        end_ts = params["end_segment"]
-        force_download = params["force_download"]
-        output_filename = params["output_filename"]
-
-        result_filepath = self.yt_downloader.get_video_segment(
-            url, start_ts, end_ts, force_download, output_filename
         )
 
     def validate(self, params):
