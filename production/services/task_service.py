@@ -12,9 +12,8 @@ from uuid import uuid4
 
 class TaskService:
 
-    def __init__(self, task_repo, sse_service):
+    def __init__(self, task_repo):
         self.task_repo: TaskMongoRepository = task_repo
-        self.sse_service: SSEService = sse_service
 
     def get_all(self) -> List[Task]:
         result = self.task_repo.get_all()
@@ -39,10 +38,7 @@ class TaskService:
 
     def _update_status(self, task_id: str, status: TaskStatus) -> None:
         """Método privado que centraliza la actualización."""
-        print(f"updating task={task_id[:5]}, status={status}")
         self.task_repo.update_fields(task_id, {"status": status})
-        print(f"updated task={task_id[:5]}, status={status}")
-        self.sse_service.notify_task_update_sync(task_id, status.value)
 
     def mark_as_processing(self, task_id: str) -> None:
         self._update_status(task_id, TaskStatus.PROCESSING)

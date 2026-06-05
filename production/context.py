@@ -59,7 +59,7 @@ class ServiceHub:
         
         self.event_service = EventService(event_repo)
         self.sse_service   = SSEService(redis_url=REDIS_HOST)
-        self.task_service  = TaskService(task_repo, self.sse_service)
+        self.task_service  = TaskService(task_repo)
         # fmt : on
 
 
