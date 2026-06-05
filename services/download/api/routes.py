@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from api.models import DownloadParamsInput, DownloadVTTInput
 from context import downloader
 from context import event_bus
+from context import EVENTS_EMITTED
 from fastapi import HTTPException
 from services.utils import get_new_uuid
 from workers.download import download_task
@@ -56,3 +57,8 @@ async def download_segment(input: DownloadParamsInput):
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/events-emitted")
+def get_events_emitted():
+    return EVENTS_EMITTED
