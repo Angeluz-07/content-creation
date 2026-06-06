@@ -2,13 +2,13 @@ from fastapi import APIRouter
 from api.models import ProductionInput
 from context import production_service as video_builder
 from context import event_bus
-#from context import EVENTS_EMITTED
+
+# from context import EVENTS_EMITTED
 from fastapi import HTTPException
-#from services.utils import get_new_uuid
-#from workers.download import download_task
+from services.utils import get_new_uuid
+from workers.video_build import video_build_task
 
 router = APIRouter(prefix="", tags=["main"])
-
 
 
 @router.post("/produce-short/synchronous")
@@ -24,26 +24,23 @@ def process_video(config: ProductionInput):
     }
 
 
-# @router.post("/produce-short")
-# async def download_segment(config: ProductionInput):
-#     try:
-#         params = config.model_dump()
-#         params["id"] = short_producer.get_new_uuid()
-#         short_producer.validator.validate(params)
+@router.post("/produce-short")
+async def download_segment(config: ProductionInput):
+    try:
+        params = config.model_dump()
+        task_id = get_new_uuid()
+        print(f"Sending to queue: {config.input_filename}")
+        await video_build_task.kiq(task_id, params)
 
-#         task = task_service.create_task(entity_type="short_production", payload=params)
-
-#         print(f"Sending to short_production queue: {config.input_filename}")
-
-#         await short_production_task.kiq(task.id, params)
-
-#         return {
-#             "status": "queued",
-#             "message": f"Tarea enviada al worker para: {config.input_filename}",
-#             "task_id": task.id,
-#         }
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=str(e))
+        await event_bus.publish(
+            "video_build:enqueued", payload={"task_id": task_id, "params": params}
+        )
+        return {
+            "status": "queued",
+            "message": f"Tarea enviada al worker para: {config.input_filename}",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 # @router.get("/events-emitted")
