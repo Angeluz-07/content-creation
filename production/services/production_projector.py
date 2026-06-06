@@ -1,7 +1,7 @@
 from dbs.mongo_repository import EventMongoRepository
 from domain.models import Production
 from dbs.interfaces import IRepository
-
+from typing import Dict
 
 class ProductionProjector:
 
@@ -28,5 +28,9 @@ class ProductionProjector:
 
         # Extract the verified facts from the event payload
         params = success_event.payload["params"]
+        item = Production(**params)
+        self.production_repo.add(item)
+
+    def project_direct(self, params: Dict):
         item = Production(**params)
         self.production_repo.add(item)
