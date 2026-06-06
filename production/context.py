@@ -2,11 +2,7 @@ from services.production_service import ProductionService
 from services.download_service import DownloadService
 from services.task_service import TaskService
 from services.sse_service import SSEService
-from services.download_validator import DownloadValidator
-from services.production_validator import ProductionValidator
 from services.event_service import EventService
-from services.download_projector import DownloadProjector
-from services.production_projector import ProductionProjector
 from dbs.mongo_client import get_mongo_client
 from dbs.mongo_repository import DownloadMongoRepository
 from dbs.mongo_repository import ProductionMongoRepository
@@ -22,9 +18,7 @@ from config import (
     REDIS_HOST,
 )
 from services.filename_provider import FilenameProvider
-from config import TEMP_DIR, DOWNLOAD_DIR, OUTPUT_DIR, ASSETS_DIR
-from domain.services.video_builder.v2 import VideoBuilderV2
-from domain.services.font_provider import FontProvider
+from config import DOWNLOAD_DIR
 
 
 class RepositoryHub:
@@ -46,16 +40,10 @@ class ServiceHub:
         event_repo = r.event_repo
 
         # fmt: off
-        download_validator      = DownloadValidator(download_repo)
-        self.download_service   = DownloadService(download_repo, download_validator) 
-        self.download_projector = DownloadProjector(download_repo) 
+        self.download_service   = DownloadService(download_repo) 
 
-        video_builder             = VideoBuilderV2(OUTPUT_DIR, TEMP_DIR)
         self.filename_provider    = FilenameProvider(DOWNLOAD_DIR, suffix=".mp4") 
-        fontpath_provider         = FontProvider(ASSETS_DIR)
-        production_validator      = ProductionValidator(production_repo)
-        self.production_service   = ProductionService(video_builder, self.filename_provider, fontpath_provider, production_validator)
-        self.production_projector = ProductionProjector(event_repo, production_repo)
+        self.production_service   = ProductionService(production_repo)
         
         self.event_service = EventService(event_repo)
         self.sse_service   = SSEService(redis_url=REDIS_HOST)
@@ -68,10 +56,8 @@ services = ServiceHub(repos)
 
 # fmt: off
 download_service               = services.download_service
-download_projector             = services.download_projector
 raw_segments_filename_provider = services.filename_provider
 short_producer                 = services.production_service
-short_production_projector     = services.production_projector
 event_service                  = services.event_service
 sse_service                    = services.sse_service
 task_service                   = services.task_service

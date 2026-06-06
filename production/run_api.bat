@@ -1,1 +1,1 @@
-fastapi dev rest_api/main.py
+fastapi dev api/main.py

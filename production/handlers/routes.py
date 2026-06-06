@@ -1,6 +1,7 @@
 from faststream.redis import RedisRouter
-from context import task_service, download_projector, sse_service
-from context import short_production_projector
+from context import task_service, sse_service
+from context import download_service
+from context import short_producer as production_service
 
 router = RedisRouter()
 
@@ -23,7 +24,7 @@ async def on_download_started(payload: dict):
 async def on_download_completed(payload: dict):
 
     params = payload["download"]
-    download_projector.project_direct(params=params)
+    download_service.project(params=params)
 
     task_service.mark_as_completed(task_id=payload["task_id"])
 
@@ -61,7 +62,7 @@ async def on_video_build_started(payload: dict):
 async def on_video_build_completed(payload: dict):
 
     params = payload["params"]
-    short_production_projector.project_direct(params=params)
+    production_service.project(params=params)
 
     task_service.mark_as_completed(task_id=payload["task_id"])
 

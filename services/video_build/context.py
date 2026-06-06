@@ -1,6 +1,6 @@
 from services.event_bus import RedisEventBus
 from config import DOWNLOAD_DIR, ASSETS_DIR, OUTPUT_DIR, TEMP_DIR
-from config import REDIS_URI
+from config import REDIS_URI, REDIS_QUEUE
 from domain.services.video_builder.v2 import VideoBuilderV2
 from services.filename_provider import FilenameProvider
 from domain.services.font_provider import FontProvider

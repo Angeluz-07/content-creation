@@ -8,7 +8,7 @@ sys.path.append(str(path_root))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from rest_api.routes import router
+from routes import router
 
 app = FastAPI()
 

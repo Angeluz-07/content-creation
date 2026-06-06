@@ -1,6 +1,6 @@
 import os
 from fastapi import APIRouter
-from rest_api.models import ProductionInput, DownloadParamsInput
+from models import ProductionInput, DownloadParamsInput
 from context import (
     short_producer,
     download_service,
@@ -13,7 +13,6 @@ from fastapi.responses import FileResponse
 from config import TEMP_DIR, OUTPUT_DIR
 from sse_starlette.sse import EventSourceResponse
 from context import sse_service
-from workers.short_production_worker import short_production_task
 from pathlib import Path
 
 router = APIRouter(prefix="", tags=["main"])

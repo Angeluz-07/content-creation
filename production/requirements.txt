@@ -1,33 +1,8 @@
-# yt download
-yt-dlp==2026.3.17
-
-#video manipulation
-moviepy==2.2.1
-
-#text fonts
-Pillow==11.3.0
-skia-python==144.0.post2
-
-# for rest api interface
 fastapi[standard]
 uvicorn[standard]
-
-# for mongodb/cosmosdb driver
+faststream[redis]
 pymongo==4.16.0 
 python-dotenv==1.2.2
-
-# for distributed asynchronous tasks
-taskiq==0.12.4
-taskiq-redis==1.2.2
-
-# for sse
 sse-starlette==3.4.4
-
-# for svg rendering
-resvg-py
-
-ipykernel
-
-faststream[redis]
-
 requests
+ipykernel
