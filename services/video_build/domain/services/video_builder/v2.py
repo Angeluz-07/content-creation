@@ -109,7 +109,6 @@ class VideoBuilderV2:
             "-ss", timestamp,  # Buscamos el tiempo exacto (antes del input es más rápido)
             "-i", input_filepath,  # Entrada de video
             "-frames:v", "1",  # Solo extraer 1 frame
-            "-q:v", "5",  # Calidad alta (2-5 es ideal para JPEG)
             output_image_path,  # Ruta de salida (ej: frame.jpg o frame.png)
         ]
         # fmt: on

@@ -160,7 +160,50 @@ services:
           memory: 256M
     profiles:
       - custom
-
+  videobuildapi:
+    image: angeluz07/cc-video-build:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./services/video-build/Dockerfile
+    container_name: video_build_api
+    ports:
+      - "8003:8003"
+    environment:
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
+      - REDIS_URI=redis://redis:6379
+    volumes:
+      - ./.data:/app/.data:z
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1536M
+        reservations:
+          memory: 256M
+    profiles:
+      - custom
+  video_build_worker:
+    image: angeluz07/cc-video-build:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./services/video-build/Dockerfile
+    container_name: video_build_worker
+    environment:
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
+      - REDIS_URI=redis://redis:6379
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./.data:/app/.data:z
+    command: taskiq worker workers.broker:broker workers.video_build --workers 2
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1536M
+        reservations:
+          memory: 256M
+    profiles:
+      - custom
   # neo4j:
   #   image: neo4j:5.18.0-community
   #   container_name: neo4j_graph_db

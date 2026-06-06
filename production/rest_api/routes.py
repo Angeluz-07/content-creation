@@ -35,6 +35,7 @@ def get_image():
 
     return FileResponse(file_path)
 
+
 # todo: improve, this endpoint is actually for produced videos
 @router.get("/video/{video_id}")
 def get_video(video_id: str):
@@ -82,19 +83,6 @@ def get_tasks(target_entity_type: str = None):
     return {"status": "success", "value": result}
 
 
-@router.post("/produce-short/synchronous")
-def process_video(config: ProductionInput):
-    print(
-        f"Procesando: {config.input_filename}"
-    )  # todo: link data to params used for download
-
-    short_producer.run(config.model_dump())
-    return {
-        "status": "success",
-        "message": f"Procesamiento iniciado para {config.input_filename}",
-    }
-
-
 # --- Asynchronous tasks ---
 @router.post("/download-segment")
 async def download_segment(input: DownloadParamsInput):
@@ -115,23 +103,30 @@ async def tasks_stream():
     return EventSourceResponse(sse_service.listen_task_updates_async())
 
 
+@router.post("/produce-short/synchronous")
+def process_video(config: ProductionInput):
+    print(
+        f"Procesando: {config.input_filename}"
+    )  # todo: link data to params used for download
+    
+    short_producer.trigger_sync(config.model_dump())
+    return {
+        "status": "success",
+        "message": f"Procesamiento iniciado para {config.input_filename}",
+    }
+
+
 @router.post("/produce-short")
-async def download_segment(config: ProductionInput):
+async def process_video_async(config: ProductionInput):
     try:
         params = config.model_dump()
-        params["id"] = short_producer.get_new_uuid()
-        short_producer.validator.validate(params)
-
-        task = task_service.create_task(entity_type="short_production", payload=params)
+        short_producer.validate(params)
+        short_producer.trigger_async(params)
 
         print(f"Sending to short_production queue: {config.input_filename}")
 
-        await short_production_task.kiq(task.id, params)
-
         return {
-            "status": "queued",
-            "message": f"Tarea enviada al worker para: {config.input_filename}",
-            "task_id": task.id,
+            "message": f"Sent to video_build: {config.input_filename}",
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
