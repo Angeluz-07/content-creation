@@ -13,7 +13,7 @@ async def video_build_task(task_id: str, params: dict):
     print(f"--- [WORKER] Iniciando proceso de: {output_filename} ---")
 
     try:
-        await asyncio.to_thread(production_service.run, params=params)
+        await production_service.run(params=params)
 
         print(f"--- [WORKER] Finalizado con éxito: {output_filename} ---")
 

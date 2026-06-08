@@ -117,6 +117,16 @@ onMounted(async () => {
         </div>
 
         <div class="form-control w-full">
+          <label class="label"><span class="label-text">Output Filename</span></label>
+          <input
+            v-model="form.outputFileName"
+            type="text"
+            class="input input-bordered w-full"
+            required
+          />
+        </div>
+
+        <div class="form-control w-full">
           <label class="label">
             <span class="label-text font-semibold">Font</span>
           </label>
@@ -153,7 +163,7 @@ onMounted(async () => {
             class="input input-bordered w-full"
           />
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!--div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="form-control w-full">
             <label class="label">
               <span class="label-text">Frame to use (HH:MM:SS)</span>
@@ -166,16 +176,8 @@ onMounted(async () => {
               class="input input-bordered w-full"
             />
           </div>
-        </div>
-        <div class="form-control w-full">
-          <label class="label"><span class="label-text">Output Filename</span></label>
-          <input
-            v-model="form.outputFileName"
-            type="text"
-            class="input input-bordered w-full"
-            required
-          />
-        </div>
+        </div-->
+
         <div class="flex flex-col md:flex-row gap-6 pt-4">
           <div class="form-control">
             <label class="label cursor-pointer justify-start gap-3">

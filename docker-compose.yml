@@ -172,10 +172,11 @@ services:
     ports:
       - "8003:8003"
     environment:
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
       - REDIS_URI=redis://redis:6379
     volumes:
       - ./.data:/app/.data:z
+      - ./services/video_build:/app:z
     deploy:
       resources:
         limits:
@@ -198,7 +199,7 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./.data:/app/.data:z
-    command: taskiq worker workers.broker:broker workers.video_build --workers 2
+    command: taskiq worker workers.broker:broker workers.video_build --workers 2 --max-async-tasks 1
     deploy:
       resources:
         limits:

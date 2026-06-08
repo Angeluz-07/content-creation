@@ -12,12 +12,12 @@ router = APIRouter(prefix="", tags=["main"])
 
 
 @router.post("/produce-short/synchronous")
-def process_video(config: ProductionInput):
+async def process_video(config: ProductionInput):
     print(
         f"Procesando: {config.input_filename}"
     )  # todo: link data to params used for download
 
-    video_builder.run(config.model_dump())
+    await video_builder.run(config.model_dump())
     return {
         "status": "success",
         "message": f"Procesamiento iniciado para {config.input_filename}",
