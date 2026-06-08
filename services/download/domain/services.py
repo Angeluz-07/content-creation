@@ -1,25 +1,26 @@
 from pathlib import Path
 import time
-import subprocess
+import asyncio
 from typing import Dict
+import subprocess
 
 class YTDownloader:
     def __init__(self, output_path: str, cookies_path: str):
         self.output_path = output_path
         self.cookies_path = cookies_path
 
-    def run(self, params: Dict):
+    async def run(self, params: Dict):
         url = params["url"]
         start_ts = params["start_segment"]
         end_ts = params["end_segment"]
         force_download = params["force_download"]
         output_filename = params["output_filename"]
 
-        result_filepath = self.get_video_segment(
+        result_filepath = await self.get_video_segment(
             url, start_ts, end_ts, force_download, output_filename
         )
     
-    def get_video_segment(
+    async def get_video_segment(
         self,
         url: str,
         start_ts: str,
@@ -34,15 +35,15 @@ class YTDownloader:
             print(
                 f"File doesnt exist or force_download={force_download}, downloading..."
             )
-            self._download_segment_from_yt(start_ts, end_ts, url, raw_filepath)
+            await self._download_segment_from_yt(start_ts, end_ts, url, raw_filepath)
         else:
             print(f"File exists, force_download={force_download}, skipping download...")
         return raw_filepath
 
-    def _download_segment_from_yt(
+    async def _download_segment_from_yt(
         self, start_ts: str, end_ts: str, url: str, output_path: str
     ):
-        print(f"Starting download raw segment (via Subprocess): {start_ts} - {end_ts}")
+        print(f"Starting download raw segment (via Async Subprocess): {start_ts} - {end_ts}")
 
         # fmt: off
         command = [
@@ -61,28 +62,38 @@ class YTDownloader:
             "--force-keyframes-at-cuts",
             "-o", output_path,
             "--merge-output-format", "mp4",
-            "--extractor-args",
-            "youtube:player_client=default",
+            "--extractor-args", "youtube:player_client=default",
             #"--verbose",  # for debug only
         ]
         # fmt: on
         try:
             start_time = time.perf_counter()
 
-            result = subprocess.run(command, check=True, text=True)
+            process = await asyncio.create_subprocess_exec(
+                command[0], *command[1:],
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            # Esperamos a que el proceso muera físicamente en el Kernel
+            stdout, stderr = await process.communicate()
 
+            if process.returncode != 0:
+                raise subprocess.CalledProcessError(
+                    returncode=process.returncode,
+                    cmd=command,  # O la variable donde guardes el comando ejecutado
+                    stderr=stderr.decode().strip()
+                )
+            
             end_time = time.perf_counter()
             print(f"Elapsed time: {end_time - start_time:.4f} seconds")
-            print("Raw segment downloaded successfully via Subprocess")
+            print("Raw segment downloaded successfully via Async Subprocess")
 
-        except subprocess.CalledProcessError as e:
-            print(f"Error while downloading with subprocess: {e}")
-            raise e
         except Exception as e:
-            print(f"General error: {e}")
+            print(f"General error or process failure: {e}")
             raise e
 
-    def get_vtt(
+    async def get_vtt(
         self,
         url: str,
         force_download: bool,
@@ -95,13 +106,13 @@ class YTDownloader:
             print(
                 f"File doesnt exist or force_download={force_download}, downloading..."
             )
-            self._download_vtt(url, raw_filepath)
+            await self._download_vtt(url, raw_filepath)
         else:
             print(f"File exists, force_download={force_download}, skipping download...")
         return raw_filepath
 
-    def _download_vtt(self, url: str, output_path: str):
-        print(f"Starting download vtt (via Subprocess): {url}")
+    async def _download_vtt(self, url: str, output_path: str):
+        print(f"Starting download vtt (via Async Subprocess): {url}")
 
         # fmt: off
         command = [
@@ -126,18 +137,25 @@ class YTDownloader:
         try:
             start_time = time.perf_counter()
 
-            result = subprocess.run(command, check=True, capture_output=True, text=True)
+            process = await asyncio.create_subprocess_exec(
+                command[0], *command[1:],
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            
+            stdout, stderr = await process.communicate()
+            
+            if process.returncode != 0:
+                raise subprocess.CalledProcessError(
+                    returncode=process.returncode,
+                    cmd=command,  # O la variable donde guardes el comando ejecutado
+                    stderr=stderr.decode().strip()
+                )
+
             end_time = time.perf_counter()
             print(f"Elapsed time: {end_time - start_time:.4f} seconds")
-            print("Raw segment downloaded successfully via Subprocess")
+            print("VTT downloaded successfully via Async Subprocess")
 
-        except subprocess.CalledProcessError as e:
-            print(f"Error while downloading with subprocess: {e}")
-            print(f"Command Failed: {e.cmd}")
-            print(f"Exit Code:     {e.returncode}")
-            print(f"Standard Out:  {e.stdout}")
-            print(f"Standard Error: {e.stderr}")
-            raise e
         except Exception as e:
-            print(f"General error: {e}")
+            print(f"General error or process failure: {e}")
             raise e

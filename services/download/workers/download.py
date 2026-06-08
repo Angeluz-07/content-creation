@@ -1,4 +1,3 @@
-import asyncio
 from context import event_bus
 from context import downloader
 import traceback
@@ -15,7 +14,7 @@ async def download_task(task_id: str, params: dict):
     print(f"--- [WORKER] Iniciando proceso de: {output_filename} ---")
 
     try:
-        await asyncio.to_thread(downloader.run, params=params)
+        await downloader.run(params=params)
 
         print(f"--- [WORKER] Finalizado con éxito: {output_filename} ---")
 
