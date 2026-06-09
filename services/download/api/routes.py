@@ -11,9 +11,9 @@ router = APIRouter(prefix="", tags=["main"])
 
 
 @router.post("/download/vtt")
-def download_vtt(input: DownloadVTTInput):
+async def download_vtt(input: DownloadVTTInput):
     print(f"Procesando vtt: {input.output_filename} desde {input.url}")
-    downloader.get_vtt(
+    await downloader.get_vtt(
         url=input.url,
         force_download=input.force_download,
         output_filename=input.output_filename,

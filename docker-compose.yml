@@ -126,10 +126,11 @@ services:
     ports:
       - "8002:8002"
     environment:
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
       - REDIS_URI=redis://redis:6379
     volumes:
-      - ./.data:/app/.data:z
+      - ./.data:/app/.data:z      
+      - ./services/download:/app:z
     deploy:
       resources:
         limits:
@@ -156,7 +157,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "5.0"
+          cpus: "4.0"
           memory: 2G
         reservations:
           cpus: "1.0"
@@ -180,10 +181,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "1.5"
+          cpus: "6"  # still have, a cpu intensive task in this api
           memory: 1G
         reservations:
-          cpus: "1.5" # still have, a cpu intensive task in this api
+          cpus: "1"
           memory: 1G
     profiles:
       - custom
@@ -199,11 +200,12 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./.data:/app/.data:z
+      - ./services/video_build:/app:z
     command: taskiq worker workers.broker:broker workers.video_build --workers 2 --max-async-tasks 1
     deploy:
       resources:
         limits:
-          cpus: "2"
+          cpus: "3"
           memory: 2G
         reservations:
           cpus: "1"
