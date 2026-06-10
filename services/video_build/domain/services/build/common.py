@@ -1,7 +1,9 @@
 import asyncio
 import subprocess
 
+
 async def run_async_subprocess(command: str):
+
     print(f"Starting command call (via Async Subprocess): ")
     process = await asyncio.create_subprocess_exec(
         command[0],
@@ -21,3 +23,24 @@ async def run_async_subprocess(command: str):
         )
 
     print("Success command call via Async Subprocess")
+
+
+def run_subprocess(command: list):
+    print("Starting command call (via Synchronous Subprocess):")
+
+    # Ejecución síncrona estándar
+    result = subprocess.run(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    if result.returncode != 0:
+        raise subprocess.CalledProcessError(
+            returncode=result.returncode,
+            cmd=command,
+            stderr=result.stderr.decode().strip(),
+        )
+
+    print("Success command call via Synchronous Subprocess")
+    return result.stdout
