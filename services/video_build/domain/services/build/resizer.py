@@ -1,5 +1,6 @@
 from pathlib import Path
 from domain.services.build.common import run_async_subprocess
+from domain.services.build.common import run_subprocess
 
 
 class Resizer:
@@ -7,54 +8,101 @@ class Resizer:
     def __init__(self, temp_path):
         self.temp_path = temp_path
 
-    async def run(self, input_filepath: str, output_type: str = "almost_at_top"):
-
-        video_filters = {
-            "almost_at_top": self.get_filter_almost_at_top(),
-            "at_top": self.get_filter_at_top(),
-            "full_vertical": self.get_filter_full_vertical(),
-        }
-        video_filter: str = video_filters[output_type]
-        resized_filepath = await self._resize_video_segment(
-            input_filepath, video_filter
-        )
-        return resized_filepath
-
-    async def _resize_video_segment(
-        self, input_filepath: str, video_filter: str, force_resize: bool = False
+    async def run(
+        self,
+        input: str,
+        output_type: str = "almost_at_top",
+        force=False,
     ):
-        file_id = Path(input_filepath).stem
-        resized_filepath = str(Path(self.temp_path) / f"{file_id}_resized.mp4")
-        resized_file_exists = Path(resized_filepath).is_file()
+        resized = self.get_resized_filepath(input)
+        resized_exists = Path(resized).is_file()
+        if force or not resized_exists:
+            print("Start resizing (Async)...")
 
-        if force_resize or not resized_file_exists:
-            print("Resized file doesnt exists. Start resizing...")
-            # fmt: off
-            encoders = [
-                "-c:v", "libx264",
-                "-crf", "21",
-                "-preset", "fast"
-            ]
-            ffmpeg_cmd = [
-                "ffmpeg", "-y",
-                "-loglevel","error",
-                "-stats",
-                "-i", input_filepath,
-                "-vf", video_filter,
-                *encoders,
-                "-pix_fmt", "yuv420p", # ensures compatibility
-                "-c:a", "copy",
-                resized_filepath,
-            ]
-            # fmt: on
-            print("Resizing video for mobile canvas...")
+            video_filter = self.get_video_filter(output_type)
+            ffmpeg_cmd = self.get_comand(input, video_filter, resized)
+
             await run_async_subprocess(command=ffmpeg_cmd)
 
-            print(f"Resizing successful with file: {resized_filepath}")
-            return resized_filepath
+            print(f"Resizing successful with file: {resized}")
+            return resized
         else:
             print("Resized file exists. Skipping resizing...")
-            return resized_filepath
+            return resized
+
+    def run_sync(
+        self,
+        input: str,
+        output_type: str = "almost_at_top",
+        force=False,
+    ):
+        resized = self.get_resized_filepath(input)
+        resized_exists = Path(resized).is_file()
+        if force or not resized_exists:
+            print("Start resizing (Sync)...")
+
+            video_filter = self.get_video_filter(output_type)
+            ffmpeg_cmd = self.get_comand(input, video_filter, resized)
+
+            run_subprocess(command=ffmpeg_cmd)
+
+            print(f"Resizing successful with file: {resized}")
+            return resized
+        else:
+            print("Resized file exists. Skipping resizing...")
+            return resized
+
+    def get_resized_filepath(self, input_path: str):
+        file_id = Path(input_path).stem
+        resized_filepath = str(Path(self.temp_path) / f"{file_id}_resized.mp4")
+        return resized_filepath
+
+    def get_video_filter(self, output_type: str):
+        video_filters = {
+            "almost_at_top": self.get_filter_almost_at_top,
+            "at_top": self.get_filter_at_top,
+            "full_vertical": self.get_filter_full_vertical,
+            "middle": self.get_filter_middle,
+        }
+        get_video_filter = video_filters[output_type]
+        return get_video_filter()
+
+    def get_comand(self, input: str, video_filter: str, resized: str) -> list[str]:
+        # fmt: off
+        encoders = [
+            "-c:v", "libx264",
+            "-crf", "21",
+            "-preset", "fast"
+        ]
+        ffmpeg_cmd = [
+            "ffmpeg", "-y",
+            "-loglevel","error",
+            "-stats",
+            "-i", input,
+            "-vf", video_filter,
+            *encoders,
+            "-pix_fmt", "yuv420p", # ensures compatibility
+            "-c:a", "copy",
+            resized,
+        ]
+        # fmt: on
+        return ffmpeg_cmd
+
+    def get_filter_middle(self):
+        POS_Y = 480
+        CANVAS_W, CANVAS_H = 1080, 1920
+        ZOOM_FACTOR = 1.53
+        TARGET_W = int(CANVAS_W * ZOOM_FACTOR)  # 1620px
+
+        # fmt: off
+        safe_filter = (
+            f"scale={TARGET_W}:-1,"
+            "setsar=1:1,"
+            f"crop={CANVAS_W}:ih,"
+            f"pad={CANVAS_W}:{CANVAS_H}:(ow-iw)/2:{POS_Y}:black"
+        )        
+        # fmt: on
+        return safe_filter
 
     def get_filter_almost_at_top(self):
         POS_Y = 180
