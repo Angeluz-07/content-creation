@@ -90,3 +90,6 @@ venv/
 
 # Others
 *.bat
+
+.data
+notebooks
