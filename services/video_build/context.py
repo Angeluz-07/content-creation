@@ -1,15 +1,10 @@
-from services.event_bus import RedisEventBus
 from config import DOWNLOAD_DIR, ASSETS_DIR, OUTPUT_DIR, TEMP_DIR, EMOJI_DIR, LAYOUT_DIR
 from config import REDIS_URI, REDIS_QUEUE
 from domain.services.layer import LayerBuilder
 from domain.services.extractor import Extractor
-from domain.services.build.assembler import Assembler
-from domain.services.video_builder.v2 import VideoBuilderV2
-from domain.services.build.v1 import VideoBuilderV1
-from services.filename_provider import FilenameProvider
-from domain.services.font_provider import FontProvider
-from services.production_service import ProductionService
-from domain.services.build.resizer import Resizer
+from domain.services.assembler import Assembler
+from domain.services.resizer import Resizer
+from services.event_bus import RedisEventBus
 from services.asset import AssetProvider
 from services.build import *
 
@@ -31,12 +26,4 @@ vb1 = BuilderV1(assets, resizer, layer_builder, assembler, extractor)
 vb2 = BuilderV2(assets, resizer, layer_builder, assembler, extractor)
 vb3 = BuilderV3(assets, resizer, layer_builder, assembler, extractor)
 
-video_builder = VideoBuilderV1(OUTPUT_DIR, TEMP_DIR)
-filename_provider = FilenameProvider(DOWNLOAD_DIR, suffix=".mp4")
-assets_provider = FilenameProvider(ASSETS_DIR, suffix=".png")
-fontpath_provider = FontProvider(ASSETS_DIR)
 event_bus = RedisEventBus(REDIS_URI)
-
-production_service = ProductionService(
-    video_builder, filename_provider, fontpath_provider, assets_provider
-)

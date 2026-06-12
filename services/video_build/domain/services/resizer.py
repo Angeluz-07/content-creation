@@ -1,6 +1,6 @@
 from pathlib import Path
-from domain.services.build.common import run_async_subprocess
-from domain.services.build.common import run_subprocess
+from domain.services.common import run_async_subprocess
+from domain.services.common import run_subprocess
 
 
 class Resizer:

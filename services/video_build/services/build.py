@@ -1,11 +1,10 @@
 from dataclasses import dataclass
-from domain.services.build.resizer import Resizer
+from abc import ABC, abstractmethod
+from domain.services.resizer import Resizer
 from domain.services.layer import LayerBuilder
-from domain.services.build.assembler import Assembler
+from domain.services.assembler import Assembler
 from domain.services.extractor import Extractor
 from services.asset import AssetProvider
-from abc import ABC, abstractmethod
-from typing import List, Optional, Any
 
 
 @dataclass
@@ -22,6 +21,11 @@ class BaseBuilder(ABC):
 
 
 class BuilderV1(BaseBuilder):
+    """
+    First version of video builder, with zoomed video,
+    watermark text, simple comment emoji and text.
+    Original the font used was cascadiacode.ttf.
+    """
 
     def run(self, params):
         input = params.get("input")
@@ -77,6 +81,11 @@ class BuilderV1(BaseBuilder):
 
 
 class BuilderV2(BaseBuilder):
+    """
+    Second version of video builder, with zoomed video at the top,
+    hook text inthe middle, with custom font. And frame at the bottom
+    section. Main font is ProtestStrike-Regular.ttf
+    """
 
     def run(self, params):
         input = params.get("input")
@@ -129,11 +138,20 @@ class BuilderV2(BaseBuilder):
 
         output = params.get("output")
         debug_frame = params.get("debug_frame")
-        result = await self.assembler.run_async(resized, layer, output, debug=debug_frame)
+        result = await self.assembler.run_async(
+            resized, layer, output, debug=debug_frame
+        )
         return result
 
 
 class BuilderV3(BaseBuilder):
+    """
+    Third version of video builder:
+        - receives video with zoom, rescaled to mobile canvas
+        - given a value 'percentage' we can slide the portion
+        to keep.
+        - adds watermark
+    """
 
     def run(self, params):
         input = params.get("input")
@@ -186,5 +204,7 @@ class BuilderV3(BaseBuilder):
 
         output = params.get("output")
         debug_frame = params.get("debug_frame")
-        result = await self.assembler.run_async(resized, layer, output, debug=debug_frame)
+        result = await self.assembler.run_async(
+            resized, layer, output, debug=debug_frame
+        )
         return result
