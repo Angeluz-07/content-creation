@@ -9,17 +9,14 @@ class Resizer:
         self.temp_path = temp_path
 
     async def run(
-        self,
-        input: str,
-        output_type: str = "almost_at_top",
-        force=False,
+        self, input: str, output_type: str = "almost_at_top", force=False, **kwargs
     ):
         resized = self.get_resized_filepath(input)
         resized_exists = Path(resized).is_file()
         if force or not resized_exists:
             print("Start resizing (Async)...")
 
-            video_filter = self.get_video_filter(output_type)
+            video_filter = self.get_video_filter(output_type, **kwargs)
             ffmpeg_cmd = self.get_comand(input, video_filter, resized)
 
             await run_async_subprocess(command=ffmpeg_cmd)
@@ -31,17 +28,14 @@ class Resizer:
             return resized
 
     def run_sync(
-        self,
-        input: str,
-        output_type: str = "almost_at_top",
-        force=False,
+        self, input: str, output_type: str = "almost_at_top", force=False, **kwargs
     ):
         resized = self.get_resized_filepath(input)
         resized_exists = Path(resized).is_file()
         if force or not resized_exists:
             print("Start resizing (Sync)...")
 
-            video_filter = self.get_video_filter(output_type)
+            video_filter = self.get_video_filter(output_type, **kwargs)
             ffmpeg_cmd = self.get_comand(input, video_filter, resized)
 
             run_subprocess(command=ffmpeg_cmd)
@@ -57,15 +51,21 @@ class Resizer:
         resized_filepath = str(Path(self.temp_path) / f"{file_id}_resized.mp4")
         return resized_filepath
 
-    def get_video_filter(self, output_type: str):
+    def get_video_filter(self, output_type: str, **kwargs):
         video_filters = {
             "almost_at_top": self.get_filter_almost_at_top,
             "at_top": self.get_filter_at_top,
             "full_vertical": self.get_filter_full_vertical,
             "middle": self.get_filter_middle,
         }
-        get_video_filter = video_filters[output_type]
-        return get_video_filter()
+        filter_fn = video_filters[output_type]
+        if output_type == "full_vertical":
+            percentage = kwargs.get(
+                "percentage", 0.0
+            )  # 0.0 es el valor por defecto si no se pasa
+            return filter_fn(percentage=percentage)
+
+        return filter_fn()
 
     def get_comand(self, input: str, video_filter: str, resized: str) -> list[str]:
         # fmt: off
@@ -135,8 +135,7 @@ class Resizer:
         )
         return safe_filter
 
-    def get_filter_full_vertical(self):
-        percentage = 0
+    def get_filter_full_vertical(self, percentage=0.0):
         CANVAS_W, CANVAS_H = 1080, 1920
         # fmt: off
         safe_filter = (
