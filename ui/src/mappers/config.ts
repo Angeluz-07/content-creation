@@ -5,24 +5,24 @@ import type { ShortProductionParams, DownloadParams } from '../types/config';
 // since by now the mapping is redundant
 // Definimos el tipo de lo que espera el API (opcional, pero recomendado)
 export interface ShortProductionParamsPayload {
-  debug_video_frame: boolean;
+  debug_frame: boolean;
   hook_text: string;
-  input_filename: string;
+  input: string;
   watermark_text: string;
   frame_ts: string;
   font_name: string;
-  output_filename: string;
+  output: string;
 }
 
 export const toShortProductionParamsPayload = (data: ShortProductionParams): ShortProductionParamsPayload => {
   return {
-    debug_video_frame: data.debugVideoFrame,
+    debug_frame: data.debugVideoFrame,
     hook_text: data.hookText,
-    input_filename: data.inputFileName,
+    input : data.inputFileName,
     watermark_text: data.watermarkText,
     frame_ts: data.frameTs,
     font_name: data.fontName,
-    output_filename: data.outputFileName
+    output: data.outputFileName
   };
 };
 

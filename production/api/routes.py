@@ -105,13 +105,13 @@ async def tasks_stream():
 @router.post("/produce-short/synchronous")
 def process_video(config: ProductionInput):
     print(
-        f"Procesando: {config.input_filename}"
+        f"Procesando: {config.input}"
     )  # todo: link data to params used for download
     
     short_producer.trigger_sync(config.model_dump())
     return {
         "status": "success",
-        "message": f"Procesamiento iniciado para {config.input_filename}",
+        "message": f"Procesamiento iniciado para {config.input}",
     }
 
 
@@ -122,10 +122,10 @@ async def process_video_async(config: ProductionInput):
         short_producer.validate(params)
         short_producer.trigger_async(params)
 
-        print(f"Sending to short_production queue: {config.input_filename}")
+        print(f"Sending to short_production queue: {config.input}")
 
         return {
-            "message": f"Sent to video_build: {config.input_filename}",
+            "message": f"Sent to video_build: {config.input}",
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

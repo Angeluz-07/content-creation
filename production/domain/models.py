@@ -16,13 +16,13 @@ class Download:
 
 @dataclass
 class Production:
-    input_filename: str
-    output_filename: str
+    input: str
+    output: str
     font_name: str
     watermark_text: str
     frame_ts: str
     hook_text: str
-    debug_video_frame: bool = True
+    debug_frame: bool = True
     id: str = field(default_factory=lambda: str(uuid4()))
 
 

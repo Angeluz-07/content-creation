@@ -1,6 +1,6 @@
 import asyncio
 from context import event_bus
-from context import production_service
+from context import vb1 as video_builder
 import traceback
 from workers.broker import broker
 
@@ -9,11 +9,11 @@ async def video_build_task(task_id: str, params: dict):
     await event_bus.publish(
         "video_build:started", payload={"task_id": task_id, "params": params}
     )
-    output_filename = params.get("output_filename")
+    output_filename = params.get("output")
     print(f"--- [WORKER] Iniciando proceso de: {output_filename} ---")
 
     try:
-        await production_service.run(params=params)
+        await video_builder.run_async(params=params)
 
         print(f"--- [WORKER] Finalizado con éxito: {output_filename} ---")
 

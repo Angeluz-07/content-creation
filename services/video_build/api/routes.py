@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from api.models import ProductionInput
-from context import production_service as video_builder
+from context import vb1 as video_builder
 from context import event_bus
 
 # from context import EVENTS_EMITTED
@@ -14,13 +14,13 @@ router = APIRouter(prefix="", tags=["main"])
 @router.post("/produce-short/synchronous")
 async def process_video(config: ProductionInput):
     print(
-        f"Procesando: {config.input_filename}"
+        f"Procesando: {config.input}"
     )  # todo: link data to params used for download
 
-    await video_builder.run(config.model_dump())
+    await video_builder.run_async(config.model_dump())
     return {
         "status": "success",
-        "message": f"Procesamiento iniciado para {config.input_filename}",
+        "message": f"Procesamiento iniciado para {config.input}",
     }
 
 
@@ -29,7 +29,7 @@ async def download_segment(config: ProductionInput):
     try:
         params = config.model_dump()
         task_id = get_new_uuid()
-        print(f"Sending to queue: {config.input_filename}")
+        print(f"Sending to queue: {config.input}")
         await video_build_task.kiq(task_id, params)
 
         await event_bus.publish(
@@ -37,7 +37,7 @@ async def download_segment(config: ProductionInput):
         )
         return {
             "status": "queued",
-            "message": f"Tarea enviada al worker para: {config.input_filename}",
+            "message": f"Tarea enviada al worker para: {config.input}",
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
