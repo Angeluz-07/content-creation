@@ -28,6 +28,17 @@ class LayerBuilder:
         self._components.append(emoji)
         return self
 
+    def add_tag(self, text, font_size=55, coords=(500, 1050)):
+        tag = TextClip(
+            text=text,
+            font_size=font_size,
+            color="white",
+            size=(460, 155),
+            font=self.font,
+        ).with_position(coords)
+        self._components.append(tag)
+        return self
+
     def add_watermark(self, watermark_text):
         watermark = (
             TextClip(
