@@ -2,6 +2,7 @@ from moviepy import TextClip, CompositeVideoClip, ImageClip
 from pathlib import Path
 from domain.services.banner import BasicBanner
 
+
 class LayerBuilder:
 
     def __init__(self, temp_path):
@@ -39,7 +40,16 @@ class LayerBuilder:
         self._components.append(tag)
         return self
 
-    def add_watermark(self, watermark_text, coords=(50, 15)):
+    def add_img(self, img_path: str, coords=(10, 10), zoom_factor=1):
+        img = (
+            ImageClip(img_path)
+            .resized(width=int(1080 * zoom_factor))
+            .with_position(coords)
+        )
+        self._components.append(img)
+        return self
+
+    def add_watermark(self, watermark_text, coords=(50, 15), opacity=1):
         watermark = (
             TextClip(
                 text=watermark_text,
@@ -48,13 +58,14 @@ class LayerBuilder:
                 size=(460, 155),
                 font=self.font,
             )
+            .with_opacity(opacity)
             .with_position(coords)
             .rotated(15)
         )
         self._components.append(watermark)
         return self
 
-    def add_banner(self, text):
+    def add_banner_purple_bottom(self, text):
         banner_filepath = str(Path(self.temp_path) / "banner_final.png")
         banner = (
             BasicBanner(
@@ -63,10 +74,21 @@ class LayerBuilder:
                 text=text,
                 font_path=self.font,
             )
-            .render_purple() # todo: improve
+            .render_purple()  # todo: improve
             .save_img(banner_filepath)
         )
         banner = ImageClip(banner_filepath).with_position(("center", 1150))
+        self._components.append(banner)
+        return self
+
+    def add_banner_black_middle(self, text):
+        banner_filepath = str(Path(self.temp_path) / "banner_final.png")
+        banner = (
+            BasicBanner(width=1100, height=320, font_path=self.font, text=text)
+            .render()
+            .save_img(banner_filepath)
+        )
+        banner = ImageClip(banner_filepath).with_position(("center", 925))
         self._components.append(banner)
         return self
 
