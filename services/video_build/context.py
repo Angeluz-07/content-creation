@@ -11,6 +11,7 @@ from domain.services.font_provider import FontProvider
 from services.production_service import ProductionService
 from domain.services.build.resizer import Resizer
 from services.asset import AssetProvider
+from services.build import *
 
 resizer = Resizer(TEMP_DIR)
 
@@ -25,6 +26,10 @@ assets = (
 layer_builder = LayerBuilder(TEMP_DIR)
 assembler = Assembler(TEMP_DIR, OUTPUT_DIR)
 extractor = Extractor(TEMP_DIR)
+
+vb1 = BuilderV1(assets, resizer, layer_builder, assembler, extractor)
+vb2 = BuilderV2(assets, resizer, layer_builder, assembler, extractor)
+vb3 = BuilderV3(assets, resizer, layer_builder, assembler, extractor)
 
 video_builder = VideoBuilderV1(OUTPUT_DIR, TEMP_DIR)
 filename_provider = FilenameProvider(DOWNLOAD_DIR, suffix=".mp4")
