@@ -19,10 +19,11 @@ class SkiaCanvas:
 
     # --- Métodos de Geometría (Construyen la forma) ---
 
-    def add_rectangle(self):
+    def add_rectangle(self, corner_radius=0):
         """Define un rectángulo que ocupa todo el canvas"""
         self._current_path = skia.Path()
-        self._current_path.addRect(skia.Rect(0, 0, self.width, self.height))
+        rect = skia.Rect(0, 0, self.width, self.height)
+        self._current_path.addRoundRect(rect, corner_radius, corner_radius)
         return self
 
     # --- Métodos de Estilo (Pintan la forma guardada) ---
@@ -79,7 +80,6 @@ class BasicBanner(SkiaCanvas):
             "letter_spacing": 0.05,
             "text_color": "#E0E0E0",
             "background_color": "#000000",
-            #"background_color": "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%)",
         }
         super().__init__(self.params["width"], self.params["height"])
 
@@ -135,6 +135,16 @@ class BasicBanner(SkiaCanvas):
             .add_text(self.text)
         )
 
+    def render_purple(self):
+        return (
+            self.add_rectangle(corner_radius=90)
+            .add_background_color(
+                "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%)"
+            )
+            .add_font(self.font_path)
+            .add_text(self.text)
+        )
+
     def _get_wrapped_lines(self, text_content: str):
         """
         given a text, splitted into lines, so it can fit container
@@ -167,14 +177,22 @@ class StackedBanner(SkiaCanvas):
     """
 
     def __init__(self, width, height, main_text, sub_text, font_path):
+        c_opts = [
+            ("#FFC107", "#9C27B0"),
+            ("#FFD700", "#6A0DAD"),
+            ("#FFF2B2", "#4A0E4E"),
+            ("#FDF5C9", "#3D1075"),
+            ("#FFEAA7", "#530A3B"),
+        ]
+        c = c_opts[4]
         self.params = {
             "width": width,
             "height": height,
             "padding": 80,
             "font_size_main": 85,
             "font_size_sub": 70,
-            "color_back": "#327EC8",  # Capa de fondo (desfasada)
-            "color_front": "#EE33A7",  # Capa principal
+            "color_back": c[0],  # Capa de fondo (desfasada)
+            "color_front": c[1],  # Capa principal
             "color_tag": "#FFFFFF",  # Capa del sujeto
             "text_color_main": "#FFFFFF",
             "text_color_sub": "#000000",
@@ -209,7 +227,7 @@ class StackedBanner(SkiaCanvas):
         return self
 
     def _draw_stacked_containers(self):
-        # 1. Capa de Fondo 
+        # 1. Capa de Fondo
         paint_back = skia.Paint(
             AntiAlias=True,
             Color=self._hex_to_color(self.params["color_back"]),
@@ -218,7 +236,7 @@ class StackedBanner(SkiaCanvas):
         rect_back = skia.Rect.MakeXYWH(100, 100, self.width - 200, self.height - 220)
         self.canvas.drawRoundRect(rect_back, 40, 40, paint_back)
 
-        # 2. Capa Frontal 
+        # 2. Capa Frontal
         paint_front = skia.Paint(
             AntiAlias=True, Color=self._hex_to_color(self.params["color_front"])
         )
@@ -284,7 +302,7 @@ class StackedBanner(SkiaCanvas):
         self.add_fonts(self.font_path)
         front_rect = self._draw_stacked_containers()
         self._draw_main_text(front_rect)
-        #self._draw_tag()
+        # self._draw_tag()
         return self
 
     def _get_wrapped_lines(self, text, font, max_w):

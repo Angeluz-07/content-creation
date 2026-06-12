@@ -56,4 +56,4 @@ class AssetProvider:
         if target_ext and target_path.suffix.lower() != target_ext:
             target_path = target_path.with_suffix(target_ext)
             
-        return target_path
+        return str(target_path)

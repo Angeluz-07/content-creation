@@ -1,6 +1,6 @@
 from moviepy import TextClip, CompositeVideoClip, ImageClip
 from pathlib import Path
-
+from domain.services.banner import BasicBanner
 
 class LayerBuilder:
 
@@ -39,7 +39,7 @@ class LayerBuilder:
         self._components.append(tag)
         return self
 
-    def add_watermark(self, watermark_text):
+    def add_watermark(self, watermark_text, coords=(50, 15)):
         watermark = (
             TextClip(
                 text=watermark_text,
@@ -48,10 +48,26 @@ class LayerBuilder:
                 size=(460, 155),
                 font=self.font,
             )
-            .with_position((50, 155))
+            .with_position(coords)
             .rotated(15)
         )
         self._components.append(watermark)
+        return self
+
+    def add_banner(self, text):
+        banner_filepath = str(Path(self.temp_path) / "banner_final.png")
+        banner = (
+            BasicBanner(
+                width=950,
+                height=500,
+                text=text,
+                font_path=self.font,
+            )
+            .render_purple() # todo: improve
+            .save_img(banner_filepath)
+        )
+        banner = ImageClip(banner_filepath).with_position(("center", 1150))
+        self._components.append(banner)
         return self
 
     def run(self):

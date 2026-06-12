@@ -1,5 +1,6 @@
 from moviepy import TextClip, CompositeVideoClip, ImageClip
 from pathlib import Path
+from domain.services.banner import BasicBanner, StackedBanner
 
 
 class LayerGenerator:
@@ -17,19 +18,20 @@ class LayerGenerator:
     # v1, todo: migrate v2 and v3
     def _generate_fixed_layer(self, watermark_text, hook_text, font_path, sticker_path):
         output_png = str(Path(self.temp_path) / "temp_ui.png")
+        banner_filepath = str(Path(self.temp_path) / "banner_final.png")
         CANVAS_SIZE = (1080, 1920)
+        banner = (
+            BasicBanner(
+                width=950,
+                height=500,
+                text=hook_text,
+                font_path=font_path,
+            )
+            .render_purple()
+            .save_img(banner_filepath)
+        )
 
-        hook = TextClip(
-            text=hook_text,
-            font_size=100,
-            color="white",
-            bg_color="black",
-            method="caption",
-            size=(920, 350),
-            text_align="center",
-            vertical_align="center",
-            font=font_path,
-        ).with_position(("center", 1150))
+        hook = ImageClip(banner_filepath).with_position(("center", 1150))
 
         # Watermark
         watermark = (
@@ -50,7 +52,7 @@ class LayerGenerator:
 
         # Componemos y guardamos UN SOLO FRAME
         ui_composite = CompositeVideoClip(
-            [hook, watermark, logo], size=CANVAS_SIZE, bg_color=None
+            [hook, watermark], size=CANVAS_SIZE, bg_color=None
         )
 
         ui_composite.save_frame(output_png, t=0)
