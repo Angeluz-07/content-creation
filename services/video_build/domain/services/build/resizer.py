@@ -8,7 +8,7 @@ class Resizer:
     def __init__(self, temp_path):
         self.temp_path = temp_path
 
-    async def run(
+    async def run_async(
         self, input: str, output_type: str = "almost_at_top", force=False, **kwargs
     ):
         resized = self.get_resized_filepath(input)
@@ -27,7 +27,7 @@ class Resizer:
             print("Resized file exists. Skipping resizing...")
             return resized
 
-    def run_sync(
+    def run(
         self, input: str, output_type: str = "almost_at_top", force=False, **kwargs
     ):
         resized = self.get_resized_filepath(input)

@@ -8,7 +8,7 @@ class Extractor:
     def __init__(self, temp_path):
         self.temp_path = temp_path
 
-    async def run(
+    async def run_async(
         self,
         input: str,
         timestamp: str,
@@ -23,7 +23,7 @@ class Extractor:
         print(f"Capturing frame successful with file: {output}")
         return output
 
-    def run_sync(
+    def run(
         self,
         input: str,
         timestamp: str,

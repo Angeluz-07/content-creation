@@ -8,7 +8,7 @@ class Assembler:
         self.temp_path = temp_path
         self.output_path = output_path
 
-    async def run(
+    async def run_async(
         self,
         input_filepath: str,
         ui_png: str,
@@ -23,7 +23,7 @@ class Assembler:
         await run_async_subprocess(command=ffmpeg_cmd)
         return output_target
 
-    def run_sync(
+    def run(
         self,
         input_filepath: str,
         ui_png: str,
