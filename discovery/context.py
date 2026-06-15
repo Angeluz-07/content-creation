@@ -7,6 +7,8 @@ from services.transcription import GroqAudioTranscriber
 from services.text_gen import GroqHookGenerator
 from config import GROQ_API_KEY
 from services.download import DownloadService
+from dbs.md_repository import PromptRepository
+from config import PROMPT_DIR
 
 client = get_qdrant_client()
 collection_name = "moments"  # change to 'moments'
@@ -22,3 +24,4 @@ metal_detector = Detector(vector_store=qvs, embedder=embedder)
 
 download_service = DownloadService()
 hook_generator = GroqHookGenerator(GROQ_API_KEY)
+prompt_repo = PromptRepository(PROMPT_DIR)
