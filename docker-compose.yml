@@ -168,7 +168,7 @@ services:
     image: angeluz07/cc-video-build:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./services/video-build/Dockerfile
+      dockerfile: ./services/video/Dockerfile
     container_name: video_build_api
     ports:
       - "8003:8003"
@@ -177,7 +177,7 @@ services:
       - REDIS_URI=redis://redis:6379
     volumes:
       - ./.data:/app/.data:z
-      - ./services/video_build:/app:z
+      - ./services/video:/app:z
     deploy:
       resources:
         limits:
@@ -192,7 +192,7 @@ services:
     image: angeluz07/cc-video-build:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./services/video-build/Dockerfile
+      dockerfile: ./services/video/Dockerfile
     container_name: video_build_worker
     environment:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
@@ -200,12 +200,12 @@ services:
       - PYTHONUNBUFFERED=1
     volumes:
       - ./.data:/app/.data:z
-      - ./services/video_build:/app:z
+      - ./services/video:/app:z
     command: taskiq worker workers.broker:broker workers.video_build --workers 2 --max-async-tasks 1
     deploy:
       resources:
         limits:
-          cpus: "3"
+          cpus: "6"
           memory: 2G
         reservations:
           cpus: "1"
