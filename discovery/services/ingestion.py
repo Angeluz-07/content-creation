@@ -2,7 +2,6 @@ import os
 import glob
 from pathlib import Path
 from uuid import uuid5, NAMESPACE_DNS
-import whisper
 
 from discovery.dbs.interfaces import IVectorStore
 

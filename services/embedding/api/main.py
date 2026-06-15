@@ -32,7 +32,7 @@ class TextBatchRequest(BaseModel):
 
 
 @app.post("/embed")
-async def get_embedding(request: TextRequest):
+def get_embedding(request: TextRequest):
     try:
         # 2. Generamos el flat array (vector)
         # .encode() devuelve un numpy array, .tolist() lo hace serializable a JSON
@@ -43,7 +43,7 @@ async def get_embedding(request: TextRequest):
 
 
 @app.post("/embed_batch")
-async def get_embeddings(request: TextBatchRequest):
+def get_embeddings(request: TextBatchRequest):
     # Esto es una operación optimizada por el modelo
     return {"vectors": model.encode(request.texts).tolist()}
 

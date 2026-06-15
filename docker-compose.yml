@@ -104,17 +104,18 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
     volumes:
-      - ./services/embedding/.data:/app/.data:z
+      - ./services/embedding/.data:/app/.data:z      
+      - ./services/embedding:/app:z
     deploy:
       resources:
         limits:
-          cpus: "1.0"
-          memory: 1536M
+          cpus: "6.0"
+          memory: 1.5G
         reservations:
-          cpus: "0.25" 
-          memory: 256M
+          cpus: "1" 
+          memory: 0.5G
     profiles:
       - custom
   downloadapi:
