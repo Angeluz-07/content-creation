@@ -4,6 +4,7 @@ from services.embedding import Embedder
 from services.ingestion import Ingester
 from services.detection import Detector
 from services.transcription import GroqAudioTranscriber
+from services.text_gen import GroqHookGenerator
 from config import GROQ_API_KEY
 from services.download import DownloadService
 
@@ -20,3 +21,4 @@ ingester = Ingester(vector_store=qvs, embedder=embedder, transcriber=transcriber
 metal_detector = Detector(vector_store=qvs, embedder=embedder)
 
 download_service = DownloadService()
+hook_generator = GroqHookGenerator(GROQ_API_KEY)
