@@ -65,7 +65,7 @@ class LayerBuilder:
         self._components.append(watermark)
         return self
 
-    def add_banner_purple_bottom(self, text):
+    def add_banner_bottom(self, text, background_color):
         banner_filepath = str(Path(self.temp_path) / "banner_final.png")
         banner = (
             BasicBanner(
@@ -73,8 +73,9 @@ class LayerBuilder:
                 height=500,
                 text=text,
                 font_path=self.font,
+                background_color=background_color,
             )
-            .render_purple()  # todo: improve
+            .render()  # todo: improve
             .save_img(banner_filepath)
         )
         banner = ImageClip(banner_filepath).with_position(("center", 1150))

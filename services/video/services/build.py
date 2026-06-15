@@ -39,11 +39,14 @@ class BuilderV1(BaseBuilder):
         font = self.assets.get_path("font", font_name)
         watermark_text = params.get("watermark_text")
         hook_text = params.get("hook_text")
+        purple_gradient = "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%)"
+        green_stylish = "linear-gradient(57deg, #574BCD, #2999AD, #41E975)"
+        background_color = params.get("background_color", purple_gradient)
         layer = (
             self.layer_builder.reset()
             .set_font(font)
             .add_watermark(watermark_text)
-            .add_banner_purple_bottom(hook_text)
+            .add_banner_bottom(hook_text, background_color)
             .run()
         )
 

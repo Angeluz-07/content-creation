@@ -70,7 +70,7 @@ class BasicBanner(SkiaCanvas):
     Basic rectangle banner with white text and black background
     """
 
-    def __init__(self, width, height, text, font_path):
+    def __init__(self, width, height, text, font_path, background_color="#000000"):
         self.params = {
             "width": width,
             "height": height,
@@ -79,7 +79,7 @@ class BasicBanner(SkiaCanvas):
             "line_spacing": 1.1,
             "letter_spacing": 0.05,
             "text_color": "#E0E0E0",
-            "background_color": "#000000",
+            "background_color": background_color,
         }
         super().__init__(self.params["width"], self.params["height"])
 
@@ -129,18 +129,8 @@ class BasicBanner(SkiaCanvas):
 
     def render(self):
         return (
-            self.add_rectangle()
-            .add_background_color(self.params["background_color"])
-            .add_font(self.font_path)
-            .add_text(self.text)
-        )
-
-    def render_purple(self):
-        return (
             self.add_rectangle(corner_radius=90)
-            .add_background_color(
-                "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%)"
-            )
+            .add_background_color(self.params["background_color"])
             .add_font(self.font_path)
             .add_text(self.text)
         )
