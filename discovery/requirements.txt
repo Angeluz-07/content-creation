@@ -16,3 +16,4 @@ ollama
 python-dotenv==1.2.2
 
 pytest
+pyinstrument
