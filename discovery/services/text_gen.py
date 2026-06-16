@@ -4,7 +4,7 @@ from groq import Groq
 
 
 class GroqHookGenerator:
-    def __init__(self, api_key: str, model: str = "llama3-70b-8192"):
+    def __init__(self, api_key: str, model: str = "llama-3.3-70b-versatile"):
         """
         Inicializa el cliente de Groq.
         Modelos recomendados para texto/velocidad en Free Tier:

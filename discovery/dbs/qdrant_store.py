@@ -1,4 +1,4 @@
-from discovery.dbs.interfaces import IVectorStore
+from dbs.interfaces import IVectorStore
 from qdrant_client.models import VectorParams, Distance
 from typing import List, Dict
 

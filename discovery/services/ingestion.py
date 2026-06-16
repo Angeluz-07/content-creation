@@ -3,7 +3,7 @@ import glob
 from pathlib import Path
 from uuid import uuid5, NAMESPACE_DNS
 
-from discovery.dbs.interfaces import IVectorStore
+from dbs.interfaces import IVectorStore
 
 
 class Ingester:
