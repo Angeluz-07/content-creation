@@ -10,12 +10,9 @@ from dbs.mongo_repository import TaskMongoRepository
 from dbs.mongo_repository import EventMongoRepository
 
 from config import (
-    MONGO_USER,
-    MONGO_PASS,
-    MONGO_HOST,
-    MONGO_PORT,
+    MONGODB_URI,
     MONGO_DB_NAME,
-    REDIS_HOST,
+    REDIS_URI,
 )
 from services.filename_provider import FilenameProvider
 from config import DOWNLOAD_DIR
@@ -23,7 +20,7 @@ from config import DOWNLOAD_DIR
 
 class RepositoryHub:
     def __init__(self):
-        client = get_mongo_client(MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT)
+        client = get_mongo_client(MONGODB_URI)
         # fmt: off
         self.download_repo   = DownloadMongoRepository(client=client, db_name=MONGO_DB_NAME, collection_name="downloads")
         self.production_repo = ProductionMongoRepository(client=client, db_name=MONGO_DB_NAME, collection_name="short_productions")
@@ -46,7 +43,7 @@ class ServiceHub:
         self.production_service   = ProductionService(production_repo)
         
         self.event_service = EventService(event_repo)
-        self.sse_service   = SSEService(redis_url=REDIS_HOST)
+        self.sse_service   = SSEService(redis_url=REDIS_URI)
         self.task_service  = TaskService(task_repo)
         # fmt : on
 

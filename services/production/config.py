@@ -14,13 +14,6 @@ TEMP_DIR = str(PROJECT_DIR.parent / ".data" / "temp")
 OUTPUT_DIR = str(PROJECT_DIR.parent / ".data" / "output_videos")
 
 
-ENV_DIR = Path(__file__).resolve().parent.parent / ".env"
-load_dotenv(dotenv_path=ENV_DIR)
-
-MONGO_USER = os.getenv("MONGO_USER")
-MONGO_PASS = os.getenv("MONGO_PASS")
-MONGO_HOST = os.getenv("MONGO_HOST")
-MONGO_PORT = os.getenv("MONGO_PORT")
 MONGO_DB_NAME = "cc_db"
-
-REDIS_HOST = "redis://localhost:6379/0"
+MONGODB_URI = os.getenv("MONGODB_URI")
+REDIS_URI = os.getenv("REDIS_URI")

@@ -94,7 +94,33 @@ services:
           memory: 128M # Garantiza al menos 128MB
     profiles:
       - base
+
   # --- Custom Services ---
+  production_api:
+    image: angeluz07/cc-production:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./services/production/Dockerfile
+    container_name: production_api
+    ports:
+      - "8000:8000"
+    environment:
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}      
+      - REDIS_URI=redis://redis:6379
+      - MONGODB_URI=${MONGODB_URI}
+    volumes:
+      - ./services/production/.data:/app/.data:z
+      - ./services/production:/app:z
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 0.25G
+        reservations:
+          cpus: "0.5"
+          memory: 0.25G
+    profiles:
+      - custom
   embedding:
     image: angeluz07/embedding:0.0.1 # use local if exists
     build: # if doesnt, build it
@@ -106,7 +132,7 @@ services:
     environment:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
     volumes:
-      - ./services/embedding/.data:/app/.data:z      
+      - ./services/embedding/.data:/app/.data:z
       - ./services/embedding:/app:z
     deploy:
       resources:
@@ -114,7 +140,7 @@ services:
           cpus: "6.0"
           memory: 1.5G
         reservations:
-          cpus: "1" 
+          cpus: "1"
           memory: 0.5G
     profiles:
       - custom
@@ -130,7 +156,7 @@ services:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
       - REDIS_URI=redis://redis:6379
     volumes:
-      - ./.data:/app/.data:z      
+      - ./.data:/app/.data:z
       - ./services/download:/app:z
     deploy:
       resources:
@@ -182,7 +208,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "6"  # still have, a cpu intensive task in this api
+          cpus: "6" # still have, a cpu intensive task in this api
           memory: 1G
         reservations:
           cpus: "1"

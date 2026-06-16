@@ -1,14 +1,6 @@
-import sys
-from pathlib import Path
-
-# This finds the 'backend' directory and adds it to the search path
-path_root = Path(__file__).parents[1]
-sys.path.append(str(path_root))
-# INFO: the code above is to be able to run python rest_api/main.py
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import router
+from api.routes import router
 
 app = FastAPI()
 
