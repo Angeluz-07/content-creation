@@ -144,28 +144,6 @@ services:
           memory: 0.25G
     profiles:
       - custom
-  ui:
-    image: node:20-alpine
-    container_name: cc_ui
-    working_dir: /app
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./services/ui:/app
-      - ./services/ui/node_modules:/app/node_modules
-    environment:
-      - NODE_ENV=development
-    command: sh -c "npm run dev -- --host"
-    deploy:
-      resources:
-        limits:
-          cpus: "1"
-          memory: 0.5G
-        reservations:
-          cpus: "1"
-          memory: 0.5G
-    profiles:
-      - custom
   embedding_api:
     image: angeluz07/embedding:0.0.1 # use local if exists
     build: # if doesnt, build it
