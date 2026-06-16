@@ -105,11 +105,11 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}      
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
       - REDIS_URI=redis://redis:6379
       - MONGODB_URI=${MONGODB_URI}
     volumes:
-      - ./services/production/.data:/app/.data:z
+      - ./.data:/app/.data:z
       - ./services/production:/app:z
     deploy:
       resources:
@@ -121,12 +121,35 @@ services:
           memory: 0.25G
     profiles:
       - custom
-  embedding:
+  production_handler:
+    image: angeluz07/cc-production:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./services/production/Dockerfile
+    container_name: production_handler
+    environment:
+      - REDIS_URI=redis://redis:6379
+      - MONGODB_URI=${MONGODB_URI}
+    volumes:
+      - ./.data:/app/.data:z
+      - ./services/production:/app:z
+    command: faststream run handlers.main:backend_worker
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 0.25G
+        reservations:
+          cpus: "0.5"
+          memory: 0.25G
+    profiles:
+      - custom
+  embedding_api:
     image: angeluz07/embedding:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
       dockerfile: ./services/embedding/Dockerfile
-    container_name: embedding
+    container_name: embedding_api
     ports:
       - "8001:8001"
     environment:
@@ -144,7 +167,7 @@ services:
           memory: 0.5G
     profiles:
       - custom
-  downloadapi:
+  download_api:
     image: angeluz07/cc-download:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
@@ -168,7 +191,7 @@ services:
           memory: 256M
     profiles:
       - custom
-  downloadworker:
+  download_worker:
     image: angeluz07/cc-download:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
@@ -191,12 +214,12 @@ services:
           memory: 1G
     profiles:
       - custom
-  videobuildapi:
+  video_api:
     image: angeluz07/cc-video-build:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
       dockerfile: ./services/video/Dockerfile
-    container_name: video_build_api
+    container_name: video_api
     ports:
       - "8003:8003"
     environment:
@@ -215,12 +238,12 @@ services:
           memory: 1G
     profiles:
       - custom
-  video_build_worker:
+  video_worker:
     image: angeluz07/cc-video-build:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
       dockerfile: ./services/video/Dockerfile
-    container_name: video_build_worker
+    container_name: video_worker
     environment:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
       - REDIS_URI=redis://redis:6379
