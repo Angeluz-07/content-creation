@@ -104,6 +104,8 @@ services:
     container_name: production_api
     ports:
       - "8000:8000"
+    extra_hosts:
+      - "localhost:host-gateway" 
     environment:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
       - REDIS_URI=redis://redis:6379
