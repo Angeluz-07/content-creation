@@ -13,6 +13,9 @@
 # neo4j local data
 .neo4j_data
 
+# prefect data
+.prefect_data
+
 # data folders
 .data
 
