@@ -60,9 +60,8 @@ class Resizer:
         }
         filter_fn = video_filters[output_type]
         if output_type == "full_vertical":
-            percentage = kwargs.get(
-                "percentage", 0.0
-            )  # 0.0 es el valor por defecto si no se pasa
+            percentage = kwargs.get("percentage")
+            percentage = 0.0 if percentage is None else percentage
             return filter_fn(percentage=percentage)
 
         return filter_fn()

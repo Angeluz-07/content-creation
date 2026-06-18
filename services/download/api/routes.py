@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from api.models import DownloadParamsInput, DownloadVTTInput
+from api.models import DownloadParamsInput, DownloadVTTInput, DownloadAudioInput
 from context import downloader
 from context import event_bus
 from context import EVENTS_EMITTED
@@ -24,6 +24,21 @@ async def download_vtt(input: DownloadVTTInput):
         "message": f"Procesamiento iniciado para {input.output_filename}",
     }
 
+@router.post("/download/audio")
+async def download_vtt(input: DownloadAudioInput):
+    print(f"Procesando audio: {input.output_filename} desde {input.url}")
+    await downloader.get_audio(
+        url=input.url,
+        start_ts=input.start_segment,
+        end_ts=input.end_segment,
+        output=input.output_filename,
+        force=input.force,
+    )
+
+    return {
+        "status": "success",
+        "message": f"Procesamiento iniciado para {input.output_filename}",
+    }
 
 @router.post("/download-segment/synchronous")
 def download_segment_synchronous(input: DownloadParamsInput):

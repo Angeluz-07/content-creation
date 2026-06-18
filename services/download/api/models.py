@@ -9,6 +9,14 @@ class DownloadParamsInput(BaseModel):
     output_filename: str
 
 
+class DownloadAudioInput(BaseModel):
+    url: str
+    start_segment: str = "00:00:00"
+    end_segment: str = "00:00:05"
+    output_filename: str
+    force: bool = False
+
+
 class DownloadVTTInput(BaseModel):
     url: str
     force_download: bool = False
