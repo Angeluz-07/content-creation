@@ -6,6 +6,7 @@ from context import EVENTS_EMITTED
 from fastapi import HTTPException
 from services.utils import get_new_uuid
 from workers.download import download_task
+from workers.prefect_download import download_prefect_flow
 
 router = APIRouter(prefix="", tags=["main"])
 
@@ -24,6 +25,7 @@ async def download_vtt(input: DownloadVTTInput):
         "message": f"Procesamiento iniciado para {input.output_filename}",
     }
 
+
 @router.post("/download/audio")
 async def download_vtt(input: DownloadAudioInput):
     print(f"Procesando audio: {input.output_filename} desde {input.url}")
@@ -39,6 +41,7 @@ async def download_vtt(input: DownloadAudioInput):
         "status": "success",
         "message": f"Procesamiento iniciado para {input.output_filename}",
     }
+
 
 @router.post("/download-segment/synchronous")
 def download_segment_synchronous(input: DownloadParamsInput):
@@ -68,6 +71,38 @@ async def download_segment(input: DownloadParamsInput):
 
         return {
             "status": "queued",
+            "message": f"Tarea enviada al worker para: {output_filename}",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+from prefect.deployments import run_deployment
+
+
+@router.post("/download-segment/prefect")
+async def download_segment_prefect(input: DownloadParamsInput):
+    try:
+        params = input.model_dump()
+        output_filename = params["output_filename"]
+        task_id = get_new_uuid()
+
+        print(f"Sending to queue: {output_filename}")
+
+        flow_run = await run_deployment(
+            name="download-video-flow/production-downloader",
+            parameters={"task_id": task_id, "params": params},
+            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
+        )
+        await event_bus.publish(
+            "download:enqueued", payload={"task_id": task_id, "params": params}
+        )
+
+        return {
+            "status": "queued",
+            "backend": "prefect-native",
+            "flow_run_id": str(flow_run.id),  # ID único del pipeline en Prefect
+            "task_id": task_id,
             "message": f"Tarea enviada al worker para: {output_filename}",
         }
     except Exception as e:
