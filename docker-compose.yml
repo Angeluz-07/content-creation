@@ -222,30 +222,7 @@ services:
       context: .
       dockerfile: ./services/download/Dockerfile
     container_name: download_worker
-    environment:
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-false}
-      - REDIS_URI=redis://redis:6379
-      - PYTHONUNBUFFERED=1
-    volumes:
-      - ./.data:/app/.data:z
-    command: taskiq worker workers.broker:broker workers.download --workers 2 --max-async-tasks 1
-    deploy:
-      resources:
-        limits:
-          cpus: "4.0"
-          memory: 2G
-        reservations:
-          cpus: "1.0"
-          memory: 1G
-    profiles:
-      - custom
-  download_worker_prefect:
-    image: angeluz07/cc-download:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./services/download/Dockerfile
-    container_name: download_worker_prefect
-    command: prefect flow serve workers.prefect_download:download_prefect_flow --name "production-downloader" --limit 2
+    command: prefect flow serve workers.download:download_video --name "main" --limit 2
     environment:
       - PREFECT_API_URL=http://prefect-server:4200/api
       - REDIS_URI=redis://redis:6379

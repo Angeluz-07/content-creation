@@ -1,7 +1,5 @@
 fastapi[standard]==0.135.3
 uvicorn[standard]==0.24.0
 yt-dlp==2026.3.17
-taskiq==0.12.4
-taskiq-redis==1.2.2
 redis==7.4.0
-prefect>=3.0.0
+prefect==3.7.5

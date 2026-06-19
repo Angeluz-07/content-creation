@@ -5,8 +5,8 @@ from context import event_bus
 from context import EVENTS_EMITTED
 from fastapi import HTTPException
 from services.utils import get_new_uuid
-from workers.download import download_task
-from workers.prefect_download import download_prefect_flow
+from workers.download import download_video
+from prefect.deployments import run_deployment
 
 router = APIRouter(prefix="", tags=["main"])
 
@@ -54,31 +54,6 @@ def download_segment_synchronous(input: DownloadParamsInput):
     }
 
 
-@router.post("/download-segment")
-async def download_segment(input: DownloadParamsInput):
-    try:
-        params = input.model_dump()
-        output_filename = params["output_filename"]
-        task_id = get_new_uuid()
-
-        print(f"Sending to queue: {output_filename}")
-
-        await download_task.kiq(task_id, params)
-
-        await event_bus.publish(
-            "download:enqueued", payload={"task_id": task_id, "params": params}
-        )
-
-        return {
-            "status": "queued",
-            "message": f"Tarea enviada al worker para: {output_filename}",
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-from prefect.deployments import run_deployment
-
 
 @router.post("/download-segment/prefect")
 async def download_segment_prefect(input: DownloadParamsInput):
@@ -90,10 +65,11 @@ async def download_segment_prefect(input: DownloadParamsInput):
         print(f"Sending to queue: {output_filename}")
 
         flow_run = await run_deployment(
-            name="download-video-flow/production-downloader",
+            name="download-video/main",
             parameters={"task_id": task_id, "params": params},
             timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
         )
+
         await event_bus.publish(
             "download:enqueued", payload={"task_id": task_id, "params": params}
         )
