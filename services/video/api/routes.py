@@ -7,6 +7,7 @@ from context import event_bus
 from fastapi import HTTPException
 from services.utils import get_new_uuid
 from workers.video_build import video_build_task
+from prefect.deployments import run_deployment
 
 router = APIRouter(prefix="", tags=["main"])
 
@@ -42,6 +43,44 @@ async def download_segment(config: ProductionInput):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+@router.post("/produce-short/prefect")
+async def produce_short_prefect(config: ProductionInput):
+    try:
+        print("hello", config)
+        params = config.model_dump()
+        output_filename = params["output"]
+        task_id = get_new_uuid()
+
+        print(f"Sending to queue: {output_filename}")
+
+        flow_run = await run_deployment(
+            name="video-build/main",
+            parameters={"task_id": task_id, "params": params},
+            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
+        )
+
+       
+        await event_bus.publish(
+            "video_build:enqueued", payload={"task_id": task_id, "params": params}
+        )
+
+        return {
+            "status": "queued",
+            "backend": "prefect-native",
+            "flow_run_id": str(flow_run.id),  # ID único del pipeline en Prefect
+            "task_id": task_id,
+            "message": f"Tarea enviada al worker para: {output_filename}",
+        }
+    except Exception as e:
+        print(f"Tipo de error: {type(e)}")
+        print(f"Representación (repr): {repr(e)}")
+        
+        # Si el error viene de una respuesta HTTP de la API de Prefect
+        if hasattr(e, "response") and hasattr(e.response, "text"):
+            print(f"Respuesta detallada de la API: {e.response.text}")
+            
+        raise HTTPException(status_code=400, detail=str(e))
 
 # @router.get("/events-emitted")
 # def get_events_emitted():

@@ -50,7 +50,7 @@ class ProductionService:
         debug_video_frame = params["debug_frame"]
 
         response = requests.post(
-            f"{self.url}/produce-short",
+            f"{self.url}/produce-short/prefect",
             json={
                 "input": input_filename,
                 "font_name": font_name,

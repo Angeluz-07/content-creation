@@ -250,6 +250,7 @@ services:
     environment:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
       - REDIS_URI=redis://redis:6379
+      - PREFECT_API_URL=http://prefect-server:4200/api
     volumes:
       - ./.data:/app/.data:z
       - ./services/video:/app:z
@@ -277,6 +278,29 @@ services:
       - ./.data:/app/.data:z
       - ./services/video:/app:z
     command: taskiq worker workers.broker:broker workers.video_build --workers 2 --max-async-tasks 1
+    deploy:
+      resources:
+        limits:
+          cpus: "6"
+          memory: 2G
+        reservations:
+          cpus: "1"
+          memory: 1G
+    profiles:
+      - custom
+  video_worker_prefect:
+    image: angeluz07/cc-video-build:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./services/video/Dockerfile
+    container_name: video_worker_prefect
+    command: prefect flow serve workers.video:video_build --name "main" --limit 2
+    environment:
+      - PREFECT_API_URL=http://prefect-server:4200/api
+      - REDIS_URI=redis://redis:6379
+    volumes:
+      - ./.data:/app/.data:z
+      - ./services/video:/app:z
     deploy:
       resources:
         limits:

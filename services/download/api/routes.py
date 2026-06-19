@@ -55,7 +55,7 @@ def download_segment_synchronous(input: DownloadParamsInput):
 
 
 
-@router.post("/download-segment/prefect")
+@router.post("/download-segment/")
 async def download_segment_prefect(input: DownloadParamsInput):
     try:
         params = input.model_dump()

@@ -15,7 +15,7 @@ class DownloadService:
         output_filename = params["output_filename"]
 
         response = requests.post(
-            f"{self.url}/download-segment",
+            f"{self.url}/download-segment/prefect",
             json={
                 "url": url,
                 "force_download": force_download,
