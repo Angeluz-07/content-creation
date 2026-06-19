@@ -6,7 +6,6 @@ from context import event_bus
 # from context import EVENTS_EMITTED
 from fastapi import HTTPException
 from services.utils import get_new_uuid
-from workers.video_build import video_build_task
 from prefect.deployments import run_deployment
 
 router = APIRouter(prefix="", tags=["main"])
@@ -14,34 +13,13 @@ router = APIRouter(prefix="", tags=["main"])
 
 @router.post("/produce-short/synchronous")
 def process_video(config: ProductionInput):
-    print(
-        f"Procesando: {config.input}"
-    )  # todo: link data to params used for download
+    print(f"Procesando: {config.input}")  # todo: link data to params used for download
 
     video_builder.run(config.model_dump())
     return {
         "status": "success",
         "message": f"Procesamiento iniciado para {config.input}",
     }
-
-
-@router.post("/produce-short")
-async def download_segment(config: ProductionInput):
-    try:
-        params = config.model_dump()
-        task_id = get_new_uuid()
-        print(f"Sending to queue: {config.input}")
-        await video_build_task.kiq(task_id, params)
-
-        await event_bus.publish(
-            "video_build:enqueued", payload={"task_id": task_id, "params": params}
-        )
-        return {
-            "status": "queued",
-            "message": f"Tarea enviada al worker para: {config.input}",
-        }
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/produce-short/prefect")
@@ -60,7 +38,6 @@ async def produce_short_prefect(config: ProductionInput):
             timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
         )
 
-       
         await event_bus.publish(
             "video_build:enqueued", payload={"task_id": task_id, "params": params}
         )
@@ -75,12 +52,13 @@ async def produce_short_prefect(config: ProductionInput):
     except Exception as e:
         print(f"Tipo de error: {type(e)}")
         print(f"Representación (repr): {repr(e)}")
-        
+
         # Si el error viene de una respuesta HTTP de la API de Prefect
         if hasattr(e, "response") and hasattr(e.response, "text"):
             print(f"Respuesta detallada de la API: {e.response.text}")
-            
+
         raise HTTPException(status_code=400, detail=str(e))
+
 
 # @router.get("/events-emitted")
 # def get_events_emitted():
