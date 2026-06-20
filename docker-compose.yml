@@ -274,6 +274,7 @@ services:
     environment:
       - PREFECT_API_URL=http://prefect-server:4200/api
       - REDIS_URI=redis://redis:6379
+      - WEBHOOK_URI=${WEBHOOK_URI}
     volumes:
       - ./.data:/app/.data:z
       - ./services/video:/app:z

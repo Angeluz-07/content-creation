@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class ProductionInput(BaseModel):
+    task_id: str
     input: str
     font_name: str
     watermark_text: str

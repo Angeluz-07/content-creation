@@ -17,3 +17,8 @@ class DownloadParamsInput(BaseModel):
     start_segment: str
     end_segment: str
     output_filename: str
+
+
+class TaskSyncInput(BaseModel):
+    task_id: str
+    status: str

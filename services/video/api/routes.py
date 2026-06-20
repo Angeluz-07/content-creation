@@ -25,12 +25,10 @@ def process_video(config: ProductionInput):
 @router.post("/produce-short/prefect")
 async def produce_short_prefect(config: ProductionInput):
     try:
-        print("hello", config)
         params = config.model_dump()
-        output_filename = params["output"]
-        task_id = get_new_uuid()
+        task_id = params.get("task_id")
 
-        print(f"Sending to queue: {output_filename}")
+        print(f"Sending to queue: {params.get("output")}")
 
         flow_run = await run_deployment(
             name="video-build/main",
@@ -38,16 +36,12 @@ async def produce_short_prefect(config: ProductionInput):
             timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
         )
 
-        await event_bus.publish(
-            "video_build:enqueued", payload={"task_id": task_id, "params": params}
-        )
+        # await event_bus.publish(
+        #     "video_build:enqueued", payload={"task_id": task_id, "params": params}
+        # )
 
         return {
-            "status": "queued",
-            "backend": "prefect-native",
-            "flow_run_id": str(flow_run.id),  # ID único del pipeline en Prefect
-            "task_id": task_id,
-            "message": f"Tarea enviada al worker para: {output_filename}",
+            "message": f"Tarea enviada al worker para: {params.get("output")}",
         }
     except Exception as e:
         print(f"Tipo de error: {type(e)}")

@@ -52,6 +52,7 @@ class ProductionService:
         response = requests.post(
             f"{self.url}/produce-short/prefect",
             json={
+                "task_id": params.get("task_id"),
                 "input": input_filename,
                 "font_name": font_name,
                 "watermark_text": watermark_text,

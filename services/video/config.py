@@ -17,3 +17,5 @@ DOWNLOAD_DIR = str(DATA_DIR / "downloads")
 
 REDIS_URI = os.getenv("REDIS_URI", "redis://localhost:6379")
 REDIS_QUEUE = "video_build_queue"
+
+WEBHOOK_URI = os.getenv("WEBHOOK_URI")
