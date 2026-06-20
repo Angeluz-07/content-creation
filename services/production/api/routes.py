@@ -12,7 +12,7 @@ from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from config import TEMP_DIR, OUTPUT_DIR
 from sse_starlette.sse import EventSourceResponse
-from context import sse_service, task_service
+from context import sse_service, task_service, download_service
 from pathlib import Path
 from api.models import TaskSyncInput
 
@@ -28,6 +28,7 @@ def sync_task_status(data: TaskSyncInput):
         task_service.mark_as_processing(task_id)
         sse_service.notify_task_update_sync(task_id, status="PROCESSING")
     elif new_status == "COMPLETED":
+        #todo: project domain object by entity_type
         task_service.mark_as_completed(task_id)
         sse_service.notify_task_update_sync(task_id, status="COMPLETED")
     elif new_status == "FAILED":

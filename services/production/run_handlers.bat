@@ -1,1 +1,0 @@
-faststream run handlers.main:backend_worker
