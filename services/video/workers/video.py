@@ -1,9 +1,9 @@
 import traceback
 from prefect import flow, tags
-from context import event_bus
 from context import vb1 as video_builder
 from config import WEBHOOK_URI
 import httpx
+
 
 # trade off technical purity for simplicity of overall system
 async def notify_status(flow, flow_run, state):
@@ -13,13 +13,13 @@ async def notify_status(flow, flow_run, state):
 
     task_id = flow_run.parameters.get("task_id")
 
-    prefect_state = state.type.value  # PENDING, RUNNING, COMPLETED, FAILED
+    task_state = state.type.value  # PENDING, RUNNING, COMPLETED, FAILED
 
     try:
         # Dispara y olvida: El worker no debe sufrir si la red parpadea
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.post(
-                WEBHOOK_URI, json={"task_id": task_id, "status": prefect_state}
+                WEBHOOK_URI, json={"task_id": task_id, "status": task_state}
             )
             response.raise_for_status()
 
@@ -27,37 +27,26 @@ async def notify_status(flow, flow_run, state):
         print(f"Couldnt notify status for task={task_id[:5]}: {e}")
 
 
-
 @flow(
     name="video-build",  # Nombre único en el servidor
     retries=2,
     retry_delay_seconds=30,
     log_prints=True,
-    timeout_seconds=600,    
+    timeout_seconds=600,
     on_running=[notify_status],  # status | PROCESSING
     on_completion=[notify_status],  # status | COMPLETED
     on_failure=[notify_status],  # status | FAILED
 )
-async def video_build(task_id: str, params: dict):
-    # await event_bus.publish(
-    #     "video_build:started", payload={"task_id": task_id, "params": params}
-    # )
-    output_filename = params.get("output")
-    print(f"--- [WORKER] Iniciando proceso de: {output_filename} ---")
+async def video_build(task_id: str, data: dict):
+    print(f"--- [WORKER] Iniciando proceso de: {data.get("output_filename")} ---")
 
     try:
-        await video_builder.run_async(params=params)
+        await video_builder.run_async(params=data)
 
-        print(f"--- [WORKER] Finalizado con éxito: {output_filename} ---")
+        print(f"--- [WORKER] Finalizado con éxito: {data.get("output_filename")} ---")
 
-        # await event_bus.publish(
-        #     "video_build:completed", payload={"task_id": task_id, "params": params}
-        # )
     except Exception as e:
         print(f"--- [WORKER] Error procesando video: {str(e)} ---")
         full_error = traceback.format_exc()
         print("Full eror: ", full_error)
-        # await event_bus.publish(
-        #     "video_build:failed", payload={"task_id": task_id, "error": full_error}
-        # )
         raise e

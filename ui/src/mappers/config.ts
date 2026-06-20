@@ -7,22 +7,22 @@ import type { ShortProductionParams, DownloadParams } from '../types/config';
 export interface ShortProductionParamsPayload {
   debug_frame: boolean;
   hook_text: string;
-  input: string;
+  input_filename: string;
   watermark_text: string;
   frame_ts: string;
   font_name: string;
-  output: string;
+  output_filename: string;
 }
 
 export const toShortProductionParamsPayload = (data: ShortProductionParams): ShortProductionParamsPayload => {
   return {
     debug_frame: data.debugVideoFrame,
     hook_text: data.hookText,
-    input : data.inputFileName,
+    input_filename : data.inputFileName,
     watermark_text: data.watermarkText,
     frame_ts: data.frameTs,
     font_name: data.fontName,
-    output: data.outputFileName
+    output_filename: data.outputFileName
   };
 };
 

@@ -21,7 +21,7 @@ watch(lastDownloadTs, (newTs) => {
 const raw_items = ref([])
 const items = computed(() => {
   return raw_items.value.map((item) => ({
-    outputFileName: item.payload?.output,
+    outputFileName: item.payload?.output_filename,
     status: item.status,
   }))
 })

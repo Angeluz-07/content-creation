@@ -147,10 +147,10 @@ async def process_video_async(config: ProductionInput):
         )
         short_producer.trigger_async(params)
 
-        print(f"Sending to short_production queue: {config.input}")
+        print(f"Sending to short_production queue: {config.input_filename}")
 
         return {
-            "message": f"Sent to video_build: {config.input}",
+            "message": f"Sent to video_build: {config.input_filename}",
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

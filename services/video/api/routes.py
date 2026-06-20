@@ -1,11 +1,7 @@
 from fastapi import APIRouter
 from api.models import ProductionInput
 from context import vb1 as video_builder
-from context import event_bus
-
-# from context import EVENTS_EMITTED
 from fastapi import HTTPException
-from services.utils import get_new_uuid
 from prefect.deployments import run_deployment
 
 router = APIRouter(prefix="", tags=["main"])
@@ -23,25 +19,19 @@ def process_video(config: ProductionInput):
 
 
 @router.post("/produce-short/prefect")
-async def produce_short_prefect(config: ProductionInput):
+async def produce_short_prefect(data: ProductionInput):
     try:
-        params = config.model_dump()
-        task_id = params.get("task_id")
-
-        print(f"Sending to queue: {params.get("output")}")
+        data = data.model_dump()
+        print(f"Sending to worker: {data.get("output_filename")}")
 
         flow_run = await run_deployment(
             name="video-build/main",
-            parameters={"task_id": task_id, "params": params},
+            parameters={"task_id": data.get("task_id"), "data": data},
             timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
         )
 
-        # await event_bus.publish(
-        #     "video_build:enqueued", payload={"task_id": task_id, "params": params}
-        # )
-
         return {
-            "message": f"Tarea enviada al worker para: {params.get("output")}",
+            "message": f"Tarea enviada al worker para: {data.get("output")}",
         }
     except Exception as e:
         print(f"Tipo de error: {type(e)}")
@@ -52,8 +42,3 @@ async def produce_short_prefect(config: ProductionInput):
             print(f"Respuesta detallada de la API: {e.response.text}")
 
         raise HTTPException(status_code=400, detail=str(e))
-
-
-# @router.get("/events-emitted")
-# def get_events_emitted():
-#     return EVENTS_EMITTED

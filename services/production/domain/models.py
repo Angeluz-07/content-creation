@@ -16,8 +16,8 @@ class Download:
 
 @dataclass
 class Production:
-    input: str
-    output: str
+    input_filename: str
+    output_filename: str
     font_name: str
     watermark_text: str
     frame_ts: str

@@ -28,7 +28,7 @@ class BuilderV1(BaseBuilder):
     """
 
     def run(self, params):
-        input = params.get("input")
+        input = params.get("input_filename")
         force_resize = params.get("force_resize")
         input = self.assets.get_path("input", input)
         resized = self.resizer.run(
@@ -50,13 +50,13 @@ class BuilderV1(BaseBuilder):
             .run()
         )
 
-        output = params.get("output")
+        output = params.get("output_filename")
         debug_frame = params.get("debug_frame")
         result = self.assembler.run(resized, layer, output, debug=debug_frame)
         return result
 
     async def run_async(self, params):
-        input = params.get("input")
+        input = params.get("input_filename")
         force_resize = params.get("force_resize")
         input = self.assets.get_path("input", input)
         resized = await self.resizer.run_async(
@@ -66,7 +66,7 @@ class BuilderV1(BaseBuilder):
         font_name = params.get("font_name")
         font = self.assets.get_path("font", font_name)
         watermark_text = params.get("watermark_text")
-        hook_text = params.get("hook_text")        
+        hook_text = params.get("hook_text")
         purple_gradient = "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%)"
         green_stylish = "linear-gradient(57deg, #574BCD, #2999AD, #41E975)"
         layer = (
@@ -77,7 +77,7 @@ class BuilderV1(BaseBuilder):
             .run()
         )
 
-        output = params.get("output")
+        output = params.get("output_filename")
         debug_frame = params.get("debug_frame")
         result = await self.assembler.run_async(
             resized, layer, output, debug=debug_frame
@@ -93,7 +93,7 @@ class BuilderV2(BaseBuilder):
     """
 
     def run(self, params):
-        input = params.get("input")
+        input = params.get("input_filename")
         force_resize = params.get("force_resize")
         input = self.assets.get_path("input", input)
         resized = self.resizer.run(input, output_type="at_top", force=force_resize)
@@ -113,13 +113,13 @@ class BuilderV2(BaseBuilder):
             .run()
         )
 
-        output = params.get("output")
+        output = params.get("output_filename")
         debug_frame = params.get("debug_frame")
         result = self.assembler.run(resized, layer, output, debug=debug_frame)
         return result
 
     async def run_async(self, params):
-        input = params.get("input")
+        input = params.get("input_filename")
         force_resize = params.get("force_resize")
         input = self.assets.get_path("input", input)
         resized = await self.resizer.run_async(
@@ -141,7 +141,7 @@ class BuilderV2(BaseBuilder):
             .run()
         )
 
-        output = params.get("output")
+        output = params.get("output_filename")
         debug_frame = params.get("debug_frame")
         result = await self.assembler.run_async(
             resized, layer, output, debug=debug_frame
@@ -159,7 +159,7 @@ class BuilderV3(BaseBuilder):
     """
 
     def run(self, params):
-        input = params.get("input")
+        input = params.get("input_filename")
         force_resize = params.get("force_resize")
         input = self.assets.get_path("input", input)
         percentage = params.get("percentage")
@@ -180,13 +180,13 @@ class BuilderV3(BaseBuilder):
             .run()
         )
 
-        output = params.get("output")
+        output = params.get("output_filename")
         debug_frame = params.get("debug_frame")
         result = self.assembler.run(resized, layer, output, debug=debug_frame)
         return result
 
     async def run_async(self, params):
-        input = params.get("input")
+        input = params.get("input_filename")
         force_resize = params.get("force_resize")
         input = self.assets.get_path("input", input)
         percentage = params.get("percentage")
@@ -207,7 +207,7 @@ class BuilderV3(BaseBuilder):
             .run()
         )
 
-        output = params.get("output")
+        output = params.get("output_filename")
         debug_frame = params.get("debug_frame")
         result = await self.assembler.run_async(
             resized, layer, output, debug=debug_frame
