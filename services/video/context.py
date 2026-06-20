@@ -1,10 +1,8 @@
 from config import DOWNLOAD_DIR, ASSETS_DIR, OUTPUT_DIR, TEMP_DIR, EMOJI_DIR, LAYOUT_DIR
-from config import REDIS_URI, REDIS_QUEUE
 from domain.services.layer import LayerBuilder
 from domain.services.extractor import Extractor
 from domain.services.assembler import Assembler
 from domain.services.resizer import Resizer
-from services.event_bus import RedisEventBus
 from services.asset import AssetProvider
 from services.build import *
 
@@ -25,5 +23,3 @@ extractor = Extractor(TEMP_DIR)
 vb1 = BuilderV1(assets, resizer, layer_builder, assembler, extractor)
 vb2 = BuilderV2(assets, resizer, layer_builder, assembler, extractor)
 vb3 = BuilderV3(assets, resizer, layer_builder, assembler, extractor)
-
-event_bus = RedisEventBus(REDIS_URI)

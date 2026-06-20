@@ -273,7 +273,6 @@ services:
     command: prefect flow serve workers.video:video_build --name "main" --limit 2
     environment:
       - PREFECT_API_URL=http://prefect-server:4200/api
-      - REDIS_URI=redis://redis:6379
       - WEBHOOK_URI=${WEBHOOK_URI}
     volumes:
       - ./.data:/app/.data:z
