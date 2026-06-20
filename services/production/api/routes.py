@@ -103,18 +103,24 @@ def get_tasks(target_entity_type: str = None):
 
 # --- Asynchronous tasks ---
 @router.post("/download-segment")
-async def download_segment(input: DownloadParamsInput):
+async def download_segment(config: DownloadParamsInput):
     try:
-        params = input.model_dump()
+        params = config.model_dump()
         download_service.validate(params)
+        new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
+        params["id"] = task_service.get_new_uuid() 
+        params["task_id"] = new_task_id
+        task_service.create_task(
+            task_id=new_task_id, entity_type="download", payload=params
+        )
         download_service.trigger(params)
-        output_filename = params["output_filename"]
+        print(f"Sending to download service: {config.output_filename}")
+
         return {
-            "message": f"Sent to download: {output_filename}",
+            "message": f"Sent to download: {params["output_filename"]}",
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
 
 @router.get("/tasks/stream")
 async def tasks_stream():

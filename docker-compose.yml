@@ -201,7 +201,6 @@ services:
       - "8002:8002"
     environment:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
-      - REDIS_URI=redis://redis:6379
       - PREFECT_API_URL=http://prefect-server:4200/api
     volumes:
       - ./.data:/app/.data:z
@@ -225,7 +224,7 @@ services:
     command: prefect flow serve workers.download:download_video --name "main" --limit 2
     environment:
       - PREFECT_API_URL=http://prefect-server:4200/api
-      - REDIS_URI=redis://redis:6379
+      - WEBHOOK_URI=${WEBHOOK_URI}
     volumes:
       - ./.data:/app/.data:z
       - ./services/download:/app:z
@@ -249,7 +248,6 @@ services:
       - "8003:8003"
     environment:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
-      - REDIS_URI=redis://redis:6379
       - PREFECT_API_URL=http://prefect-server:4200/api
     volumes:
       - ./.data:/app/.data:z

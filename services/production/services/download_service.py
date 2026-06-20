@@ -29,6 +29,7 @@ class DownloadService:
         response = requests.post(
             f"{self.url}/download-segment",
             json={
+                "task_id": params.get("task_id"),
                 "url": url,
                 "force_download": force_download,
                 "start_segment": start_ts,

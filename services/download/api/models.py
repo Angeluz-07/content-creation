@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 
 
 class DownloadParamsInput(BaseModel):
+    task_id: str
     url: str
     force_download: bool = False
     start_segment: str
