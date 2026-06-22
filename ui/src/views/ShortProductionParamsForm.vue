@@ -53,6 +53,7 @@ const handleSubmit = async () => {
   } else {
     const { success, data } = await sendForm('/produce-short', payload)
     if (success) {
+      videoStore.setLastProductionTs(Date.now().toString())
       toast.success('Producción iniciada', {
         description: 'Se ha enviado a producir el video',
       })

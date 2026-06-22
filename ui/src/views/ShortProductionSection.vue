@@ -17,15 +17,15 @@ const refreshImage = () => {
   imageId.value = `images/?ts=${timestamp}`
 }
 
-const refreshVideo = (filename: string) => {
-  const timestamp = Date.now()
-  videoId.value = `${filename}/?t=${timestamp}`
-}
+// const refreshVideo = (filename: string) => {
+//   const timestamp = Date.now()
+//   videoId.value = `${filename}/?t=${timestamp}`
+// }
 
 watch(lastProductionTs, (newTs) => {
   if (newTs) {
     refreshImage()
-    refreshVideo(latestVideoId.value)
+    //refreshVideo(latestVideoId.value)
   }
 })
 </script>

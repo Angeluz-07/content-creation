@@ -9,12 +9,15 @@ import ModalVideoPlayer from './ModalVideoPlayer.vue'
 import { useDownloadStore } from '@/stores/useDownloadStore'
 import { storeToRefs } from 'pinia'
 import { usePolling } from '@/composables/usePolling.ts'
+import { useVideoStore } from '@/stores/useVideoStore.ts'
 
 const downloadStore = useDownloadStore()
+const videoStore = useVideoStore()
+const { lastProductionTs } = storeToRefs(videoStore)
 const { lastDownloadTs } = storeToRefs(downloadStore)
 const polling = usePolling(2000)
 
-watch(lastDownloadTs, (newTs) => {
+watch(lastProductionTs, (newTs) => {
   if (newTs) {
     polling.start(loadItems)
   }
@@ -43,7 +46,7 @@ const { loading: loadingItems, get: getItems } = useApi()
 const loadItems = async () => {
   const { data } = await getItems('/tasks?target_entity_type=short_production')
   if (data) {
-    console.log(data)
+    //console.log(data)
     raw_items.value = data.value
   }
 }
