@@ -8,14 +8,15 @@ import { useApi } from '@/composables/useApi'
 import ModalVideoPlayer from './ModalVideoPlayer.vue'
 import { useDownloadStore } from '@/stores/useDownloadStore'
 import { storeToRefs } from 'pinia'
-import { useTaskStream } from '@/composables/useTaskStream'
+import { usePolling } from '@/composables/usePolling.ts'
 
 const downloadStore = useDownloadStore()
 const { lastDownloadTs } = storeToRefs(downloadStore)
+const polling = usePolling(2000)
 
 watch(lastDownloadTs, (newTs) => {
   if (newTs) {
-    loadItems()
+    polling.start(loadItems)
   }
 })
 const raw_items = ref([])
@@ -25,6 +26,17 @@ const items = computed(() => {
     status: item.status,
   }))
 })
+
+watch(
+  raw_items,
+  (newItems) => {
+    const hasActiveTasks = newItems.some((i) => ['PENDING', 'PROCESSING'].includes(i.status))
+    if (!hasActiveTasks) {
+      polling.stop() // Detención explícita basada en tu regla de negocio
+    }
+  },
+  { deep: true },
+)
 
 const { loading: loadingItems, get: getItems } = useApi()
 
@@ -42,14 +54,9 @@ const statusSeverityMap = {
   COMPLETED: 'success',
   FAILED: 'warn',
 }
-const { connect, disconnect } = useTaskStream()
 
 onMounted(() => {
-  loadItems()
-  connect('tasks/stream', loadItems)
-})
-onUnmounted(() => {
-  disconnect()
+  polling.start(loadItems)
 })
 </script>
 <template>
@@ -85,7 +92,10 @@ onUnmounted(() => {
     <Column field="" header="Play">
       <template #body="slotProps">
         <template v-if="slotProps.data.status == 'COMPLETED'">
-          <ModalVideoPlayer url="/video" :fileName="slotProps.data.outputFileName"></ModalVideoPlayer>
+          <ModalVideoPlayer
+            url="/video"
+            :fileName="slotProps.data.outputFileName"
+          ></ModalVideoPlayer>
         </template>
       </template>
     </Column>

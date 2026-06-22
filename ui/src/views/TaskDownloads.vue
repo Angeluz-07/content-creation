@@ -11,7 +11,7 @@ import { usePolling } from '@/composables/usePolling.ts'
 
 const downloadStore = useDownloadStore()
 const { lastDownloadTs } = storeToRefs(downloadStore)
-const polling = usePolling(2000)
+const polling = usePolling( 2000)
 
 watch(lastDownloadTs, (newTs) => {
   if (newTs) {
