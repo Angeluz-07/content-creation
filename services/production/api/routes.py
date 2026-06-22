@@ -11,8 +11,7 @@ from context import (
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from config import TEMP_DIR, OUTPUT_DIR
-from sse_starlette.sse import EventSourceResponse
-from context import sse_service, task_service, download_service
+from context import task_service, download_service
 from pathlib import Path
 from api.models import TaskSyncInput
 
@@ -26,14 +25,11 @@ def sync_task_status(data: TaskSyncInput):
     task_id = data.task_id
     if new_status == "RUNNING":
         task_service.mark_as_processing(task_id)
-        sse_service.notify_task_update_sync(task_id, status="PROCESSING")
     elif new_status == "COMPLETED":
         #todo: project domain object by entity_type
         task_service.mark_as_completed(task_id)
-        sse_service.notify_task_update_sync(task_id, status="COMPLETED")
     elif new_status == "FAILED":
         task_service.mark_as_failed(task_id)
-        sse_service.notify_task_update_sync(task_id, status="FAILED")
     else:
         print("unknown state for", task_id)
     return {"status": "success"}
@@ -123,11 +119,8 @@ async def download_segment(config: DownloadParamsInput):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/tasks/stream")
-async def tasks_stream():
-    return EventSourceResponse(sse_service.listen_task_updates_async())
 
-
+# todo colapse into single method
 @router.post("/produce-short/synchronous")
 def process_video(config: ProductionInput):
     print(

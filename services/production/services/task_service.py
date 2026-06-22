@@ -3,11 +3,6 @@ from dbs.interfaces import IRepository
 from domain.models import Task, TaskStatus
 from uuid import uuid4
 from typing import List, Dict
-from dataclasses import asdict
-from services.sse_service import SSEService
-from uuid import uuid4
-
-# todo: make method to group by target_entity_type
 
 
 class TaskService:
@@ -21,6 +16,7 @@ class TaskService:
         return result
 
     def get_all_filtered_by_type(self, target_entity_type: str) -> List[Dict]:
+        # todo: make method to group by target_entity_type
         result: List[Task] = self.task_repo.get_all()
         result = [x for x in result if x.target_entity_type == target_entity_type]
         result.reverse()
