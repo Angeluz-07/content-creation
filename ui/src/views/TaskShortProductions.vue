@@ -15,7 +15,7 @@ const downloadStore = useDownloadStore()
 const videoStore = useVideoStore()
 const { lastProductionTs } = storeToRefs(videoStore)
 const { lastDownloadTs } = storeToRefs(downloadStore)
-const polling = usePolling(2000)
+const polling = usePolling(20000)
 
 watch(lastProductionTs, (newTs) => {
   if (newTs) {

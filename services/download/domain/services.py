@@ -39,7 +39,7 @@ class YTDownloader:
         force_download: bool,
         output_filename: str,
     ) -> str:
-        raw_filepath = str(Path(self.output_path) / f"{output_filename}.mp4")
+        raw_filepath = str(Path(self.output_path) / "video" /  f"{output_filename}.mp4")
         file_doesnt_exist = not Path(raw_filepath).is_file()
 
         if file_doesnt_exist or force_download:
@@ -113,7 +113,7 @@ class YTDownloader:
         force_download: bool,
         output_filename: str,
     ) -> str:
-        raw_filepath = str(Path(self.output_path) / f"{output_filename}")
+        raw_filepath = str(Path(self.output_path) / "vtt" / f"{output_filename}")
         file_doesnt_exist = not Path(raw_filepath).is_file()
 
         if file_doesnt_exist or force_download:
@@ -183,7 +183,7 @@ class YTDownloader:
         start_ts: str,
         end_ts: str,
     ) -> str:
-        output_path = str(Path(self.output_path) / f"{output}")
+        output_path = str(Path(self.output_path) / "audio" / f"{output}")
         file_doesnt_exist = not Path(output_path).is_file()
 
         if file_doesnt_exist or force:

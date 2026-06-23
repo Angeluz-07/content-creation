@@ -6,7 +6,7 @@ PROJECT_DIR = Path(__file__).resolve().parent
 
 DATA_DIR = PROJECT_DIR / ".data"
 
-DOWNLOAD_DIR = str(DATA_DIR / "downloads")
+DOWNLOAD_DIR = str(DATA_DIR / "downloads" / "video")
 TEMP_DIR = str(DATA_DIR / "temp")
 OUTPUT_DIR = str(DATA_DIR/ "output_videos")
 
