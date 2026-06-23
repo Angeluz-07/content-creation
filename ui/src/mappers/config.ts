@@ -32,6 +32,7 @@ export interface DownloadParamsPayload {
   start_segment: string;
   end_segment: string;
   output_filename: string;
+  file_type: string;
 }
 
 export const toDownloadParamsPayload = (data: DownloadParams): DownloadParamsPayload => {
@@ -41,5 +42,6 @@ export const toDownloadParamsPayload = (data: DownloadParams): DownloadParamsPay
     start_segment: data.startSegment,
     end_segment: data.endSegment,
     output_filename: data.outputFileName,
+    file_type: data.file_type,
   };
 };

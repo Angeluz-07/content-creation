@@ -11,7 +11,7 @@ import { usePolling } from '@/composables/usePolling.ts'
 
 const downloadStore = useDownloadStore()
 const { lastDownloadTs } = storeToRefs(downloadStore)
-const polling = usePolling( 2000)
+const polling = usePolling(20000)
 
 watch(lastDownloadTs, (newTs) => {
   if (newTs) {
@@ -24,6 +24,7 @@ const items = computed(() => {
   return raw_items.value.map((item) => ({
     outputFileName: item.payload?.output_filename,
     status: item.status,
+    fileType: item.payload?.file_type,
   }))
 })
 
@@ -83,6 +84,9 @@ onMounted(() => {
         </div>
       </template>
       <Column field="outputFileName" header="Output Filename"></Column>
+
+      <Column field="fileType" header="type"></Column>
+
       <Column field="status" header="Status">
         <template #body="slotProps">
           <Tag
@@ -93,7 +97,9 @@ onMounted(() => {
       </Column>
       <Column field="" header="Play">
         <template #body="slotProps">
-          <template v-if="slotProps.data.status == 'COMPLETED'">
+          <template
+            v-if="slotProps.data.status == 'COMPLETED' && slotProps.data.fileType == 'video'"
+          >
             <ModalVideoPlayer
               url="/video/raw"
               :fileName="slotProps.data.outputFileName"

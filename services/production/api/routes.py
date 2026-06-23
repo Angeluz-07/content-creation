@@ -1,6 +1,6 @@
 import os
 from fastapi import APIRouter
-from api.models import ProductionInput, DownloadParamsInput
+from api.models import ProductionInput, DownloadParamsInput, DownloadInput
 from context import (
     short_producer,
     download_service,
@@ -99,8 +99,8 @@ def get_tasks(target_entity_type: str = None):
 
 
 # --- Asynchronous tasks ---
-@router.post("/download-segment")
-async def download_segment(config: DownloadParamsInput):
+@router.post("/download")
+async def download_segment(config: DownloadInput):
     try:
         params = config.model_dump()
         download_service.validate(params)
@@ -111,7 +111,7 @@ async def download_segment(config: DownloadParamsInput):
             task_id=new_task_id, entity_type="download", payload=params
         )
         download_service.trigger(params)
-        print(f"Sending to download service: {config.output_filename}")
+        print(f"Sending to download service: {config.output_filename} ")
 
         return {
             "message": f"Sent to download: {params["output_filename"]}",

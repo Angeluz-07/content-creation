@@ -198,7 +198,7 @@ services:
       context: .
       dockerfile: ./services/download/Dockerfile
     container_name: download_worker
-    command: prefect flow serve workers.download:download_video --name "main" --limit 2
+    command: prefect flow serve workers.download:download --name "main" --limit 2
     environment:
       - PREFECT_API_URL=http://prefect-server:4200/api
       - WEBHOOK_URI=${WEBHOOK_URI}

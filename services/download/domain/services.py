@@ -17,9 +17,19 @@ class YTDownloader:
         force_download = params["force_download"]
         output_filename = params["output_filename"]
 
-        result_filepath = await self.get_video_segment(
-            url, start_ts, end_ts, force_download, output_filename
-        )
+        file_type = params["file_type"]
+        if file_type == "vtt":
+            result_filepath = await self.get_vtt(
+                url=url,
+                force_download=force_download,
+                output_filename=output_filename,
+            )
+        elif file_type == "video":
+            result_filepath = await self.get_video_segment(
+                url, start_ts, end_ts, force_download, output_filename
+            )
+        else:
+            print("Error from download service, unknown file_type")
 
     async def get_video_segment(
         self,

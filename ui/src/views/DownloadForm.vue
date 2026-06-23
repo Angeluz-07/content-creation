@@ -14,8 +14,12 @@ const form = reactive<DownloadParams>({
   endSegment: '00:00:20',
   outputFileName: 'test',
   forceDownload: false,
+  file_type: 'vtt'
 })
-
+const downloadTypes = ref([
+  'video', 'vtt','audio'
+])
+    
 const { loading: loadingParams, get: getParams } = useApi()
 const { loading: isSubmitting, error: submitError, post: sendForm } = useApi()
 
@@ -32,7 +36,7 @@ async function loadLastParams() {
 
 const handleSubmit = async () => {
   const payload = toDownloadParamsPayload(form)
-  const { success } = await sendForm('/download-segment', payload)
+  const { success } = await sendForm('/download', payload)
 
   // Disparar efectos colaterales de UI basados en el éxito de la acción
   if (success) {
@@ -40,7 +44,7 @@ const handleSubmit = async () => {
       description: 'Se ha enviado a descargar el archivo',
     })
     downloadStore.taskDownloadSent()
-  } 
+  }
 }
 
 onMounted(() => {
@@ -112,15 +116,19 @@ onMounted(() => {
           />
         </div>
 
-        <div class="flex flex-col md:flex-row gap-6 pt-4">
-          <div class="form-control">
-            <label class="label cursor-pointer justify-start gap-3">
-              <input v-model="form.forceDownload" type="checkbox" class="toggle toggle-primary" />
-              <span class="label-text">Force Download</span>
-            </label>
-          </div>
+        <div class="form-control w-full">
+          <label class="label">
+            <span class="label-text font-semibold">File Type</span>
+          </label>
+          <!-- Use v-model for binding and select tag instead of input -->
+          <select v-model="form.file_type" class="select select-bordered w-full" required>
+            <option value="" disabled selected>Select a type</option>
+            <!-- Loop through the list of strings -->
+            <option v-for="item in downloadTypes" :key="item" :value="item">
+              {{ item }}
+            </option>
+          </select>
         </div>
-
         <div class="card-actions justify-end mt-6">
           <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full md:w-auto">
             <span v-if="isSubmitting" class="loading loading-spinner"></span>

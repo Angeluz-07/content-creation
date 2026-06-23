@@ -18,6 +18,13 @@ class DownloadParamsInput(BaseModel):
     end_segment: str
     output_filename: str
 
+class DownloadInput(BaseModel):
+    url: str
+    force_download: bool = False
+    start_segment: str
+    end_segment: str
+    output_filename: str
+    file_type: str = "vtt"
 
 class TaskSyncInput(BaseModel):
     task_id: str

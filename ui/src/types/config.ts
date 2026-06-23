@@ -15,4 +15,5 @@ export interface DownloadParams {
   endSegment: string;
   outputFileName: string;
   forceDownload: boolean;
+  file_type: string
 }

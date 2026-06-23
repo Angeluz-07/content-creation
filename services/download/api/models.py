@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field
 
 
-class DownloadParamsInput(BaseModel):
+class DownloadInput(BaseModel):
     task_id: str
+    file_type: str
     url: str
     force_download: bool = False
     start_segment: str
@@ -16,9 +17,3 @@ class DownloadAudioInput(BaseModel):
     end_segment: str = "00:00:05"
     output_filename: str
     force: bool = False
-
-
-class DownloadVTTInput(BaseModel):
-    url: str
-    force_download: bool = False
-    output_filename: str

@@ -28,7 +28,7 @@ async def notify_status(flow, flow_run, state):
 
 
 @flow(
-    name="download-video",  # Nombre único en el servidor
+    name="download",  # Nombre único en el servidor
     retries=2,
     retry_delay_seconds=30,
     log_prints=True,
@@ -37,13 +37,14 @@ async def notify_status(flow, flow_run, state):
     on_completion=[notify_status],  # status | COMPLETED
     on_failure=[notify_status],  # status | FAILED
 )
-async def download_video(task_id: str, data: dict):
-    print(f"--- [WORKER] Iniciando proceso de: {data.get("output_filename")} ---")
+async def download(task_id: str, data: dict):
+    file_type = data.get("file_type")
+    print(f"--- [WORKER] Iniciando proceso de: {data.get("output_filename")}({file_type}) ---")
 
     try:
         await downloader.run(params=data)
 
-        print(f"--- [WORKER] Finalizado con éxito: {data.get("output_filename")} ---")
+        print(f"--- [WORKER] Finalizado con éxito: {data.get("output_filename")}({file_type}) ---")
 
     except Exception as e:
         print(f"--- [WORKER] Error : {str(e)} ---")
