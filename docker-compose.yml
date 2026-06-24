@@ -266,7 +266,7 @@ services:
     image: angeluz07/cc-discovery:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./services/video/Dockerfile
+      dockerfile: ./services/discovery/Dockerfile
     container_name: discovery_api
     extra_hosts:
       - "localhost:host-gateway"
@@ -276,6 +276,37 @@ services:
       - QDRANTDB_URI=${QDRANTDB_URI}
       - EMBEDDER_URI=${EMBEDDER_URI}
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
+      - PREFECT_API_URL=http://prefect-server:4200/api
+    volumes:
+      - ./.data:/app/.data:z
+      - ./services/discovery:/app:z
+    deploy:
+      resources:
+        limits:
+          cpus: "2" # still have, a cpu intensive task in this api
+          memory: 1G
+        reservations:
+          cpus: "1"
+          memory: 1G
+    depends_on:
+      - embedding_api
+    profiles:
+      - custom
+  discovery_worker:
+    image: angeluz07/cc-discovery:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./services/discovery/Dockerfile
+    container_name: discovery_worker
+    command: prefect flow serve workers.discovery:discovery --name "main" --limit 2
+    extra_hosts:
+      - "localhost:host-gateway"
+    environment:
+      - QDRANTDB_URI=${QDRANTDB_URI}
+      - EMBEDDER_URI=${EMBEDDER_URI}
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
+      - PREFECT_API_URL=http://prefect-server:4200/api
+      - WEBHOOK_URI=${WEBHOOK_URI}
     volumes:
       - ./.data:/app/.data:z
       - ./services/discovery:/app:z

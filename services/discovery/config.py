@@ -22,3 +22,5 @@ QDRANTDB_PORT = os.getenv("QDRANTDB_PORT")
 QDRANTDB_URI = os.getenv("QDRANTDB_URI")
 EMBEDDER_URI = os.getenv("EMBEDDER_URI")
 
+WEBHOOK_URI = os.getenv("WEBHOOK_URI")
+

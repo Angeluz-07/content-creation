@@ -17,20 +17,20 @@ async def download_vtt(data: DiscoveryInput):
     }
 
 
-# @router.post("/download")
-# async def download_video(data: DownloadInput):
-#     try:
-#         data = data.model_dump()
-#         print(f"Sending to worker: {data.get("output_filename")}")
+@router.post("/discovery")
+async def download_video(data: DiscoveryInput):
+    try:
+        data = data.model_dump()
+        print(f"Sending to worker: {data.get("output_filename")}")
 
-#         flow_run = await run_deployment(
-#             name="download/main",
-#             parameters={"task_id": data.get("task_id"), "data": data},
-#             timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
-#         )
+        flow_run = await run_deployment(
+            name="discovery/main",
+            parameters={"task_id": data.get("task_id"), "data": data},
+            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
+        )
 
-#         return {
-#             "message": f"Tarea enviada al worker para: {data.get("output_filename")}",
-#         }
-#     except Exception as e:
-#         raise HTTPException(status_code=400, detail=str(e))
+        return {
+            "message": f"Tarea enviada al worker para: {data.get("output_filename")}",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
