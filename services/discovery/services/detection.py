@@ -1,10 +1,24 @@
+from pathlib import Path
 import webvtt
 from difflib import SequenceMatcher
+import json
+
 
 class Detector:
-    def __init__(self, vector_store, embedder):
+    def __init__(self, vector_store, embedder, vtt_dir, output_dir):
         self.vector_store = vector_store
         self.embedder = embedder
+        self.vtt_dir = vtt_dir
+        self.output_dir = output_dir
+
+    def run(self, data: dict):
+        vtt_path = str(Path(self.vtt_dir) / data.get("input_filename"))
+        result = self.scan_vtt(vtt_path, data.get("sensitivity"), data.get("min_words"))
+        output_path = str(Path(self.output_dir) / f"{data.get("output_filename")}.json")
+        with open(output_path, "w", encoding="utf-8") as file:
+            json.dump(result, file, ensure_ascii=False, indent=4)
+
+        print("Scan of vtt completed")
 
     def scan_vtt(self, vtt_path, sensitivity=0.70, min_words=90):
         """
@@ -13,14 +27,14 @@ class Detector:
         """
         # 1. Limpieza inicial del VTT
         fragmentos_limpios = self.clean_vtt(vtt_path)
-        
+
         # 2. Agrupamiento por bloques de sentido (Estructura fluida)
         bloques = self.group_by_semantic_sense(fragmentos_limpios, min_words)
         if not bloques:
             return []
-            
+
         textos = [b["texto"] for b in bloques]
-        
+
         # 3. Inferencia Batch (Un solo viaje para todos los embeddings)
         vectores = self.embedder.get_vectors(textos)
 
@@ -29,20 +43,22 @@ class Detector:
         for i, bloque in enumerate(bloques):
             resultados = self.vector_store.search(vectores[i], top_k=1)
             points = resultados.points if hasattr(resultados, "points") else resultados
-            
+
             if points and len(points) > 0:
                 mejor_resultado = points[0]
                 score = mejor_resultado.score
-                
+
                 # Evaluamos si entra en Zona Templada o Caliente
                 if score >= sensitivity:
-                    bloques_calientes.append({
-                        "start": bloque["start"],
-                        "end": bloque["end"],
-                        "score": score,
-                        "texto": bloque["texto"],
-                        "match": mejor_resultado.payload.get("archivo")
-                    })
+                    bloques_calientes.append(
+                        {
+                            "start": bloque["start"],
+                            "end": bloque["end"],
+                            "score": score,
+                            "texto": bloque["texto"],
+                            "match": mejor_resultado.payload.get("archivo"),
+                        }
+                    )
 
         # 5. Fusión temporal de momentos contiguos de alto interés
         candidatos_finales = self.merge_adjacent_segments(bloques_calientes)
@@ -57,7 +73,9 @@ class Detector:
             texto_actual = c.text.replace("\n", " ").strip()
 
             matcher = SequenceMatcher(None, texto_previo, texto_actual)
-            match = matcher.find_longest_match(0, len(texto_previo), 0, len(texto_actual))
+            match = matcher.find_longest_match(
+                0, len(texto_previo), 0, len(texto_actual)
+            )
 
             if match.a + match.size == len(texto_previo):
                 novedad = texto_actual[match.b + match.size :].strip()
@@ -82,29 +100,33 @@ class Detector:
         for frag in fragmentos:
             if not acumulador:
                 start_ts = frag["start"]
-                
+
             acumulador.append(frag["text"])
             texto_actual_combinado = " ".join(acumulador)
             palabras = texto_actual_combinado.split()
 
             # Condición de cierre semántico: termina en punto/signo AND tiene longitud suficiente
-            termina_idea = frag["text"].endswith(('.', '!', '?', '...'))
-            
+            termina_idea = frag["text"].endswith((".", "!", "?", "..."))
+
             if len(palabras) >= min_words and (termina_idea or len(palabras) > 60):
-                bloques.append({
-                    "texto": texto_actual_combinado,
-                    "start": start_ts,
-                    "end": frag["end"]
-                })
+                bloques.append(
+                    {
+                        "texto": texto_actual_combinado,
+                        "start": start_ts,
+                        "end": frag["end"],
+                    }
+                )
                 acumulador = []
 
         # Asegurar el remanente final si existe
         if acumulador:
-            bloques.append({
-                "texto": " ".join(acumulador),
-                "start": start_ts,
-                "end": fragmentos[-1]["end"]
-            })
+            bloques.append(
+                {
+                    "texto": " ".join(acumulador),
+                    "start": start_ts,
+                    "end": fragmentos[-1]["end"],
+                }
+            )
 
         return bloques
 
@@ -123,7 +145,11 @@ class Detector:
             "end": bloques_calientes[0]["end"],
             "max_score": bloques_calientes[0]["score"],
             "textos": [bloques_calientes[0]["texto"]],
-            "matches": {bloques_calientes[0]["match"]} if bloques_calientes[0]["match"] else set()
+            "matches": (
+                {bloques_calientes[0]["match"]}
+                if bloques_calientes[0]["match"]
+                else set()
+            ),
         }
 
         for siguiente in bloques_calientes[1:]:
@@ -142,9 +168,9 @@ class Detector:
                     "end": siguiente["end"],
                     "max_score": siguiente["score"],
                     "textos": [siguiente["texto"]],
-                    "matches": {siguiente["match"]} if siguiente["match"] else set()
+                    "matches": {siguiente["match"]} if siguiente["match"] else set(),
                 }
-                
+
         segmentos_fusionados.append(self._build_segment_payload(actual))
         return segmentos_fusionados
 
@@ -154,5 +180,5 @@ class Detector:
             "end": data["end"],
             "peak_score": data["max_score"],
             "full_context": " ".join(data["textos"]),
-            "referenced_patterns": list(data["matches"])
+            "referenced_patterns": list(data["matches"]),
         }

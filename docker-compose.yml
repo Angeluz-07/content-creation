@@ -262,6 +262,35 @@ services:
           memory: 1G
     profiles:
       - custom
+  discovery_api:
+    image: angeluz07/cc-discovery:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./services/video/Dockerfile
+    container_name: discovery_api
+    extra_hosts:
+      - "localhost:host-gateway"
+    ports:
+      - "8004:8004"
+    environment:
+      - QDRANTDB_URI=${QDRANTDB_URI}
+      - EMBEDDER_URI=${EMBEDDER_URI}
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
+    volumes:
+      - ./.data:/app/.data:z
+      - ./services/discovery:/app:z
+    deploy:
+      resources:
+        limits:
+          cpus: "2" # still have, a cpu intensive task in this api
+          memory: 1G
+        reservations:
+          cpus: "1"
+          memory: 1G
+    depends_on:
+      - embedding_api
+    profiles:
+      - custom
   # neo4j:
   #   image: neo4j:5.18.0-community
   #   container_name: neo4j_graph_db

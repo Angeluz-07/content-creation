@@ -1,9 +1,9 @@
 from qdrant_client import QdrantClient
 
 
-def get_qdrant_client():
+def get_qdrant_client(uri: str):
     # 2. Conexión a Qdrant
-    client = QdrantClient(host="localhost", port=6333)
+    client = QdrantClient(url=uri)
     try:
         client.get_collections()
         return client

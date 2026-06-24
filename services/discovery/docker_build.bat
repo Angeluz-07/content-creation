@@ -1,0 +1,1 @@
+docker build -t angeluz07/cc-discovery:0.0.1 .
