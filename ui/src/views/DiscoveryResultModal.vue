@@ -17,7 +17,7 @@ const props = defineProps({
 })
 
 // SOLUCIÓN 1: El nombre de la variable debe coincidir EXACTAMENTE con ref="modalForInputVideo" del template
-const modalForInputVideo = ref<HTMLDialogElement | null>(null) 
+const modalForInputVideo = ref<HTMLDialogElement | null>(null)
 const videoUrl_in = ref('')
 
 const handleModal = async () => {
@@ -31,20 +31,22 @@ const handleModal = async () => {
 const raw_items = ref<any[]>([])
 const items = computed(() => {
   // SOLUCIÓN 3: Añadimos encadenamiento opcional (?.) para evitar que falle si la estructura viene vacía
-  return raw_items.value?.map((item: any) => ({
-    start: item?.start_segment || '',
-    end: item?.end_segment || '',    
-    text: item?.text || '',
-  })) || []
+  return (
+    raw_items.value?.map((item: any) => ({
+      start: item?.start_segment || '',
+      end: item?.end_segment || '',
+      text: item?.text || '',
+    })) || []
+  )
 })
-
+const { loading: isSubmitting, error: submitError, post: sendForm } = useApi()
 const { loading: loadingItems, get: getItems } = useApi()
 
 const loadItems = async () => {
   try {
     const response = await getItems(`${props.url}/${props.fileName}`)
-    
-    // SOLUCIÓN 4: Desestructuramos la respuesta de forma segura. 
+
+    // SOLUCIÓN 4: Desestructuramos la respuesta de forma segura.
     // Dependiendo de tu useApi, la respuesta puede estar en response.data o directo en response.
     const responseData = response?.data || response
 
@@ -55,18 +57,14 @@ const loadItems = async () => {
       raw_items.value = responseData
     }
   } catch (error) {
-    console.error("Error cargando los resultados de la API:", error)
+    console.error('Error cargando los resultados de la API:', error)
     raw_items.value = []
   }
 }
 </script>
 
 <template>
-  <button
-    type="button"
-    @click="handleModal"
-    class="btn btn-square btn-primary col-span-1"
-  >
+  <button type="button" @click="handleModal" class="btn btn-square btn-primary col-span-1">
     <!-- SOLUCIÓN 5: Corregido el namespace inválido del SVG (xmlns) -->
     <svg xmlns="http://w3.org" fill="currentColor" viewBox="0 0 24 24" class="w-6 h-6">
       <path d="M8 5v14l11-7z" />
@@ -98,6 +96,12 @@ const loadItems = async () => {
         </div>
       </div>
       <div class="modal-action p-4">
+        <form method="dialog">
+          <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full md:w-auto">
+            <span v-if="isSubmitting" class="loading loading-spinner"></span>
+            {{ isSubmitting ? 'Procesando...' : 'Enviar a descarga' }}
+          </button>
+        </form>
         <form method="dialog">
           <button class="btn">Close [Esc]</button>
         </form>
