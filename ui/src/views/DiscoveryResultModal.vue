@@ -61,6 +61,22 @@ const loadItems = async () => {
     raw_items.value = []
   }
 }
+
+
+const handleSubmit = async () => {
+  console.log(raw_items.value )
+//   const payload = toDiscoveryPayload(form)
+//   const { success } = await sendForm('/discovery', payload)
+
+//   // Disparar efectos colaterales de UI basados en el éxito de la acción
+//   if (success) {
+//     toast.success('Descarga iniciada', {
+//       description: 'Se ha enviado a descargar el archivo',
+//     })
+//     discoveryStore.taskSent()
+//   }
+// 
+}
 </script>
 
 <template>
@@ -96,7 +112,7 @@ const loadItems = async () => {
         </div>
       </div>
       <div class="modal-action p-4">
-        <form method="dialog">
+        <form method="dialog"  @submit.prevent="handleSubmit">
           <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full md:w-auto">
             <span v-if="isSubmitting" class="loading loading-spinner"></span>
             {{ isSubmitting ? 'Procesando...' : 'Enviar a descarga' }}
