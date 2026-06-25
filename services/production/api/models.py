@@ -26,6 +26,13 @@ class DownloadInput(BaseModel):
     output_filename: str
     file_type: str = "vtt"
 
+class DiscoveryInput(BaseModel):
+    input_filename: str    
+    output_filename: str
+    sensitivity: float = 0.75
+    min_words: int = 80
+    url: str
+
 class TaskSyncInput(BaseModel):
     task_id: str
     status: str

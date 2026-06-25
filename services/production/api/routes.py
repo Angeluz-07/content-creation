@@ -1,11 +1,13 @@
 import os
 from fastapi import APIRouter
-from api.models import ProductionInput, DownloadParamsInput, DownloadInput
+from api.models import ProductionInput, DownloadParamsInput, DownloadInput, DiscoveryInput
 from context import (
     short_producer,
     download_service,
     raw_segments_filename_provider,
     task_service,
+    assets,
+    discovery_service
 )
 
 from fastapi import HTTPException
@@ -26,13 +28,14 @@ def sync_task_status(data: TaskSyncInput):
     if new_status == "RUNNING":
         task_service.mark_as_processing(task_id)
     elif new_status == "COMPLETED":
-        #todo: project domain object by entity_type
+        # todo: project domain object by entity_type
         task_service.mark_as_completed(task_id)
     elif new_status == "FAILED":
         task_service.mark_as_failed(task_id)
     else:
         print("unknown state for", task_id)
     return {"status": "success"}
+
 
 @router.get("/helloworld")
 def hello_world():
@@ -80,6 +83,12 @@ def get_raw_video_names():
     return {"status": "success", "values": values}
 
 
+@router.get("/assets/vtt")
+def get_raw_video_names():
+    values = assets.list_files("vtt")
+    return {"status": "success", "values": values}
+
+
 @router.get("/download-params/last")
 def get_last_download_params():
 
@@ -105,7 +114,7 @@ async def download_segment(config: DownloadInput):
         params = config.model_dump()
         download_service.validate(params)
         new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
-        params["id"] = task_service.get_new_uuid() 
+        params["id"] = task_service.get_new_uuid()
         params["task_id"] = new_task_id
         task_service.create_task(
             task_id=new_task_id, entity_type="download", payload=params
@@ -119,14 +128,39 @@ async def download_segment(config: DownloadInput):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+@router.post("/discovery")
+def discovery(data: DiscoveryInput):
+    try:
+        params = data.model_dump()
+        new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
+        params["id"] = task_service.get_new_uuid()
+        params["task_id"] = new_task_id
+        task_service.create_task(
+            task_id=new_task_id, entity_type="discovery", payload=params
+        )
+        discovery_service.trigger(params)
+        print(f"Sending to download service: {data.output_filename} ")
+
+        return {
+            "message": f"Sent to download: {params["output_filename"]}",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/discovery/results/{result_id}")
+def get_discovery_result(result_id: str):
+    values = assets.get_path("metals", result_id)
+    import json
+    with open(values, "r", encoding="utf-8") as file:
+        file_content = json.load(file)
+    return {"status": "success", "values": file_content}
 
 # todo colapse into single method
 @router.post("/produce-short/synchronous")
 def process_video(config: ProductionInput):
-    print(
-        f"Procesando: {config.input}"
-    )  # todo: link data to params used for download
-    
+    print(f"Procesando: {config.input}")  # todo: link data to params used for download
+
     short_producer.trigger_sync(config.model_dump())
     return {
         "status": "success",
@@ -140,7 +174,7 @@ async def process_video_async(config: ProductionInput):
         params = config.model_dump()
         short_producer.validate(params)
         new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
-        params["id"] = task_service.get_new_uuid() 
+        params["id"] = task_service.get_new_uuid()
         params["task_id"] = new_task_id
         task_service.create_task(
             task_id=new_task_id, entity_type="short_production", payload=params

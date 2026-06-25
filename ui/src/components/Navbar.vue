@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const menuItems = [
-  { name: 'Downloads', to: '/download-section' },
+  { name: 'Downloads', to: '/download-section' },  
+  { name: 'Discovery', to: '/discovery-section' },
   { name: 'Production', to: '/short-production' },
 ]
 </script>

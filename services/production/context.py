@@ -1,6 +1,8 @@
 from services.production_service import ProductionService
 from services.download_service import DownloadService
 from services.task_service import TaskService
+from services.asset import AssetProvider
+from services.discovery_service import DiscoveryService
 from dbs.mongo_client import get_mongo_client
 from dbs.mongo_repository import DownloadMongoRepository
 from dbs.mongo_repository import ProductionMongoRepository
@@ -12,7 +14,9 @@ from config import (
     REDIS_URI,
 )
 from services.filename_provider import FilenameProvider
-from config import DOWNLOAD_DIR
+from config import DOWNLOAD_DIR, VTT_DIR, METALS_DIR
+
+assets = AssetProvider().add_source("vtt", VTT_DIR, extension=".vtt").add_source("metals", METALS_DIR, extension=".json")
 
 
 class RepositoryHub:
@@ -36,6 +40,7 @@ class ServiceHub:
         self.filename_provider  = FilenameProvider(DOWNLOAD_DIR, suffix=".mp4") 
         self.production_service = ProductionService(production_repo)
         self.task_service       = TaskService(task_repo)
+        self.discovery_service  = DiscoveryService()
         # fmt : on
 
 
@@ -47,4 +52,5 @@ download_service               = services.download_service
 raw_segments_filename_provider = services.filename_provider
 short_producer                 = services.production_service
 task_service                   = services.task_service
+discovery_service              = services.discovery_service
 # fmt: on

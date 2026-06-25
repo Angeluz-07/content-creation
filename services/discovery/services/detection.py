@@ -12,7 +12,7 @@ class Detector:
         self.output_dir = output_dir
 
     def run(self, data: dict):
-        vtt_path = str(Path(self.vtt_dir) / data.get("input_filename"))
+        vtt_path = str(Path(self.vtt_dir) / f"{data.get("input_filename")}.vtt")
         result = self.scan_vtt(vtt_path, data.get("sensitivity"), data.get("min_words"))
         output_path = str(Path(self.output_dir) / f"{data.get("output_filename")}.json")
         with open(output_path, "w", encoding="utf-8") as file:

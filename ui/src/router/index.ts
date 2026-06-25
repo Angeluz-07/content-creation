@@ -9,6 +9,11 @@ const router = createRouter({
       component: () => import('../views/DownloadSection.vue'),
     },
     {
+      path: '/discovery-section',
+      name: 'discoverySection',
+      component: () => import('../views/DiscoverySection.vue'),
+    },
+    {
       path: '/short-production',
       name: 'shortProductionSection',
       component: () => import('../views/ShortProductionSection.vue'),

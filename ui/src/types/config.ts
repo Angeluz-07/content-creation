@@ -17,3 +17,11 @@ export interface DownloadParams {
   forceDownload: boolean;
   file_type: string
 }
+
+export interface DiscoveryInput {
+  inputFileName: string
+  outputFileName: string;
+  sensitivity: number;
+  min_words: number; 
+  url: string;
+}
