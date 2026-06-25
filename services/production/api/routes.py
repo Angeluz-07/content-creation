@@ -148,13 +148,45 @@ def discovery(data: DiscoveryInput):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+from datetime import datetime, timedelta
+import math
+
+
+def format_time(time_str, round_fn, extra_sec=0):
+    # Convertimos el string en un objeto timedelta para manipularlo fácilmente
+    t = datetime.strptime(time_str, "%H:%M:%S.%f")
+    seconds = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1_000_000
+    # Aplicamos el redondeo (piso o techo) y los segundos extra
+    final_seconds = round_fn(seconds) + extra_sec
+    return str(timedelta(seconds=final_seconds)).zfill(8)
+
+def map_discovery_results(result, prefix):
+    # Fecha de hoy en formato AAAAMMDD
+    today = datetime.now().strftime("%Y%m%d")
+
+    # Mapeo compacto en una sola línea de comprensión (list comprehension)
+    mapped_data = [
+        {
+            "start_segment": format_time(item['start'], math.floor),
+            "end_segment": format_time(item['end'], math.ceil, extra_sec=1),
+            "text": item['full_context'],
+            "output_filename": f"{prefix}_{today}_{idx:02d}",
+            "force_download": False,
+            #"url": item["url"]
+        }
+        for idx, item in enumerate(result)
+    ]
+    return mapped_data
+
 @router.get("/discovery/results/{result_id}")
 def get_discovery_result(result_id: str):
     values = assets.get_path("metals", result_id)
     import json
     with open(values, "r", encoding="utf-8") as file:
         file_content = json.load(file)
-    return {"status": "success", "values": file_content}
+    result =  map_discovery_results(file_content, result_id)
+    print(result)
+    return {"status": "success", "values": result}
 
 # todo colapse into single method
 @router.post("/produce-short/synchronous")

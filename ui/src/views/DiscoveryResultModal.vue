@@ -32,9 +32,9 @@ const raw_items = ref<any[]>([])
 const items = computed(() => {
   // SOLUCIÓN 3: Añadimos encadenamiento opcional (?.) para evitar que falle si la estructura viene vacía
   return raw_items.value?.map((item: any) => ({
-    start: item?.start || '',
-    end: item?.end || '',    
-    text: item?.full_context || '',
+    start: item?.start_segment || '',
+    end: item?.end_segment || '',    
+    text: item?.text || '',
   })) || []
 })
 

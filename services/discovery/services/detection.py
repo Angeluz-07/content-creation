@@ -14,6 +14,8 @@ class Detector:
     def run(self, data: dict):
         vtt_path = str(Path(self.vtt_dir) / f"{data.get("input_filename")}.vtt")
         result = self.scan_vtt(vtt_path, data.get("sensitivity"), data.get("min_words"))
+        for item in result:
+            item["url"] = data.get("url")
         output_path = str(Path(self.output_dir) / f"{data.get("output_filename")}.json")
         with open(output_path, "w", encoding="utf-8") as file:
             json.dump(result, file, ensure_ascii=False, indent=4)
