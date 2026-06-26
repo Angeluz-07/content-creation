@@ -145,6 +145,8 @@ def discovery(data: DiscoveryInput):
             "message": f"Sent to download: {params["output_filename"]}",
         }
     except Exception as e:
+        import traceback
+        traceback.print_exc() 
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -170,9 +172,9 @@ def map_discovery_results(result, prefix):
             "start_segment": format_time(item['start'], math.floor),
             "end_segment": format_time(item['end'], math.ceil, extra_sec=1),
             "text": item['full_context'],
-            "output_filename": f"{prefix}_{today}_{idx:02d}",
+            "output_filename": f"{prefix}_{idx:02d}",
             "force_download": False,
-            #"url": item["url"]
+            "url": item["url"]
         }
         for idx, item in enumerate(result)
     ]

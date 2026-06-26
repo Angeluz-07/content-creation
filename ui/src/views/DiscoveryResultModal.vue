@@ -36,8 +36,17 @@ const items = computed(() => {
       start: item?.start_segment || '',
       end: item?.end_segment || '',
       text: item?.text || '',
+      url: item?.url || ''
     })) || []
   )
+})
+
+const downloadUrl = computed(() => {
+  return raw_items.value?.[0]?.url || ''
+})
+
+const outputFileNameExample = computed(() => {
+  return raw_items.value?.[0]?.output_filename || ''
 })
 const { loading: isSubmitting, error: submitError, post: sendForm } = useApi()
 const { loading: loadingItems, get: getItems } = useApi()
@@ -102,6 +111,13 @@ const handleSubmit = async () => {
             <template #header>
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <span class="text-xl font-bold">Discover Tasks</span>
+              </div>
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-base font-medium"> URL | {{ downloadUrl }} </span>
+              </div>
+              
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-base font-medium"> Outputfilename Format | {{ outputFileNameExample }} </span>
               </div>
             </template>
             <!-- Vinculamos las columnas mapeadas en el computed con la propiedad 'field' -->
