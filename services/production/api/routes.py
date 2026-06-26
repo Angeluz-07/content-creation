@@ -187,8 +187,41 @@ def get_discovery_result(result_id: str):
     with open(values, "r", encoding="utf-8") as file:
         file_content = json.load(file)
     result =  map_discovery_results(file_content, result_id)
-    print(result)
     return {"status": "success", "values": result}
+
+
+@router.post("/discovery/results/{result_id}/trigger-download")
+def get_discovery_result(result_id: str):
+    values = assets.get_path("metals", result_id)
+    import json
+    with open(values, "r", encoding="utf-8") as file:
+        file_content = json.load(file)
+    result =  map_discovery_results(file_content, result_id)
+    #print(result)
+    for item in result:
+        params = {}
+        params["file_type"] = "video"
+        params["url"] = item["url"]
+        params["force_download"] = item["force_download"]
+        params["start_segment"] = item["start_segment"]
+        params["end_segment"] = item["end_segment"]
+        params["output_filename"] = item["output_filename"]
+        new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
+        params["id"] = task_service.get_new_uuid()
+        params["task_id"] = new_task_id
+        try:
+            download_service.validate(params)
+        except Exception as e:
+            print("Exception: ", str(e))
+            print(f"Skipping triggering for {item["output_filename"]}")
+            continue # to next iteration
+
+        task_service.create_task(
+            task_id=new_task_id, entity_type="download", payload=params
+        )
+        download_service.trigger(params)
+        print(f"Sending to download service: {item["output_filename"]} ")
+    return {"status": "success"}
 
 # todo colapse into single method
 @router.post("/produce-short/synchronous")

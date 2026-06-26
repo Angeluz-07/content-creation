@@ -4,7 +4,7 @@ import { useApi } from '@/composables/useApi'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import { Tag } from 'primevue'
-
+import { toast } from 'vue-sonner'
 const props = defineProps({
   fileName: {
     type: String,
@@ -74,17 +74,15 @@ const loadItems = async () => {
 
 const handleSubmit = async () => {
   console.log(raw_items.value )
-//   const payload = toDiscoveryPayload(form)
-//   const { success } = await sendForm('/discovery', payload)
+  const { success } = await sendForm(`/discovery/results/${props.fileName}/trigger-download`,{})
 
-//   // Disparar efectos colaterales de UI basados en el éxito de la acción
-//   if (success) {
-//     toast.success('Descarga iniciada', {
-//       description: 'Se ha enviado a descargar el archivo',
-//     })
-//     discoveryStore.taskSent()
-//   }
-// 
+  // Disparar efectos colaterales de UI basados en el éxito de la acción
+  if (success) {
+    toast.success('Descarga iniciada', {
+      description: 'Se ha enviado a descargar los archivos',
+    })
+  }
+
 }
 </script>
 
