@@ -1,1 +1,0 @@
-docker build -t angeluz07/cc-production:0.0.1 .
