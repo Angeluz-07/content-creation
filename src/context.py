@@ -3,10 +3,10 @@ from src.services.production.download_service import DownloadService
 from src.services.production.task_service import TaskService
 from src.services.production.asset import AssetProvider
 from src.services.production.discovery_service import DiscoveryService
-from src.infrastructure.dbs.mongo_client import get_mongo_client
-from src.infrastructure.dbs.mongo_repository import DownloadMongoRepository
-from src.infrastructure.dbs.mongo_repository import ProductionMongoRepository
-from src.infrastructure.dbs.mongo_repository import TaskMongoRepository
+from src.dbs.mongo_client import get_mongo_client
+from src.dbs.mongo_repository import DownloadMongoRepository
+from src.dbs.mongo_repository import ProductionMongoRepository
+from src.dbs.mongo_repository import TaskMongoRepository
 
 from src.config import (
     MONGODB_URI,

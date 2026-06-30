@@ -1,5 +1,4 @@
-from src.infrastructure.dbs.mongo_repository import TaskMongoRepository
-from src.infrastructure.dbs.interfaces import IRepository
+from src.dbs.interfaces import IRepository
 from src.domain.production.models import Task, TaskStatus
 from uuid import uuid4
 from typing import List, Dict
@@ -8,7 +7,7 @@ from typing import List, Dict
 class TaskService:
 
     def __init__(self, task_repo):
-        self.task_repo: TaskMongoRepository = task_repo
+        self.task_repo: IRepository = task_repo
 
     def get_all(self) -> List[Task]:
         result = self.task_repo.get_all()

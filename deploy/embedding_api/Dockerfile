@@ -14,4 +14,4 @@ COPY /src /app/src
 
 EXPOSE 8001
 
-CMD ["uvicorn", "src.entrypoints.embedding_api:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD ["uvicorn", "src.api.embedding:app", "--host", "0.0.0.0", "--port", "8001"]

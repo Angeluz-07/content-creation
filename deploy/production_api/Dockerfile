@@ -15,4 +15,4 @@ ENV MONGODB_URI=""
 ENV REDIS_URI=""
 EXPOSE 8000
 
-CMD ["uvicorn", "src.entrypoints.production_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.api.production.main:app", "--host", "0.0.0.0", "--port", "8000"]

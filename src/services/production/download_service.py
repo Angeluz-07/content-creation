@@ -1,5 +1,5 @@
 from typing import Dict
-from src.infrastructure.dbs.interfaces import IRepository
+from src.dbs.interfaces import IRepository
 from uuid import uuid4
 from src.domain.production.models import Download
 import requests
