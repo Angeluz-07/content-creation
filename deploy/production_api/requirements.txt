@@ -1,0 +1,6 @@
+fastapi[standard]
+uvicorn[standard]
+pymongo==4.16.0 
+python-dotenv==1.2.2
+sse-starlette==3.4.4
+requests

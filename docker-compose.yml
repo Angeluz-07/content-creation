@@ -122,7 +122,7 @@ services:
     image: angeluz07/cc-production:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./services/production/Dockerfile
+      dockerfile: ./deploy/production_api/Dockerfile
     container_name: production_api
     ports:
       - "8000:8000"
@@ -134,7 +134,7 @@ services:
       - MONGODB_URI=${MONGODB_URI}
     volumes:
       - ./.data:/app/.data:z
-      - ./services/production:/app:z
+      - ./src:/app/src:z
     deploy:
       resources:
         limits:
