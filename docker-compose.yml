@@ -119,7 +119,7 @@ services:
 
   # --- Custom Services ---  
   embedding_api:
-    image: angeluz07/embedding:0.0.1 # use local if exists
+    image: angeluz07/cc-embedding:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .                       # IMPORTANTE: Mantenemos la raíz para que lea /src
       dockerfile: ./deploy/embedding_api/Dockerfile
@@ -129,7 +129,7 @@ services:
     environment:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
     volumes:
-      - ./.data/.embedding:/app/.data:z
+      #- ./.data/.embedding:/app/.data:z
       - ./src:/app/src:z
     deploy:
       resources:

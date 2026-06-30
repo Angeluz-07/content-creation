@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -10,6 +10,7 @@ COPY deploy/embedding_api/requirements.txt ./requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN python -c "from sentence_transformers import SentenceTransformer; model = SentenceTransformer('all-MiniLM-L6-v2'); model.save_pretrained('/app/.data/model_weights') "
 COPY /src /app/src
 
 EXPOSE 8001

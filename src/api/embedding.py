@@ -5,19 +5,21 @@ from pathlib import Path
 import os
 from sentence_transformers import SentenceTransformer
 
-DATA_DIR = Path(__file__).parent.parent / ".data"
-MODEL_DIR = str(DATA_DIR / "onnx")
+DATA_DIR = Path(__file__).parent.parent.parent / ".data"
+MODEL_DIR = str(DATA_DIR / "model_weights")
 MODEL_NAME = "all-MiniLM-L6-v2"
 
-if not os.path.exists(MODEL_DIR):
-    print("Exporting and saving model for the first time...")
-    model = SentenceTransformer(MODEL_NAME, backend="onnx")
-    model.save_pretrained(MODEL_DIR)
+if os.path.exists(os.path.join(MODEL_DIR, "config.json")):
+    print("🚀 Weights loaded from volume...")    
+    model = SentenceTransformer(MODEL_DIR)
+    #model.save_pretrained(MODEL_DIR)
 else:
-    print("Loading existing ONNX model...")
-    model = SentenceTransformer(
-        MODEL_DIR, backend="onnx", model_kwargs={"file_name": "model.onnx"}
-    )
+    print("⚠️ Didnt find weights, downloading...")
+
+    model = SentenceTransformer(MODEL_NAME)
+    # model = SentenceTransformer(
+    #     MODEL_DIR, backend="onnx", model_kwargs={"file_name": "model.onnx"}
+    # )
 
 
 app = FastAPI()
