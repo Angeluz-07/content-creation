@@ -13,6 +13,6 @@ ASSETS_DIR = str(DATA_DIR / "assets")
 EMOJI_DIR = str(Path(ASSETS_DIR) / "emojis")
 LAYOUT_DIR = str(Path(ASSETS_DIR) / "layouts")
 
-DOWNLOAD_DIR = str(DATA_DIR / "downloads")
+DOWNLOAD_DIR = str(DATA_DIR / "downloads" / "video")
 
 WEBHOOK_URI = os.getenv("WEBHOOK_URI")
