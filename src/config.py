@@ -8,9 +8,9 @@ DATA_DIR = PROJECT_DIR / ".data"
 
 DOWNLOAD_DIR = str(DATA_DIR / "downloads" / "video")
 TEMP_DIR = str(DATA_DIR / "temp")
-OUTPUT_DIR = str(DATA_DIR/ "output_videos")
+OUTPUT_DIR = str(DATA_DIR / "output_videos")
 VTT_DIR = str(DATA_DIR / "downloads" / "vtt")
-METALS_DIR = str(DATA_DIR /  "metals")
+METALS_DIR = str(DATA_DIR / "metals")
 
 MONGO_DB_NAME = "cc_db"
 MONGODB_URI = os.getenv("MONGODB_URI")
@@ -19,3 +19,6 @@ REDIS_URI = os.getenv("REDIS_URI")
 
 COOKIES_PATH = str(DATA_DIR / "cookies.txt")
 WEBHOOK_URI = os.getenv("WEBHOOK_URI")
+
+QDRANTDB_URI = os.getenv("QDRANTDB_URI")
+EMBEDDER_URI = os.getenv("EMBEDDER_URI")

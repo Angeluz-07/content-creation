@@ -133,7 +133,7 @@ async def download_video(data: DownloadInput):
         raise HTTPException(status_code=400, detail=str(e))
     
 @router.post("/discovery")
-def discovery(data: DiscoveryInput):
+async def discovery(data: DiscoveryInput):
     try:
         params = data.model_dump()
         new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
@@ -142,11 +142,16 @@ def discovery(data: DiscoveryInput):
         task_service.create_task(
             task_id=new_task_id, entity_type="discovery", payload=params
         )
-        discovery_service.trigger(params)
-        print(f"Sending to download service: {data.output_filename} ")
+
+        flow_run = await run_deployment(
+            name="discovery/main",
+            parameters={"task_id": params.get("task_id"), "data": params},
+            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
+        )
+        print(f"Sending to discovery service: {data.output_filename} ")
 
         return {
-            "message": f"Sent to download: {params["output_filename"]}",
+            "message": f"Sent to discovery: {params["output_filename"]}",
         }
     except Exception as e:
         import traceback
