@@ -1,7 +1,7 @@
 import os
 from fastapi import APIRouter
 from .models import ProductionInput, DownloadParamsInput, DownloadInput, DiscoveryInput
-from src.context import (
+from src.context.production import (
     short_producer,
     download_service,
     raw_segments_filename_provider,
@@ -13,7 +13,7 @@ from src.context import (
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from src.config import TEMP_DIR, OUTPUT_DIR
-from src.context import task_service, download_service
+from src.context.production import task_service, download_service
 from pathlib import Path
 from .models import TaskSyncInput
 
@@ -107,27 +107,31 @@ def get_tasks(target_entity_type: str = None):
     return {"status": "success", "value": result}
 
 
-# --- Asynchronous tasks ---
+from prefect.deployments import run_deployment
 @router.post("/download")
-async def download_segment(config: DownloadInput):
+async def download_video(data: DownloadInput):
     try:
-        params = config.model_dump()
+        params = data.model_dump()
         download_service.validate(params)
+
         new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
         params["id"] = task_service.get_new_uuid()
         params["task_id"] = new_task_id
         task_service.create_task(
             task_id=new_task_id, entity_type="download", payload=params
         )
-        download_service.trigger(params)
-        print(f"Sending to download service: {config.output_filename} ")
+        flow_run = await run_deployment(
+            name="download/main",
+            parameters={"task_id": params.get("task_id"), "data": params},
+            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
+        )
 
         return {
-            "message": f"Sent to download: {params["output_filename"]}",
+            "message": f"Tarea enviada al worker para: {params.get("output_filename")}",
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
+    
 @router.post("/discovery")
 def discovery(data: DiscoveryInput):
     try:

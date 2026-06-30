@@ -117,34 +117,7 @@ services:
     profiles:
       - base
 
-  # --- Custom Services ---
-  production_api:
-    image: angeluz07/cc-production:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./deploy/production_api/Dockerfile
-    container_name: production_api
-    ports:
-      - "8000:8000"
-    extra_hosts:
-      - "localhost:host-gateway"
-    environment:
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
-      - REDIS_URI=redis://redis:6379
-      - MONGODB_URI=${MONGODB_URI}
-    volumes:
-      - ./.data:/app/.data:z
-      - ./src:/app/src:z
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 0.25G
-        reservations:
-          cpus: "0.5"
-          memory: 0.25G
-    profiles:
-      - custom
+  # --- Custom Services ---  
   embedding_api:
     image: angeluz07/embedding:0.0.1 # use local if exists
     build: # if doesnt, build it
@@ -168,43 +141,47 @@ services:
           memory: 0.5G
     profiles:
       - custom
-  download_api:
-    image: angeluz07/cc-download:0.0.1 # use local if exists
+  production_api:
+    image: angeluz07/cc-production:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./services/download/Dockerfile
-    container_name: download_api
+      dockerfile: ./deploy/production_api/Dockerfile
+    container_name: production_api
     ports:
-      - "8002:8002"
+      - "8000:8000"
+    extra_hosts:
+      - "localhost:host-gateway"
     environment:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
+      - REDIS_URI=redis://redis:6379
+      - MONGODB_URI=${MONGODB_URI}
       - PREFECT_API_URL=http://prefect-server:4200/api
     volumes:
       - ./.data:/app/.data:z
-      - ./services/download:/app:z
+      - ./src:/app/src:z
     deploy:
       resources:
         limits:
           cpus: "1.0"
-          memory: 512M
+          memory: 0.25G
         reservations:
           cpus: "0.5"
-          memory: 256M
+          memory: 0.25G
     profiles:
       - custom
   download_worker:
     image: angeluz07/cc-download:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./services/download/Dockerfile
+      dockerfile: ./deploy/download_worker/Dockerfile
     container_name: download_worker
-    command: prefect flow serve workers.download:download --name "main" --limit 2
+    command: prefect flow serve src.workers.download:download --name "main" --limit 2
     environment:
       - PREFECT_API_URL=http://prefect-server:4200/api
       - WEBHOOK_URI=${WEBHOOK_URI}
     volumes:
       - ./.data:/app/.data:z
-      - ./services/download:/app:z
+      - ./src:/app/src:z
     deploy:
       resources:
         limits:

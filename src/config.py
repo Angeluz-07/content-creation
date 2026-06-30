@@ -15,3 +15,7 @@ METALS_DIR = str(DATA_DIR /  "metals")
 MONGO_DB_NAME = "cc_db"
 MONGODB_URI = os.getenv("MONGODB_URI")
 REDIS_URI = os.getenv("REDIS_URI")
+
+
+COOKIES_PATH = str(DATA_DIR / "cookies.txt")
+WEBHOOK_URI = os.getenv("WEBHOOK_URI")
