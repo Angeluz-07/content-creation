@@ -4,6 +4,7 @@ from src.config import  QDRANTDB_URI
 from src.config import EMBEDDER_URI
 from src.config import VTT_DIR, METALS_DIR
 from src.config import GROQ_API_KEY
+from src.config import INGESTION_DIR
 from src.services.discovery.embedding import Embedder
 from src.services.discovery.detection import Detector
 from src.services.discovery.ingestion import Ingester
@@ -24,4 +25,4 @@ metal_detector = Detector(
 )
 
 transcriber = GroqAudioTranscriber(GROQ_API_KEY)
-ingester = Ingester(vector_store=qvs, embedder=embedder, transcriber=transcriber)
+ingester = Ingester(vector_store=qvs, embedder=embedder, transcriber=transcriber, ingestion_dir=INGESTION_DIR)

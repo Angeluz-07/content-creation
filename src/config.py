@@ -12,6 +12,7 @@ TEMP_DIR = str(DATA_DIR / "temp")
 OUTPUT_DIR = str(DATA_DIR / "output_videos")
 VTT_DIR = str(DATA_DIR / "downloads" / "vtt")
 METALS_DIR = str(DATA_DIR / "metals")
+INGESTION_DIR =  str(DATA_DIR / "gold_samples")
 
 MONGO_DB_NAME = "cc_db"
 MONGODB_URI = os.getenv("MONGODB_URI")

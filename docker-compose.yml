@@ -249,7 +249,7 @@ services:
     image: angeluz07/cc-discovery:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./deploy/workers/ingestion/Dockerfile
+      dockerfile: ./deploy/workers/discovery/Dockerfile
     container_name: ingestion_worker
     command: prefect flow serve src.workers.ingestion:ingestion --name "main" --limit 2
     extra_hosts:

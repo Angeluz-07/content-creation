@@ -7,13 +7,19 @@ from src.dbs.qdrant import IVectorStore #todo:improve
 
 
 class Ingester:
-    def __init__(self, vector_store: IVectorStore, embedder, transcriber):
+    def __init__(self, vector_store: IVectorStore, embedder, transcriber, ingestion_dir):
         self.vector_store = vector_store
         self.embedder = embedder
         self.transcriber = transcriber
+        self.ingestion_dir = ingestion_dir
 
     def run(self, data):
-        print("Reached ingester", data.get("folder_name"))
+        print("Reached ingester ", data.get("folder_name"))
+        target_dir =  str(Path(self.ingestion_dir) / data.get("folder_name") )
+        print("Path to process ", target_dir)
+        result = self.generate_transcriptions(target_dir)
+        self.save_transcriptions(result)
+        print(f"Successfully proccessed {len(result)} items")
 
     def save_transcriptions(self, transcriptions):
         texts = [t["metadata"]["text"] for t in transcriptions]
@@ -47,7 +53,7 @@ class Ingester:
         video_files = glob.glob(os.path.join(directorio_videos, "*.mp4"))
         result = []
 
-        for video_path in video_files:
+        for video_path in video_files[:1]:
             data = self.transcribe_video(video_path)
 
             # Generar un ID único para el video completo
