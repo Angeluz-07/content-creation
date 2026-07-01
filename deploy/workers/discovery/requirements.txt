@@ -4,3 +4,4 @@ qdrant-client==1.18.0
 webvtt-py==0.5.1
 prefect==3.7.5
 requests
+groq

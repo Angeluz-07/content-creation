@@ -291,6 +291,13 @@ async def process_video_async(config: ProductionInput):
 
 
 @router.post("/ingestion/{folder_name}")
-def ingestion(folder_name: str):
+async def ingestion(folder_name: str):
+    params = {"folder_name": folder_name}
+    params["task_id"] = task_service.get_new_uuid()
+    flow_run = await run_deployment(
+        name="ingestion/main",
+        parameters={"task_id": params.get("task_id"), "data": params},
+        timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
+    )
     # .send() pone el mensaje en Redis y regresa de inmediato
     return {"message": "ok"}

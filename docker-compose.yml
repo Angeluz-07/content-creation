@@ -156,6 +156,7 @@ services:
       - REDIS_URI=redis://redis:6379
       - MONGODB_URI=${MONGODB_URI}
       - PREFECT_API_URL=http://prefect-server:4200/api
+      - GROQ_API_KEY=${GROQ_API_KEY}
     volumes:
       - ./.data:/app/.data:z
       - ./src:/app/src:z
@@ -219,7 +220,7 @@ services:
     image: angeluz07/cc-discovery:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./deploy/discovery_worker/Dockerfile
+      dockerfile: ./deploy/workers/discovery/Dockerfile
     container_name: discovery_worker
     command: prefect flow serve src.workers.discovery:discovery --name "main" --limit 2
     extra_hosts:
@@ -230,6 +231,36 @@ services:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
       - PREFECT_API_URL=http://prefect-server:4200/api
       - WEBHOOK_URI=${WEBHOOK_URI}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+    volumes:
+      - ./.data:/app/.data:z
+      - ./src:/app/src:z
+    deploy:
+      resources:
+        limits:
+          cpus: "2" # still have, a cpu intensive task in this api
+          memory: 1G
+        reservations:
+          cpus: "1"
+          memory: 1G
+    profiles:
+      - custom
+  ingestion_worker:
+    image: angeluz07/cc-discovery:0.0.1 # use local if exists
+    build: # if doesnt, build it
+      context: .
+      dockerfile: ./deploy/workers/ingestion/Dockerfile
+    container_name: ingestion_worker
+    command: prefect flow serve src.workers.ingestion:ingestion --name "main" --limit 2
+    extra_hosts:
+      - "localhost:host-gateway"
+    environment:
+      - QDRANTDB_URI=${QDRANTDB_URI}
+      - EMBEDDER_URI=${EMBEDDER_URI}
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
+      - PREFECT_API_URL=http://prefect-server:4200/api
+      - WEBHOOK_URI=${WEBHOOK_URI}
+      - GROQ_API_KEY=${GROQ_API_KEY}
     volumes:
       - ./.data:/app/.data:z
       - ./src:/app/src:z
