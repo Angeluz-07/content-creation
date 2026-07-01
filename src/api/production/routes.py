@@ -7,7 +7,7 @@ from src.context.production import (
     raw_segments_filename_provider,
     task_service,
     assets,
-    discovery_service
+    discovery_service,
 )
 
 from fastapi import HTTPException
@@ -108,6 +108,8 @@ def get_tasks(target_entity_type: str = None):
 
 
 from prefect.deployments import run_deployment
+
+
 @router.post("/download")
 async def download_video(data: DownloadInput):
     try:
@@ -131,7 +133,8 @@ async def download_video(data: DownloadInput):
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-    
+
+
 @router.post("/discovery")
 async def discovery(data: DiscoveryInput):
     try:
@@ -155,7 +158,8 @@ async def discovery(data: DiscoveryInput):
         }
     except Exception as e:
         import traceback
-        traceback.print_exc() 
+
+        traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -171,6 +175,7 @@ def format_time(time_str, round_fn, extra_sec=0):
     final_seconds = round_fn(seconds) + extra_sec
     return str(timedelta(seconds=final_seconds)).zfill(8)
 
+
 def map_discovery_results(result, prefix):
     # Fecha de hoy en formato AAAAMMDD
     today = datetime.now().strftime("%Y%m%d")
@@ -178,24 +183,26 @@ def map_discovery_results(result, prefix):
     # Mapeo compacto en una sola línea de comprensión (list comprehension)
     mapped_data = [
         {
-            "start_segment": format_time(item['start'], math.floor),
-            "end_segment": format_time(item['end'], math.ceil, extra_sec=1),
-            "text": item['full_context'],
+            "start_segment": format_time(item["start"], math.floor),
+            "end_segment": format_time(item["end"], math.ceil, extra_sec=1),
+            "text": item["full_context"],
             "output_filename": f"{prefix}_{idx:02d}",
             "force_download": False,
-            "url": item["url"]
+            "url": item["url"],
         }
         for idx, item in enumerate(result)
     ]
     return mapped_data
 
+
 @router.get("/discovery/results/{result_id}")
 def get_discovery_result(result_id: str):
     values = assets.get_path("metals", result_id)
     import json
+
     with open(values, "r", encoding="utf-8") as file:
         file_content = json.load(file)
-    result =  map_discovery_results(file_content, result_id)
+    result = map_discovery_results(file_content, result_id)
     return {"status": "success", "values": result}
 
 
@@ -203,10 +210,11 @@ def get_discovery_result(result_id: str):
 async def get_discovery_result(result_id: str):
     values = assets.get_path("metals", result_id)
     import json
+
     with open(values, "r", encoding="utf-8") as file:
         file_content = json.load(file)
-    result =  map_discovery_results(file_content, result_id)
-    #print(result)
+    result = map_discovery_results(file_content, result_id)
+    # print(result)
     for item in result:
         params = {}
         params["file_type"] = "video"
@@ -223,7 +231,7 @@ async def get_discovery_result(result_id: str):
         except Exception as e:
             print("Exception: ", str(e))
             print(f"Skipping triggering for {item["output_filename"]}")
-            continue # to next iteration
+            continue  # to next iteration
 
         task_service.create_task(
             task_id=new_task_id, entity_type="download", payload=params
@@ -236,7 +244,6 @@ async def get_discovery_result(result_id: str):
 
         print(f"Sending to download service: {item["output_filename"]} ")
     return {"status": "success"}
-
 
 
 # todo: migrate
@@ -273,7 +280,7 @@ async def process_video_async(config: ProductionInput):
         return {
             "message": f"Sent to video_build: {config.input_filename}",
         }
-    except Exception as e:        
+    except Exception as e:
         print(f"Tipo de error: {type(e)}")
         print(f"Representación (repr): {repr(e)}")
 
@@ -283,4 +290,7 @@ async def process_video_async(config: ProductionInput):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-
+@router.post("/ingestion/{folder_name}")
+def ingestion(folder_name: str):
+    # .send() pone el mensaje en Redis y regresa de inmediato
+    return {"message": "ok"}
