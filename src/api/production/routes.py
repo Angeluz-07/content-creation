@@ -237,16 +237,18 @@ async def get_discovery_result(result_id: str):
         print(f"Sending to download service: {item["output_filename"]} ")
     return {"status": "success"}
 
-# todo colapse into single method
-@router.post("/produce-short/synchronous")
-def process_video(config: ProductionInput):
-    print(f"Procesando: {config.input}")  # todo: link data to params used for download
 
-    short_producer.trigger_sync(config.model_dump())
-    return {
-        "status": "success",
-        "message": f"Procesamiento iniciado para {config.input}",
-    }
+
+# todo: migrate
+# @router.post("/produce-short/synchronous")
+# def process_video(config: ProductionInput):
+#     print(f"Procesando: {config.input}")  # todo: link data to params used for download
+
+#     video_builder.run(config.model_dump())
+#     return {
+#         "status": "success",
+#         "message": f"Procesamiento iniciado para {config.input}",
+#     }
 
 
 @router.post("/produce-short")
@@ -260,12 +262,25 @@ async def process_video_async(config: ProductionInput):
         task_service.create_task(
             task_id=new_task_id, entity_type="short_production", payload=params
         )
-        short_producer.trigger_async(params)
+        flow_run = await run_deployment(
+            name="video-build/main",
+            parameters={"task_id": params.get("task_id"), "data": params},
+            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
+        )
 
-        print(f"Sending to short_production queue: {config.input_filename}")
+        print(f"Sending to video worker: {config.input_filename}")
 
         return {
             "message": f"Sent to video_build: {config.input_filename}",
         }
-    except Exception as e:
+    except Exception as e:        
+        print(f"Tipo de error: {type(e)}")
+        print(f"Representación (repr): {repr(e)}")
+
+        # Si el error viene de una respuesta HTTP de la API de Prefect
+        if hasattr(e, "response") and hasattr(e.response, "text"):
+            print(f"Respuesta detallada de la API: {e.response.text}")
         raise HTTPException(status_code=400, detail=str(e))
+
+
+
