@@ -200,7 +200,7 @@ def get_discovery_result(result_id: str):
 
 
 @router.post("/discovery/results/{result_id}/trigger-download")
-def get_discovery_result(result_id: str):
+async def get_discovery_result(result_id: str):
     values = assets.get_path("metals", result_id)
     import json
     with open(values, "r", encoding="utf-8") as file:
@@ -228,7 +228,12 @@ def get_discovery_result(result_id: str):
         task_service.create_task(
             task_id=new_task_id, entity_type="download", payload=params
         )
-        download_service.trigger(params)
+        flow_run = await run_deployment(
+            name="download/main",
+            parameters={"task_id": params.get("task_id"), "data": params},
+            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
+        )
+
         print(f"Sending to download service: {item["output_filename"]} ")
     return {"status": "success"}
 

@@ -117,6 +117,10 @@ const handleSubmit = async () => {
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <span class="text-base font-medium"> Outputfilename Format | {{ outputFileNameExample }} </span>
               </div>
+
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-base font-medium"> # Items | {{ raw_items.length }} </span>
+              </div>
             </template>
             <!-- Vinculamos las columnas mapeadas en el computed con la propiedad 'field' -->
             <Column field="start" header="Start"></Column>

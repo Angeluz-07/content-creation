@@ -24,10 +24,12 @@ class YTDownloader:
                 force_download=force_download,
                 output_filename=output_filename,
             )
+            print("File saved in ", result_filepath)
         elif file_type == "video":
             result_filepath = await self.get_video_segment(
                 url, start_ts, end_ts, force_download, output_filename
             )
+            print("File saved in ", result_filepath)
         else:
             print("Error from download service, unknown file_type")
 

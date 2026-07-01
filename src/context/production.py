@@ -14,7 +14,7 @@ from src.config import (
     REDIS_URI,
 )
 from src.services.production.filename_provider import FilenameProvider
-from src.config import DOWNLOAD_DIR, VTT_DIR, METALS_DIR
+from src.config import DOWNLOAD_DIR_VIDEO, VTT_DIR, METALS_DIR
 
 assets = AssetProvider().add_source("vtt", VTT_DIR, extension=".vtt").add_source("metals", METALS_DIR, extension=".json")
 
@@ -37,7 +37,7 @@ class ServiceHub:
 
         # fmt: off
         self.download_service   = DownloadService(download_repo) 
-        self.filename_provider  = FilenameProvider(DOWNLOAD_DIR, suffix=".mp4") 
+        self.filename_provider  = FilenameProvider(DOWNLOAD_DIR_VIDEO, suffix=".mp4") 
         self.production_service = ProductionService(production_repo)
         self.task_service       = TaskService(task_repo)
         self.discovery_service  = DiscoveryService()
