@@ -170,107 +170,35 @@ services:
           memory: 0.25G
     profiles:
       - custom
-  download_worker:
-    image: angeluz07/cc-download:0.0.1 # use local if exists
-    build: # if doesnt, build it
+  prefect_worker:
+    image: angeluz07/cc-worker:0.0.1
+    build:
       context: .
-      dockerfile: ./deploy/download_worker/Dockerfile
-    container_name: download_worker
-    command: prefect flow serve src.workers.download:download --name "main" --limit 2
-    environment:
-      - PREFECT_API_URL=http://prefect-server:4200/api
-      - WEBHOOK_URI=${WEBHOOK_URI}
-    volumes:
-      - ./.data:/app/.data:z
-      - ./src:/app/src:z
-    deploy:
-      resources:
-        limits:
-          cpus: "4.0"
-          memory: 2G
-        reservations:
-          cpus: "1.0"
-          memory: 1G
-    profiles:
-      - custom
-  video_worker:
-    image: angeluz07/cc-video-build:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./deploy/video_worker/Dockerfile
-    container_name: video_worker
-    command: prefect flow serve src.workers.video:video_build --name "main" --limit 2
-    environment:
-      - PREFECT_API_URL=http://prefect-server:4200/api
-      - WEBHOOK_URI=${WEBHOOK_URI}
-    volumes:
-      - ./.data:/app/.data:z
-      - ./src:/app/src:z
-    deploy:
-      resources:
-        limits:
-          cpus: "6"
-          memory: 2G
-        reservations:
-          cpus: "1"
-          memory: 1G
-    profiles:
-      - custom
-  discovery_worker:
-    image: angeluz07/cc-discovery:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./deploy/workers/discovery/Dockerfile
-    container_name: discovery_worker
-    command: prefect flow serve src.workers.discovery:discovery --name "main" --limit 2
+      dockerfile: ./deploy/workers/cc/Dockerfile
+    container_name: prefect_worker
     extra_hosts:
       - "localhost:host-gateway"
+    command: >
+      sh -c "prefect work-pool create 'local-docker-pool' --type process || true && 
+             prefect deploy --all && 
+             prefect worker start --pool 'local-docker-pool' --limit 4"
     environment:
+      - PREFECT_API_URL=http://prefect-server:4200/api
       - QDRANTDB_URI=${QDRANTDB_URI}
       - EMBEDDER_URI=${EMBEDDER_URI}
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
-      - PREFECT_API_URL=http://prefect-server:4200/api
       - WEBHOOK_URI=${WEBHOOK_URI}
       - GROQ_API_KEY=${GROQ_API_KEY}
     volumes:
       - ./.data:/app/.data:z
-      - ./src:/app/src:z
+      - ./src:/app/src:z 
+      - ./prefect.yaml:/app/prefect.yaml:z
     deploy:
       resources:
         limits:
-          cpus: "2" # still have, a cpu intensive task in this api
-          memory: 1G
+          cpus: "8.0"
+          memory: 4G
         reservations:
-          cpus: "1"
-          memory: 1G
-    profiles:
-      - custom
-  ingestion_worker:
-    image: angeluz07/cc-discovery:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./deploy/workers/discovery/Dockerfile
-    container_name: ingestion_worker
-    command: prefect flow serve src.workers.ingestion:ingestion --name "main" --limit 2
-    extra_hosts:
-      - "localhost:host-gateway"
-    environment:
-      - QDRANTDB_URI=${QDRANTDB_URI}
-      - EMBEDDER_URI=${EMBEDDER_URI}
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
-      - PREFECT_API_URL=http://prefect-server:4200/api
-      - WEBHOOK_URI=${WEBHOOK_URI}
-      - GROQ_API_KEY=${GROQ_API_KEY}
-    volumes:
-      - ./.data:/app/.data:z
-      - ./src:/app/src:z
-    deploy:
-      resources:
-        limits:
-          cpus: "2" # still have, a cpu intensive task in this api
-          memory: 1G
-        reservations:
-          cpus: "1"
+          cpus: "2.0"
           memory: 1G
     profiles:
       - custom

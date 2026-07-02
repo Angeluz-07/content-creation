@@ -1,0 +1,16 @@
+# common
+prefect==3.7.5
+
+# download
+yt-dlp==2026.3.17
+
+# video
+moviepy==2.2.1
+Pillow==11.3.0
+skia-python==144.0.post2
+
+# discovery
+qdrant-client==1.18.0
+webvtt-py==0.5.1
+requests
+groq

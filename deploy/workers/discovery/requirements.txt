@@ -1,7 +1,0 @@
-fastapi[standard]==0.135.3
-uvicorn[standard]==0.24.0
-qdrant-client==1.18.0
-webvtt-py==0.5.1
-prefect==3.7.5
-requests
-groq
