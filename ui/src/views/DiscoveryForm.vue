@@ -11,7 +11,7 @@ const discoveryStore = useDiscoveryStore()
 const form = reactive<DiscoveryInput>({
   inputFileName: '',
   outputFileName: 'test',
-  sensitivity: 0.75,
+  sensitivity: 0.71,
   min_words: 90,
   url: 'https://www.youtube.com/watch',
 })
