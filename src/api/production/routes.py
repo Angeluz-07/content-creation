@@ -1,12 +1,13 @@
 import os
 from fastapi import APIRouter
 from .models import ProductionInput, DownloadInput, DiscoveryInput
+from src.context.common import assets
 from src.context.production import (
     short_producer,
     download_service,
     raw_segments_filename_provider,
     task_service,
-    assets
+    #assets
 )
 
 from fastapi import HTTPException
@@ -19,9 +20,14 @@ from .models import TaskSyncInput
 router = APIRouter(prefix="", tags=["main"])
 
 
+@router.get("/helloworld")
+def hello_world():
+    return {"message": "hello world"}
+
+
 @router.post("/tasks/sync")
 def sync_task_status(data: TaskSyncInput):
-    print("testing hook", data.task_id, data.status)
+    print("Updating task status ", data.task_id, data.status)
     new_status = data.status
     task_id = data.task_id
     if new_status == "RUNNING":
@@ -36,18 +42,10 @@ def sync_task_status(data: TaskSyncInput):
     return {"status": "success"}
 
 
-@router.get("/helloworld")
-def hello_world():
-    # .send() pone el mensaje en Redis y regresa de inmediato
-    return {"message": "hello worldd"}
-
-
 @router.get("/images/")
 def get_image():
-    file_path = str(Path(TEMP_DIR) / f"debug_frame.png")
-    import os
-
-    if not os.path.exists(file_path):
+    file_path = assets.get_path("temp", "debug_frame.png")
+    if not Path(file_path).is_file():
         raise HTTPException(status_code=404, detail="Imagen no encontrada")
 
     return FileResponse(file_path)
