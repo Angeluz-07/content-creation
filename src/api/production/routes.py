@@ -20,12 +20,6 @@ def hello_world():
     return {"message": "hello world"}
 
 
-@router.post("/tasks/sync")
-def sync_task_status(data: TaskSyncInput):
-    task_service.update_status(data.task_id, data.status)
-    return {"status": "success"}
-
-
 @router.get("/images/")
 def get_image():
     file_path = assets.get_path("temp", "debug_frame.png")
@@ -86,6 +80,11 @@ def get_tasks(target_entity_type: str = None):
     return {"status": "success", "value": result}
 
 
+@router.post("/tasks/sync")
+def sync_task_status(data: TaskSyncInput):
+    task_service.update_status(data.task_id, data.status)
+    return {"status": "success"}
+
 from prefect.deployments import run_deployment
 
 
@@ -95,18 +94,14 @@ async def download_video(data: DownloadInput):
         params = data.model_dump()
         download_service.validate(params)
 
-        new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
-        params["id"] = task_service.get_new_uuid()
-        params["task_id"] = new_task_id
-        task_service.create_task(
-            task_id=new_task_id, entity_type="download", payload=params
+        task_id = task_service.create_task(
+            entity_type="download", payload=params
         )
         flow_run = await run_deployment(
             name="download/main",
-            parameters={"task_id": params.get("task_id"), "data": params},
+            parameters={"task_id": task_id, "data": params},
             timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
         )
-
         return {
             "message": f"Tarea enviada al worker para: {params.get("output_filename")}",
         }

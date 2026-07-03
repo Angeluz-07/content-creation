@@ -33,15 +33,15 @@ class TaskService:
         result.reverse()
         return result
 
-    def create_task(self, task_id, entity_type, payload=None):
+    def create_task(self, entity_type, payload=None):
+        payload["id"] = self.get_new_uuid()
         task = Task(
-            id=task_id,
             target_entity_id=payload["id"],
             target_entity_type=entity_type,
             payload=(payload or {}),
         )
         self.task_repo.add(task)
-        return task
+        return task.id
 
     def _update_status(self, task_id: str, status: TaskStatus) -> None:
         """Método privado que centraliza la actualización."""
