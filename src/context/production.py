@@ -1,12 +1,12 @@
 from src.services.production.production_service import ProductionService
 from src.services.production.download_service import DownloadService
 from src.services.production.task_service import TaskService
-from src.services.production.asset import AssetProvider
 from src.services.production.discovery_service import DiscoveryService
 from src.dbs.mongo_client import get_mongo_client
 from src.dbs.mongo_repository import DownloadMongoRepository
 from src.dbs.mongo_repository import ProductionMongoRepository
 from src.dbs.mongo_repository import TaskMongoRepository
+from src.services.production.prefect_service import PrefectService
 
 from src.config import (
     MONGODB_URI,
@@ -16,8 +16,7 @@ from src.config import (
 from src.services.production.filename_provider import FilenameProvider
 from src.config import DOWNLOAD_DIR_VIDEO, VTT_DIR, METALS_DIR
 
-assets = AssetProvider().add_source("vtt", VTT_DIR, extension=".vtt").add_source("metals", METALS_DIR, extension=".json")
-
+prefect_service = PrefectService()
 
 class RepositoryHub:
     def __init__(self):

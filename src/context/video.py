@@ -3,18 +3,11 @@ from src.domain.video.layer import LayerBuilder
 from src.domain.video.extractor import Extractor
 from src.domain.video.assembler import Assembler
 from src.domain.video.resizer import Resizer
-from src.services.video.asset import AssetProvider
 from src.services.video.build import *
+from src.context.common import assets
 
 resizer = Resizer(TEMP_DIR)
 
-assets = (
-    AssetProvider()
-    .add_source("input", DOWNLOAD_DIR_VIDEO, extension=".mp4")
-    .add_source("font", ASSETS_DIR, extension=".ttf")
-    .add_source("emoji", EMOJI_DIR, extension=".png")
-    .add_source("layout", LAYOUT_DIR, extension=".png")
-)
 
 layer_builder = LayerBuilder(TEMP_DIR)
 assembler = Assembler(TEMP_DIR, OUTPUT_DIR)

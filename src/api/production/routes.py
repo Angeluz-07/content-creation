@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from .models import ProductionInput, DownloadInput, DiscoveryInput
 from src.context.common import assets
+from src.context.production import prefect_service
 from src.context.production import (
     short_producer,
     download_service,
@@ -85,25 +86,20 @@ def sync_task_status(data: TaskSyncInput):
     task_service.update_status(data.task_id, data.status)
     return {"status": "success"}
 
-from prefect.deployments import run_deployment
-
 
 @router.post("/download")
 async def download_video(data: DownloadInput):
     try:
-        params = data.model_dump()
-        download_service.validate(params)
+        data = data.model_dump()
+        download_service.validate(data)
 
-        task_id = task_service.create_task(
-            entity_type="download", payload=params
-        )
-        flow_run = await run_deployment(
-            name="download/main",
-            parameters={"task_id": task_id, "data": params},
-            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
-        )
+        task_id = task_service.create_task(entity_type="download", payload=data)
+        await prefect_service.trigger_download(task_id, data)
+
+        print(f"Sending to download service: {data.get('output_filename')} ")
+
         return {
-            "message": f"Tarea enviada al worker para: {params.get("output_filename")}",
+            "message": f"Tarea enviada al worker para: {data.get("output_filename")}",
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -112,23 +108,14 @@ async def download_video(data: DownloadInput):
 @router.post("/discovery")
 async def discovery(data: DiscoveryInput):
     try:
-        params = data.model_dump()
-        new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
-        params["id"] = task_service.get_new_uuid()
-        params["task_id"] = new_task_id
-        task_service.create_task(
-            task_id=new_task_id, entity_type="discovery", payload=params
-        )
-
-        flow_run = await run_deployment(
-            name="discovery/main",
-            parameters={"task_id": params.get("task_id"), "data": params},
-            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
-        )
-        print(f"Sending to discovery service: {data.output_filename} ")
+        data = data.model_dump()
+        task_id = task_service.create_task( entity_type="discovery", payload=data)
+        await prefect_service.trigger_discovery(task_id, data)
+        
+        print(f"Sending to discovery service: {data.get('output_filename')} ")
 
         return {
-            "message": f"Sent to discovery: {params["output_filename"]}",
+            "message": f"Sent to discovery: {data.get('output_filename')}",
         }
     except Exception as e:
         import traceback

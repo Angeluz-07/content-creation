@@ -5,6 +5,16 @@ from typing import Dict
 import subprocess
 
 
+def remove_middle_extension(file_path: str):
+    path = Path(file_path)
+    if len(path.suffixes) >= 2:
+        print("Renaming file with multiple extensions..")
+        new_path = path.with_name(f"{path.name.split('.')[0]}{path.suffix}")
+        path.rename(new_path)
+        return new_path
+    return path
+
+
 class YTDownloader:
     def __init__(self, output_path: str, cookies_path: str):
         self.output_path = output_path
@@ -24,6 +34,7 @@ class YTDownloader:
                 force_download=force_download,
                 output_filename=output_filename,
             )
+            result_filepath = remove_middle_extension(f"{result_filepath}.es.vtt")
             print("File saved in ", result_filepath)
         elif file_type == "video":
             result_filepath = await self.get_video_segment(
@@ -41,7 +52,7 @@ class YTDownloader:
         force_download: bool,
         output_filename: str,
     ) -> str:
-        raw_filepath = str(Path(self.output_path) / "video" /  f"{output_filename}.mp4")
+        raw_filepath = str(Path(self.output_path) / "video" / f"{output_filename}.mp4")
         file_doesnt_exist = not Path(raw_filepath).is_file()
 
         if file_doesnt_exist or force_download:

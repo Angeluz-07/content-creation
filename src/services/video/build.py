@@ -4,7 +4,7 @@ from src.domain.video.resizer import Resizer
 from src.domain.video.layer import LayerBuilder
 from src.domain.video.assembler import Assembler
 from src.domain.video.extractor import Extractor
-from .asset import AssetProvider
+from src.services.common.asset import AssetProvider
 
 
 @dataclass

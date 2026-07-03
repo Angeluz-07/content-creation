@@ -12,7 +12,7 @@ class Detector:
         self.output_dir = output_dir
 
     def run(self, data: dict):
-        vtt_path = str(Path(self.vtt_dir) / f"{data.get("input_filename")}.vtt")
+        vtt_path = str(Path(self.vtt_dir) / f"{data.get("input_filename")}")
         result = self.scan_vtt(vtt_path, data.get("sensitivity"), data.get("min_words"))
         for item in result:
             item["url"] = data.get("url")
