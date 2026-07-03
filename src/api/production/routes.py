@@ -1,13 +1,12 @@
 import os
 from fastapi import APIRouter
-from .models import ProductionInput, DownloadParamsInput, DownloadInput, DiscoveryInput
+from .models import ProductionInput, DownloadInput, DiscoveryInput
 from src.context.production import (
     short_producer,
     download_service,
     raw_segments_filename_provider,
     task_service,
-    assets,
-    discovery_service,
+    assets
 )
 
 from fastapi import HTTPException
