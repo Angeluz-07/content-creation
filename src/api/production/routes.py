@@ -54,8 +54,8 @@ def get_image():
 # todo: improve, this endpoint is actually for produced videos
 @router.get("/video/{video_id}")
 def get_video(video_id: str):
-    file_path = str(Path(OUTPUT_DIR) / f"{video_id}.mp4")
-    if not os.path.exists(file_path):
+    file_path = assets.get_path("output_videos", f"{video_id}.mp4")
+    if not Path(file_path).is_file():
         raise HTTPException(status_code=404, detail="Video no encontrado")
 
     # media_type='video/mp4' es crucial para que el navegador sepa qué hacer
