@@ -97,11 +97,8 @@ async def download_video(data: DownloadInput):
 
         task_id = task_service.create_task(entity_type="download", payload=data)
         await prefect_service.trigger_download(task_id, data)
-
-        print(f"Sending to download service: {data.get('output_filename')} ")
-
         return {
-            "message": f"Tarea enviada al worker para: {data.get("output_filename")}",
+            "message": f"Sent to download: {data.get("output_filename")}",
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -111,11 +108,8 @@ async def download_video(data: DownloadInput):
 async def discovery(data: DiscoveryInput):
     try:
         data = data.model_dump()
-        task_id = task_service.create_task( entity_type="discovery", payload=data)
+        task_id = task_service.create_task(entity_type="discovery", payload=data)
         await prefect_service.trigger_discovery(task_id, data)
-        
-        print(f"Sending to discovery service: {data.get('output_filename')} ")
-
         return {
             "message": f"Sent to discovery: {data.get('output_filename')}",
         }
@@ -126,6 +120,37 @@ async def discovery(data: DiscoveryInput):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/produce-short")
+async def process_video_async(data: ProductionInput):
+    try:
+        data = data.model_dump()
+        short_producer.validate(data)
+        task_id = task_service.create_task(entity_type="short_production", payload=data)
+
+        await prefect_service.trigger_video_build(task_id, data)
+        return {
+            "message": f"Sent to video_build: {data.get('output_filename')}",
+        }
+    except Exception as e:
+        print(f"Tipo de error: {type(e)}")
+        print(f"Representación (repr): {repr(e)}")
+
+        # Si el error viene de una respuesta HTTP de la API de Prefect
+        if hasattr(e, "response") and hasattr(e.response, "text"):
+            print(f"Respuesta detallada de la API: {e.response.text}")
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/ingestion/{folder_name}")
+async def ingestion(folder_name: str):
+    try:
+        data = {"folder_name": folder_name}
+        task_id = task_service.create_task(entity_type="ingestion", payload=data)
+        await prefect_service.trigger_ingestion(task_id, data)
+        return {"message": "ok"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 @router.get("/discovery/results/{result_id}")
 def get_discovery_result(result_id: str):
@@ -135,11 +160,11 @@ def get_discovery_result(result_id: str):
 
 
 @router.post("/discovery/results/{result_id}/trigger-download")
-async def get_discovery_result(result_id: str):
+async def trigger_download_for_discovery_result(result_id: str):
     filepath = assets.get_path("metals", result_id)
     result = read_json(filepath)
 
-    for data in result[:1]:
+    for data in result:
         task_id = task_service.create_task(entity_type="download", payload=data)
         await prefect_service.trigger_download(task_id, data)
 
@@ -157,48 +182,3 @@ async def get_discovery_result(result_id: str):
 #         "status": "success",
 #         "message": f"Procesamiento iniciado para {config.input}",
 #     }
-
-
-@router.post("/produce-short")
-async def process_video_async(config: ProductionInput):
-    try:
-        params = config.model_dump()
-        short_producer.validate(params)
-        new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
-        params["id"] = task_service.get_new_uuid()
-        params["task_id"] = new_task_id
-        task_service.create_task(
-            task_id=new_task_id, entity_type="short_production", payload=params
-        )
-        flow_run = await run_deployment(
-            name="video-build/main",
-            parameters={"task_id": params.get("task_id"), "data": params},
-            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
-        )
-
-        print(f"Sending to video worker: {config.input_filename}")
-
-        return {
-            "message": f"Sent to video_build: {config.input_filename}",
-        }
-    except Exception as e:
-        print(f"Tipo de error: {type(e)}")
-        print(f"Representación (repr): {repr(e)}")
-
-        # Si el error viene de una respuesta HTTP de la API de Prefect
-        if hasattr(e, "response") and hasattr(e.response, "text"):
-            print(f"Respuesta detallada de la API: {e.response.text}")
-        raise HTTPException(status_code=400, detail=str(e))
-
-
-@router.post("/ingestion/{folder_name}")
-async def ingestion(folder_name: str):
-    params = {"folder_name": folder_name}
-    params["task_id"] = task_service.get_new_uuid()
-    flow_run = await run_deployment(
-        name="ingestion/main",
-        parameters={"task_id": params.get("task_id"), "data": params},
-        timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
-    )
-    # .send() pone el mensaje en Redis y regresa de inmediato
-    return {"message": "ok"}
