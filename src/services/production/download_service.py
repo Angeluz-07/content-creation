@@ -17,17 +17,6 @@ class DownloadService:
         download_repo: IRepository = None,
     ):
         self.download_repo = download_repo
-        self.url = "http://localhost:8002"
-
-    def trigger(self, data: Dict):
-        try:
-            response = requests.post(
-                f"{self.url}/download",
-                json=data,
-            )
-        except Exception as e:
-            print(e)
-            raise
 
     def get_last_download(self):
         params = self.download_repo.get_all()

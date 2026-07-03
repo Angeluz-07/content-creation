@@ -1,7 +1,6 @@
 from src.services.production.production_service import ProductionService
 from src.services.production.download_service import DownloadService
 from src.services.production.task_service import TaskService
-from src.services.production.discovery_service import DiscoveryService
 from src.dbs.mongo_client import get_mongo_client
 from src.dbs.mongo_repository import DownloadMongoRepository
 from src.dbs.mongo_repository import ProductionMongoRepository
@@ -11,10 +10,8 @@ from src.services.production.prefect_service import PrefectService
 from src.config import (
     MONGODB_URI,
     MONGO_DB_NAME,
-    REDIS_URI,
 )
-from src.services.production.filename_provider import FilenameProvider
-from src.config import DOWNLOAD_DIR_VIDEO, VTT_DIR, METALS_DIR
+
 
 prefect_service = PrefectService()
 
@@ -36,10 +33,8 @@ class ServiceHub:
 
         # fmt: off
         self.download_service   = DownloadService(download_repo) 
-        self.filename_provider  = FilenameProvider(DOWNLOAD_DIR_VIDEO, suffix=".mp4") 
         self.production_service = ProductionService(production_repo)
         self.task_service       = TaskService(task_repo)
-        self.discovery_service  = DiscoveryService()
         # fmt : on
 
 
@@ -48,8 +43,6 @@ services = ServiceHub(repos)
 
 # fmt: off
 download_service               = services.download_service
-raw_segments_filename_provider = services.filename_provider
 short_producer                 = services.production_service
 task_service                   = services.task_service
-discovery_service              = services.discovery_service
 # fmt: on

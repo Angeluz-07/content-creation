@@ -16,52 +16,6 @@ class ProductionService:
         production_repo,
     ):
         self.production_repo = production_repo
-        self.url = "http://localhost:8003"
-
-    def trigger_sync(self, params: Dict):
-        input_filename = params["input_filename"]
-        font_name = params["font_name"]
-        watermark_text = params["watermark_text"]
-        frame_ts = params["frame_ts"]
-        hook_text = params["hook_text"]
-        output_filename = params["output_filename"]
-        debug_video_frame = params["debug_frame"]
-
-        response = requests.post(
-            f"{self.url}/produce-short/synchronous",
-            json={
-                "input_filename": input_filename,
-                "font_name": font_name,
-                "watermark_text": watermark_text,
-                "frame_ts": frame_ts,
-                "hook_text": hook_text,
-                "output_filename": output_filename,
-                "debug_frame": debug_video_frame,
-            },
-        )
-
-    def trigger_async(self, params: Dict):
-        input_filename = params["input_filename"]
-        font_name = params["font_name"]
-        watermark_text = params["watermark_text"]
-        frame_ts = params["frame_ts"]
-        hook_text = params["hook_text"]
-        output_filename = params["output_filename"]
-        debug_video_frame = params["debug_frame"]
-
-        response = requests.post(
-            f"{self.url}/produce-short/prefect",
-            json={
-                "task_id": params.get("task_id"),
-                "input_filename": input_filename,
-                "font_name": font_name,
-                "watermark_text": watermark_text,
-                "frame_ts": frame_ts,
-                "hook_text": hook_text,
-                "output_filename": output_filename,
-                "debug_frame": debug_video_frame,
-            },
-        )
 
     def project(self, params: Dict):
         item = Production(**params)
