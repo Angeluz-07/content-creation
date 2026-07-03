@@ -17,17 +17,26 @@ const form = reactive<DiscoveryInput>({
 })
 
 watch(
-  () => form.inputFileName,
-  (fileName) => {
-    form.outputFileName = `${getFilenameStem(fileName)}_candidates`
-  },
-)
+  // 1. Single watcher listening to all 3 properties
+  () => [form.inputFileName, form.sensitivity, form.min_words],
+  // 2. Safely extract those 3 exact values
+  ([fileName, sensitivity, minWords]) => {
+    // 3. Stop if any value is missing to prevent breaking
+    if (!fileName || sensitivity == null || minWords == null) return;
+
+    const stem = getFilenameStem(fileName);
+    const sensStr = sensitivity.toString().replaceAll('.', '');
+
+    // 4. Update the output name
+    form.outputFileName = `${stem}_candidates_${sensStr}_${minWords}`;
+  }
+);
 
 const getFilenameStem = (filename) => {
-    const lastDotIndex = filename.lastIndexOf('.');
-    
-    // Return the stem if a dot exists, otherwise return the whole filename
-    return lastDotIndex !== -1 ? filename.slice(0, lastDotIndex) : filename;
+  const lastDotIndex = filename.lastIndexOf('.')
+
+  // Return the stem if a dot exists, otherwise return the whole filename
+  return lastDotIndex !== -1 ? filename.slice(0, lastDotIndex) : filename
 }
 const fileNames = ref([])
 const { loading: loadingFileNames, get: getFileNames } = useApi()
@@ -87,7 +96,7 @@ const handleSubmit = async () => {
 
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <!-- ... Campos del formulario permanecen igual con v-model ... -->
-          <div class="form-control w-full">
+        <div class="form-control w-full">
           <label class="label">
             <span class="label-text font-semibold">Input Filename</span>
           </label>
@@ -100,6 +109,25 @@ const handleSubmit = async () => {
             </option>
           </select>
         </div>
+
+        <div class="form-control w-full">
+          <label class="label"><span class="label-text">Sensitivity</span></label>
+          <input
+            v-model="form.sensitivity"
+            type="text"
+            class="input input-bordered w-full"
+            required
+          />
+        </div>
+        <div class="form-control w-full">
+          <label class="label"><span class="label-text">Min Words</span></label>
+          <input
+            v-model="form.min_words"
+            type="text"
+            class="input input-bordered w-full"
+            required
+          />
+        </div>
         <div class="form-control w-full">
           <label class="label"><span class="label-text">Output Filename</span></label>
           <input
@@ -109,36 +137,11 @@ const handleSubmit = async () => {
             required
           />
         </div>
-           <div class="form-control w-full">
-          <label class="label"><span class="label-text">Sensitivity</span></label>
-          <input
-            v-model="form.sensitivity"
-            type="text"
-            class="input input-bordered w-full"
-            required
-          />
-        </div>
-           <div class="form-control w-full">
-          <label class="label"><span class="label-text">Min Words</span></label>
-          <input
-            v-model="form.min_words"
-            type="text"
-            class="input input-bordered w-full"
-            required
-          />
-        </div>
-           <div class="form-control w-full">
+        <div class="form-control w-full">
           <label class="label"><span class="label-text">URL</span></label>
-          <input
-            v-model="form.url"
-            type="text"
-            class="input input-bordered w-full"
-            required
-          />
+          <input v-model="form.url" type="text" class="input input-bordered w-full" required />
         </div>
 
-
-       
         <div class="card-actions justify-end mt-6">
           <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full md:w-auto">
             <span v-if="isSubmitting" class="loading loading-spinner"></span>

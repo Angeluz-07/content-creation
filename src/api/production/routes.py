@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 from .models import ProductionInput, DownloadInput, DiscoveryInput
 from src.context.common import assets
+from src.services.common.utils import read_json
+
 from src.context.production import prefect_service
 from src.context.production import (
     short_producer,
@@ -124,86 +126,24 @@ async def discovery(data: DiscoveryInput):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-from datetime import datetime, timedelta
-import math
-
-
-def format_time(time_str, round_fn, extra_sec=0):
-    # Convertimos el string en un objeto timedelta para manipularlo fácilmente
-    t = datetime.strptime(time_str, "%H:%M:%S.%f")
-    seconds = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1_000_000
-    # Aplicamos el redondeo (piso o techo) y los segundos extra
-    final_seconds = round_fn(seconds) + extra_sec
-    return str(timedelta(seconds=final_seconds)).zfill(8)
-
-
-def map_discovery_results(result, prefix):
-    # Fecha de hoy en formato AAAAMMDD
-    today = datetime.now().strftime("%Y%m%d")
-
-    # Mapeo compacto en una sola línea de comprensión (list comprehension)
-    mapped_data = [
-        {
-            "start_segment": format_time(item["start"], math.floor),
-            "end_segment": format_time(item["end"], math.ceil, extra_sec=1),
-            "text": item["full_context"],
-            "output_filename": f"{prefix}_{idx:02d}",
-            "force_download": False,
-            "url": item["url"],
-        }
-        for idx, item in enumerate(result)
-    ]
-    return mapped_data
-
 
 @router.get("/discovery/results/{result_id}")
 def get_discovery_result(result_id: str):
-    values = assets.get_path("metals", result_id)
-    import json
-
-    with open(values, "r", encoding="utf-8") as file:
-        file_content = json.load(file)
-    result = map_discovery_results(file_content, result_id)
+    filepath = assets.get_path("metals", result_id)
+    result = read_json(filepath)
     return {"status": "success", "values": result}
 
 
 @router.post("/discovery/results/{result_id}/trigger-download")
 async def get_discovery_result(result_id: str):
-    values = assets.get_path("metals", result_id)
-    import json
+    filepath = assets.get_path("metals", result_id)
+    result = read_json(filepath)
 
-    with open(values, "r", encoding="utf-8") as file:
-        file_content = json.load(file)
-    result = map_discovery_results(file_content, result_id)
-    # print(result)
-    for item in result:
-        params = {}
-        params["file_type"] = "video"
-        params["url"] = item["url"]
-        params["force_download"] = item["force_download"]
-        params["start_segment"] = item["start_segment"]
-        params["end_segment"] = item["end_segment"]
-        params["output_filename"] = item["output_filename"]
-        new_task_id = task_service.get_new_uuid()  # todo: improve, not intuitive
-        params["id"] = task_service.get_new_uuid()
-        params["task_id"] = new_task_id
-        try:
-            download_service.validate(params)
-        except Exception as e:
-            print("Exception: ", str(e))
-            print(f"Skipping triggering for {item["output_filename"]}")
-            continue  # to next iteration
+    for data in result[:1]:
+        task_id = task_service.create_task(entity_type="download", payload=data)
+        await prefect_service.trigger_download(task_id, data)
 
-        task_service.create_task(
-            task_id=new_task_id, entity_type="download", payload=params
-        )
-        flow_run = await run_deployment(
-            name="download/main",
-            parameters={"task_id": params.get("task_id"), "data": params},
-            timeout=0,  # IMPORTANTÍSIMO: 0 significa "encola y no te quedes esperando a que termine"
-        )
-
-        print(f"Sending to download service: {item["output_filename"]} ")
+        print(f"Sending to download service: {data.get("output_filename")}")
     return {"status": "success"}
 
 
