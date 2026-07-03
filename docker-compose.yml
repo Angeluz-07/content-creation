@@ -39,41 +39,41 @@ services:
           memory: 256M
     profiles:
       - base
-  redis:
-    image: redis:7.2-alpine
-    container_name: redis_cc
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256M
-    profiles:
-      - base
-  redisinsight:
-    image: redis/redisinsight:latest
-    container_name: redisinsight_cc
-    ports:
-      - "5540:5540"
-    environment:
-      # Configura la conexión automática apuntando al contenedor de arriba
-      - REDIS_EXTERNAL_URL=redis://redis:6379
-    depends_on:
-      redis:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256M
-    profiles:
-      - base
+  # redis:
+  #   image: redis:7.2-alpine
+  #   container_name: redis_cc
+  #   ports:
+  #     - "6379:6379"
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 5
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.25"
+  #         memory: 256M
+  #   profiles:
+  #     - base
+  # redisinsight:
+  #   image: redis/redisinsight:latest
+  #   container_name: redisinsight_cc
+  #   ports:
+  #     - "5540:5540"
+  #   environment:
+  #     # Configura la conexión automática apuntando al contenedor de arriba
+  #     - REDIS_EXTERNAL_URL=redis://redis:6379
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.25"
+  #         memory: 256M
+  #   profiles:
+  #     - base
   qdrant:
     image: qdrant/qdrant:v1.17.1
     container_name: qdrant_vector_db
@@ -144,7 +144,7 @@ services:
     image: angeluz07/cc-production:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./deploy/production_api/Dockerfile
+      dockerfile: ./deploy/api/production/Dockerfile
     container_name: production_api
     ports:
       - "8000:8000"

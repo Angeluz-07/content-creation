@@ -6,7 +6,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-COPY deploy/production_api/requirements.txt ./requirements.txt
+COPY deploy/api/production/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY ./src /app/src
