@@ -1,4 +1,4 @@
-from src.services.video.asset import AssetProvider
+from src.services.common.asset import AssetProvider
 from src.config import (
     DOWNLOAD_DIR_VIDEO,
     ASSETS_DIR,
@@ -6,6 +6,8 @@ from src.config import (
     TEMP_DIR,
     EMOJI_DIR,
     LAYOUT_DIR,
+    VTT_DIR,
+    METALS_DIR,
 )
 
 assets = (
@@ -16,4 +18,6 @@ assets = (
     .add_source("font", ASSETS_DIR, extension=".ttf")
     .add_source("emoji", EMOJI_DIR, extension=".png")
     .add_source("layout", LAYOUT_DIR, extension=".png")
+    .add_source("vtt", VTT_DIR, extension=".vtt")
+    .add_source("metals", METALS_DIR, extension=".json")
 )

@@ -1,19 +1,14 @@
-import os
 from fastapi import APIRouter
 from .models import ProductionInput, DownloadInput, DiscoveryInput
 from src.context.common import assets
 from src.context.production import (
     short_producer,
     download_service,
-    raw_segments_filename_provider,
     task_service,
-    #assets
 )
 
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
-from src.config import TEMP_DIR, OUTPUT_DIR
-from src.context.production import task_service, download_service
 from pathlib import Path
 from .models import TaskSyncInput
 
@@ -64,10 +59,9 @@ def get_video(video_id: str):
 
 @router.get("/video/raw/{video_id}")
 def get_raw_video(video_id: str):
-    file_path = raw_segments_filename_provider.get_filepath(video_id)
-    import os
+    file_path = assets.get_path("input", f"{video_id}.mp4")
 
-    if not os.path.exists(file_path):
+    if not Path(file_path).is_file():
         raise HTTPException(status_code=404, detail="Video no encontrado")
 
     # media_type='video/mp4' es crucial para que el navegador sepa qué hacer
@@ -76,19 +70,18 @@ def get_raw_video(video_id: str):
 
 @router.get("/video/raws/")
 def get_raw_video_names():
-    values = raw_segments_filename_provider.get_filenames()
+    values = assets.get_filenames("input")
     return {"status": "success", "values": values}
 
 
 @router.get("/assets/vtt")
-def get_raw_video_names():
-    values = assets.list_files("vtt")
+def get_vtt_names():
+    values = assets.get_filenames("vtt")
     return {"status": "success", "values": values}
 
 
 @router.get("/download-params/last")
 def get_last_download_params():
-
     result = download_service.get_last_download()
     return {"status": "success", "value": result}
 
