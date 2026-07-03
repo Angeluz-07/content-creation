@@ -9,6 +9,18 @@ class TaskService:
     def __init__(self, task_repo):
         self.task_repo: IRepository = task_repo
 
+    def update_status(self, task_id: str, new_status: str):
+        print("Updating task status ", task_id, new_status)
+        if new_status == "RUNNING":
+            self.mark_as_processing(task_id)
+        elif new_status == "COMPLETED":
+            # todo: project domain object by entity_type
+            self.mark_as_completed(task_id)
+        elif new_status == "FAILED":
+            self.mark_as_failed(task_id)
+        else:
+            print("Unknown state for ", task_id)
+    
     def get_all(self) -> List[Task]:
         result = self.task_repo.get_all()
         result.reverse()

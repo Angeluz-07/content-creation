@@ -22,18 +22,7 @@ def hello_world():
 
 @router.post("/tasks/sync")
 def sync_task_status(data: TaskSyncInput):
-    print("Updating task status ", data.task_id, data.status)
-    new_status = data.status
-    task_id = data.task_id
-    if new_status == "RUNNING":
-        task_service.mark_as_processing(task_id)
-    elif new_status == "COMPLETED":
-        # todo: project domain object by entity_type
-        task_service.mark_as_completed(task_id)
-    elif new_status == "FAILED":
-        task_service.mark_as_failed(task_id)
-    else:
-        print("unknown state for", task_id)
+    task_service.update_status(data.task_id, data.status)
     return {"status": "success"}
 
 
