@@ -1,27 +1,26 @@
 from src.services.production.production_service import ProductionService
 from src.services.production.download_service import DownloadService
 from src.services.production.task_service import TaskService
-from src.dbs.mongo_client import get_mongo_client
-from src.dbs.mongo_repository import DownloadMongoRepository
-from src.dbs.mongo_repository import ProductionMongoRepository
-from src.dbs.mongo_repository import TaskMongoRepository
 from src.services.production.prefect_service import PrefectService
-
+from src.dbs.mongo import MongoRepository
+from src.dbs.mongo import get_mongo_client
+from src.domain.download.models import Download
+from src.domain.production.models import Production
+from src.domain.production.models import Task
 from src.config import (
     MONGODB_URI,
     MONGO_DB_NAME,
 )
-
-
+client = get_mongo_client(MONGODB_URI)
 prefect_service = PrefectService()
 
 class RepositoryHub:
     def __init__(self):
         client = get_mongo_client(MONGODB_URI)
         # fmt: off
-        self.download_repo   = DownloadMongoRepository(client=client, db_name=MONGO_DB_NAME, collection_name="downloads")
-        self.production_repo = ProductionMongoRepository(client=client, db_name=MONGO_DB_NAME, collection_name="short_productions")
-        self.task_repo       = TaskMongoRepository(client=client, db_name=MONGO_DB_NAME, collection_name="tasks")
+        self.download_repo   = MongoRepository(client, MONGO_DB_NAME, "downloads", Download)
+        self.production_repo = MongoRepository(client, MONGO_DB_NAME, "short_productions", Production)
+        self.task_repo       = MongoRepository(client, MONGO_DB_NAME, "tasks", Task)
         # fmt: on
 
 

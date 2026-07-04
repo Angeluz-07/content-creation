@@ -45,7 +45,7 @@ def get_video(video_id: str):
 
 @router.get("/video/raw/{video_id}")
 def get_raw_video(video_id: str):
-    file_path = assets.get_path("input", f"{video_id}.mp4")
+    file_path = assets.get_path("input", f"{video_id}")
 
     if not Path(file_path).is_file():
         raise HTTPException(status_code=404, detail="Video no encontrado")
@@ -167,8 +167,6 @@ async def trigger_download_for_discovery_result(result_id: str):
     for data in result:
         task_id = task_service.create_task(entity_type="download", payload=data)
         await prefect_service.trigger_download(task_id, data)
-
-        print(f"Sending to download service: {data.get("output_filename")}")
     return {"status": "success"}
 
 
