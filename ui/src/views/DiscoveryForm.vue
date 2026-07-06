@@ -12,7 +12,7 @@ const form = reactive<DiscoveryInput>({
   inputFileName: '',
   outputFileName: 'test',
   sensitivity: 0.71,
-  min_words: 90,
+  min_words: 110,
   url: 'https://www.youtube.com/watch',
 })
 

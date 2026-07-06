@@ -36,7 +36,8 @@ const items = computed(() => {
       start: item?.start_segment || '',
       end: item?.end_segment || '',
       text: item?.text || '',
-      url: item?.url || ''
+      url: item?.url || '',
+      duration: item?.duration || '',
     })) || []
   )
 })
@@ -125,6 +126,7 @@ const handleSubmit = async () => {
             <!-- Vinculamos las columnas mapeadas en el computed con la propiedad 'field' -->
             <Column field="start" header="Start"></Column>
             <Column field="end" header="End"></Column>
+            <Column field="duration" header="Duration"></Column>
             <Column field="text" header="Text"></Column>
           </DataTable>
         </div>
