@@ -3,7 +3,7 @@ import time
 import asyncio
 from typing import Dict
 import subprocess
-
+import sys
 
 def remove_middle_extension(file_path: str):
     path = Path(file_path)
@@ -39,6 +39,12 @@ class YTDownloader:
         elif file_type == "video":
             result_filepath = await self.get_video_segment(
                 url, start_ts, end_ts, force_download, output_filename
+            )
+            print("File saved in ", result_filepath)
+        
+        elif file_type == "audio":
+            result_filepath = await self.get_audio(
+                url, force_download, output_filename, start_ts, end_ts
             )
             print("File saved in ", result_filepath)
         else:
@@ -89,6 +95,7 @@ class YTDownloader:
             "-o", output_path,
             "--merge-output-format", "mp4",
             "--extractor-args", "youtube:player_client=default",
+            "--print", "Duration reported by API: %(duration_string)s (%(duration)s secs)",
             #"--verbose",  # for debug only
         ]
         # fmt: on
@@ -218,16 +225,17 @@ class YTDownloader:
         # fmt: off
         command = [
             "yt-dlp", url,
-            "--extract-audio",                           # Extract audio from video
-            "--audio-format", "aac",        # Convert/extract to AAC format
+            "--extract-audio",
+            "--audio-format", "m4a",
+            "-f", "wa[ext=m4a]",
             "--external-downloader-args", "ffmpeg:-loglevel error", # hides extra logs
-            "--postprocessor-args", "ffmpeg:-loglevel error",  # hides extra logs
+            "--postprocessor-args", "ExtractAudio:-c:a aac -ac 1 -b:a 48k -af aresample=async=1",
             "--force-overwrites",
             "--no-playlist",
             "--cookies", self.cookies_path,
             "--js-runtimes", "node",
             "--remote-components", "ejs:github",
-            "--download-sections", f"*{start_ts}-{end_ts}",
+            #"--download-sections", f"*{start_ts}-{end_ts}",
             "-o", output_path,
             #"--verbose",  # for debug only
         ]
@@ -244,6 +252,11 @@ class YTDownloader:
             )
 
             stdout, stderr = await process.communicate()
+
+            stdout_text = stdout.decode('utf-8', errors='ignore')
+            if stdout_text:
+                sys.stdout.write(stdout_text)
+                sys.stdout.flush()
 
             if process.returncode != 0:
                 raise subprocess.CalledProcessError(

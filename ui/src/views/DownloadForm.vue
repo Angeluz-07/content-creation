@@ -14,7 +14,7 @@ const form = reactive<DownloadParams>({
   endSegment: '00:00:20',
   outputFileName: 'test',
   forceDownload: false,
-  file_type: 'vtt'
+  file_type: 'vtt',
 })
 const downloadTypes = ref([
   'video', 'vtt','audio'
@@ -83,6 +83,29 @@ onMounted(() => {
           <input v-model="form.url" type="url" class="input input-bordered w-full" required />
         </div>
 
+        <div class="form-control w-full">
+          <label class="label">
+            <span class="label-text font-semibold">File Type</span>
+          </label>
+          <!-- Use v-model for binding and select tag instead of input -->
+          <select v-model="form.file_type" class="select select-bordered w-full" required>
+            <option value="" disabled selected>Select a type</option>
+            <!-- Loop through the list of strings -->
+            <option v-for="item in downloadTypes" :key="item" :value="item">
+              {{ item }}
+            </option>
+          </select>
+        </div>
+        <div class="form-control w-full">
+          <label class="label"><span class="label-text">Output Filename</span></label>
+          <input
+            v-model="form.outputFileName"
+            type="text"
+            class="input input-bordered w-full"
+            required
+          />
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div class="form-control w-full">
             <label class="label"><span class="label-text">Start Segment (HH:MM:SS)</span></label>
@@ -106,29 +129,6 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="form-control w-full">
-          <label class="label"><span class="label-text">Output Filename</span></label>
-          <input
-            v-model="form.outputFileName"
-            type="text"
-            class="input input-bordered w-full"
-            required
-          />
-        </div>
-
-        <div class="form-control w-full">
-          <label class="label">
-            <span class="label-text font-semibold">File Type</span>
-          </label>
-          <!-- Use v-model for binding and select tag instead of input -->
-          <select v-model="form.file_type" class="select select-bordered w-full" required>
-            <option value="" disabled selected>Select a type</option>
-            <!-- Loop through the list of strings -->
-            <option v-for="item in downloadTypes" :key="item" :value="item">
-              {{ item }}
-            </option>
-          </select>
-        </div>
         <div class="card-actions justify-end mt-6">
           <button type="submit" :disabled="isSubmitting" class="btn btn-primary w-full md:w-auto">
             <span v-if="isSubmitting" class="loading loading-spinner"></span>
