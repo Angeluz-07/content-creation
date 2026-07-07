@@ -95,7 +95,6 @@ class YTDownloader:
             "-o", output_path,
             "--merge-output-format", "mp4",
             "--extractor-args", "youtube:player_client=default",
-            "--print", "Duration reported by API: %(duration_string)s (%(duration)s secs)",
             #"--verbose",  # for debug only
         ]
         # fmt: on
@@ -111,6 +110,11 @@ class YTDownloader:
 
             # Esperamos a que el proceso muera físicamente en el Kernel
             stdout, stderr = await process.communicate()
+
+            stdout_text = stdout.decode('utf-8', errors='ignore')
+            if stdout_text:
+                sys.stdout.write(stdout_text)
+                sys.stdout.flush()
 
             if process.returncode != 0:
                 raise subprocess.CalledProcessError(
