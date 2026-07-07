@@ -1,1 +1,1 @@
-docker compose --profile base up
+docker compose --profile base up --remove-orphans

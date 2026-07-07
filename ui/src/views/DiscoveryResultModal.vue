@@ -36,7 +36,8 @@ const items = computed(() => {
       start: item?.start_segment || '',
       end: item?.end_segment || '',
       text: item?.text || '',
-      url: item?.url || ''
+      url: item?.url || '',
+      duration: item?.duration || '',
     })) || []
   )
 })
@@ -117,10 +118,15 @@ const handleSubmit = async () => {
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <span class="text-base font-medium"> Outputfilename Format | {{ outputFileNameExample }} </span>
               </div>
+
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="text-base font-medium"> # Items | {{ raw_items.length }} </span>
+              </div>
             </template>
             <!-- Vinculamos las columnas mapeadas en el computed con la propiedad 'field' -->
             <Column field="start" header="Start"></Column>
             <Column field="end" header="End"></Column>
+            <Column field="duration" header="Duration"></Column>
             <Column field="text" header="Text"></Column>
           </DataTable>
         </div>

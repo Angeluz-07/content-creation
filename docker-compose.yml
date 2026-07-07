@@ -39,41 +39,41 @@ services:
           memory: 256M
     profiles:
       - base
-  redis:
-    image: redis:7.2-alpine
-    container_name: redis_cc
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256M
-    profiles:
-      - base
-  redisinsight:
-    image: redis/redisinsight:latest
-    container_name: redisinsight_cc
-    ports:
-      - "5540:5540"
-    environment:
-      # Configura la conexión automática apuntando al contenedor de arriba
-      - REDIS_EXTERNAL_URL=redis://redis:6379
-    depends_on:
-      redis:
-        condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: "0.25"
-          memory: 256M
-    profiles:
-      - base
+  # redis:
+  #   image: redis:7.2-alpine
+  #   container_name: redis_cc
+  #   ports:
+  #     - "6379:6379"
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 5
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.25"
+  #         memory: 256M
+  #   profiles:
+  #     - base
+  # redisinsight:
+  #   image: redis/redisinsight:latest
+  #   container_name: redisinsight_cc
+  #   ports:
+  #     - "5540:5540"
+  #   environment:
+  #     # Configura la conexión automática apuntando al contenedor de arriba
+  #     - REDIS_EXTERNAL_URL=redis://redis:6379
+  #   depends_on:
+  #     redis:
+  #       condition: service_healthy
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         cpus: "0.25"
+  #         memory: 256M
+  #   profiles:
+  #     - base
   qdrant:
     image: qdrant/qdrant:v1.17.1
     container_name: qdrant_vector_db
@@ -118,11 +118,33 @@ services:
       - base
 
   # --- Custom Services ---
+  embedding_api:
+    image: angeluz07/cc-embedding:0.0.2 # use local if exists
+    build:
+      context: .
+      dockerfile: ./deploy/api/embedding/Dockerfile
+    container_name: embedding_api
+    ports:
+      - "8001:8001"
+    environment:
+      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
+    volumes:
+      - ./src:/app/src:z
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 1.5G
+        reservations:
+          cpus: "1"
+          memory: 0.5G
+    profiles:
+      - custom
   production_api:
     image: angeluz07/cc-production:0.0.1 # use local if exists
     build: # if doesnt, build it
       context: .
-      dockerfile: ./services/production/Dockerfile
+      dockerfile: ./deploy/api/production/Dockerfile
     container_name: production_api
     ports:
       - "8000:8000"
@@ -132,9 +154,11 @@ services:
       - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
       - REDIS_URI=redis://redis:6379
       - MONGODB_URI=${MONGODB_URI}
+      - PREFECT_API_URL=http://prefect-server:4200/api
+      - GROQ_API_KEY=${GROQ_API_KEY}
     volumes:
       - ./.data:/app/.data:z
-      - ./services/production:/app:z
+      - ./src:/app/src:z
     deploy:
       resources:
         limits:
@@ -145,203 +169,35 @@ services:
           memory: 0.25G
     profiles:
       - custom
-  embedding_api:
-    image: angeluz07/embedding:0.0.1 # use local if exists
-    build: # if doesnt, build it
+  prefect_worker:
+    image: angeluz07/cc-worker:0.0.1
+    build:
       context: .
-      dockerfile: ./services/embedding/Dockerfile
-    container_name: embedding_api
-    ports:
-      - "8001:8001"
-    environment:
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
-    volumes:
-      - ./services/embedding/.data:/app/.data:z
-      - ./services/embedding:/app:z
-    deploy:
-      resources:
-        limits:
-          cpus: "6.0"
-          memory: 1.5G
-        reservations:
-          cpus: "1"
-          memory: 0.5G
-    profiles:
-      - custom
-  download_api:
-    image: angeluz07/cc-download:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./services/download/Dockerfile
-    container_name: download_api
-    ports:
-      - "8002:8002"
-    environment:
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
-      - PREFECT_API_URL=http://prefect-server:4200/api
-    volumes:
-      - ./.data:/app/.data:z
-      - ./services/download:/app:z
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 512M
-        reservations:
-          cpus: "0.5"
-          memory: 256M
-    profiles:
-      - custom
-  download_worker:
-    image: angeluz07/cc-download:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./services/download/Dockerfile
-    container_name: download_worker
-    command: prefect flow serve workers.download:download --name "main" --limit 2
-    environment:
-      - PREFECT_API_URL=http://prefect-server:4200/api
-      - WEBHOOK_URI=${WEBHOOK_URI}
-    volumes:
-      - ./.data:/app/.data:z
-      - ./services/download:/app:z
-    deploy:
-      resources:
-        limits:
-          cpus: "4.0"
-          memory: 2G
-        reservations:
-          cpus: "1.0"
-          memory: 1G
-    profiles:
-      - custom
-  video_api:
-    image: angeluz07/cc-video-build:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./services/video/Dockerfile
-    container_name: video_api
-    ports:
-      - "8003:8003"
-    environment:
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
-      - PREFECT_API_URL=http://prefect-server:4200/api
-    volumes:
-      - ./.data:/app/.data:z
-      - ./services/video:/app:z
-    deploy:
-      resources:
-        limits:
-          cpus: "6" # still have, a cpu intensive task in this api
-          memory: 1G
-        reservations:
-          cpus: "1"
-          memory: 1G
-    profiles:
-      - custom
-  video_worker:
-    image: angeluz07/cc-video-build:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./services/video/Dockerfile
-    container_name: video_worker
-    command: prefect flow serve workers.video:video_build --name "main" --limit 2
-    environment:
-      - PREFECT_API_URL=http://prefect-server:4200/api
-      - WEBHOOK_URI=${WEBHOOK_URI}
-    volumes:
-      - ./.data:/app/.data:z
-      - ./services/video:/app:z
-    deploy:
-      resources:
-        limits:
-          cpus: "6"
-          memory: 2G
-        reservations:
-          cpus: "1"
-          memory: 1G
-    profiles:
-      - custom
-  discovery_api:
-    image: angeluz07/cc-discovery:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./services/discovery/Dockerfile
-    container_name: discovery_api
+      dockerfile: ./deploy/workers/cc/Dockerfile
+    container_name: prefect_worker
     extra_hosts:
       - "localhost:host-gateway"
-    ports:
-      - "8004:8004"
+    command: >
+      sh -c "prefect work-pool create 'local-docker-pool' --type process || true && 
+             prefect deploy --all && 
+             prefect worker start --pool 'local-docker-pool' --limit 4"
     environment:
+      - PREFECT_API_URL=http://prefect-server:4200/api
       - QDRANTDB_URI=${QDRANTDB_URI}
       - EMBEDDER_URI=${EMBEDDER_URI}
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
-      - PREFECT_API_URL=http://prefect-server:4200/api
-    volumes:
-      - ./.data:/app/.data:z
-      - ./services/discovery:/app:z
-    deploy:
-      resources:
-        limits:
-          cpus: "2" # still have, a cpu intensive task in this api
-          memory: 1G
-        reservations:
-          cpus: "1"
-          memory: 1G
-    depends_on:
-      - embedding_api
-    profiles:
-      - custom
-  discovery_worker:
-    image: angeluz07/cc-discovery:0.0.1 # use local if exists
-    build: # if doesnt, build it
-      context: .
-      dockerfile: ./services/discovery/Dockerfile
-    container_name: discovery_worker
-    command: prefect flow serve workers.discovery:discovery --name "main" --limit 2
-    extra_hosts:
-      - "localhost:host-gateway"
-    environment:
-      - QDRANTDB_URI=${QDRANTDB_URI}
-      - EMBEDDER_URI=${EMBEDDER_URI}
-      - UVICORN_RELOAD=${UVICORN_RELOAD:-true}
-      - PREFECT_API_URL=http://prefect-server:4200/api
       - WEBHOOK_URI=${WEBHOOK_URI}
+      - GROQ_API_KEY=${GROQ_API_KEY}
     volumes:
       - ./.data:/app/.data:z
-      - ./services/discovery:/app:z
+      - ./src:/app/src:z
+      - ./prefect.yaml:/app/prefect.yaml:z
     deploy:
       resources:
         limits:
-          cpus: "2" # still have, a cpu intensive task in this api
-          memory: 1G
+          cpus: "8.0"
+          memory: 4G
         reservations:
-          cpus: "1"
+          cpus: "2.0"
           memory: 1G
-    depends_on:
-      - embedding_api
     profiles:
       - custom
-  # neo4j:
-  #   image: neo4j:5.18.0-community
-  #   container_name: neo4j_graph_db
-  #   restart: always
-  #   ports:
-  #     - "7474:7474"       # HTTP (Dashboard/Browser de Neo4j)
-  #     - "7687:7687"       # Bolt (Protocolo para conectar desde Python/Node)
-  #   environment:
-  #     - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASS}
-  #     # Optimización de memoria interna para que quepa en los 512MB de Docker
-  #     - NEO4J_server_memory_heap_initial__size=128m
-  #     - NEO4J_server_memory_heap_max__size=256m
-  #     - NEO4J_server_memory_pagecache_size=128m
-  #   volumes:
-  #     - ./.neo4j_data/data:/data
-  #     - ./.neo4j_data/logs:/logs
-  #   deploy:
-  #     resources:
-  #       limits:
-  #         cpus: '0.50'     # Máximo 50% de un núcleo de CPU
-  #         memory: 512M    # Máximo 512MB de RAM
-  #       reservations:
-  #         memory: 128M    # Garantiza al menos 128MB

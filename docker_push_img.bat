@@ -1,0 +1,1 @@
+docker push angeluz07/cc-embedding:0.0.1

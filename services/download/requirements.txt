@@ -1,4 +1,0 @@
-fastapi[standard]==0.135.3
-uvicorn[standard]==0.24.0
-yt-dlp==2026.3.17
-prefect==3.7.5

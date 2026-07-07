@@ -1,5 +1,6 @@
 # others
 .archive
+.notebooks
 
 # env
 .env
@@ -24,3 +25,8 @@ __pycache__
 # txt
 map.txt
 cookies.txt
+
+# terraform
+.terraform.*
+terraform.tfstate
+.terraform

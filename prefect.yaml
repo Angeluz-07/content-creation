@@ -1,0 +1,25 @@
+# prefect.yaml
+prefect-version: 3.0.0
+
+name: cc-pipeline
+
+deployments:
+  - name: main
+    entrypoint: src.workers.download:download
+    work_pool:
+      name: local-docker-pool
+
+  - name: main
+    entrypoint: src.workers.video:video_build
+    work_pool:
+      name: local-docker-pool
+
+  - name: main
+    entrypoint: src.workers.discovery:discovery
+    work_pool:
+      name: local-docker-pool
+
+  - name: main
+    entrypoint: src.workers.ingestion:ingestion
+    work_pool:
+      name: local-docker-pool
