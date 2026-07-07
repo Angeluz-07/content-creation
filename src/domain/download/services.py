@@ -217,8 +217,8 @@ class YTDownloader:
         self,
         url: str,
         output_path: str,
-        start_ts: str = "0",
-        end_ts: str = "inf",
+        start_ts: str ,
+        end_ts: str ,
     ):
         print(f"Starting download audio (via Async Subprocess): {url}")
 
@@ -235,7 +235,6 @@ class YTDownloader:
             "--cookies", self.cookies_path,
             "--js-runtimes", "node",
             "--remote-components", "ejs:github",
-            #"--download-sections", f"*{start_ts}-{end_ts}",
             "-o", output_path,
             #"--verbose",  # for debug only
         ]
@@ -258,6 +257,35 @@ class YTDownloader:
                 sys.stdout.write(stdout_text)
                 sys.stdout.flush()
 
+            if process.returncode != 0:
+                raise subprocess.CalledProcessError(
+                    returncode=process.returncode,
+                    cmd=command,  # O la variable donde guardes el comando ejecutado
+                    stderr=stderr.decode().strip(),
+                )
+
+            ### extra step
+            input_audio =f"{output_path}.m4a"
+            output_segment = str(Path(input_audio).parent / f"{str(Path(input_audio).stem)}_segment.m4a")
+            ffmpeg_command = [
+                "ffmpeg",
+                "-y",                 # Sobrescribe el archivo de salida si ya existe
+                "-ss", start_ts,      # Tiempo de inicio (Ponerlo ANTES del -i activa el buscador rápido por keyframes)
+                "-to", end_ts,        # Tiempo de finalización
+                "-i", input_audio,    # Tu archivo de 52MB calibrado
+                "-c:a", "copy",       # Extracción instantánea sin re-decodificar (0% CPU)
+                output_segment
+            ]
+            
+            print("calling command", ffmpeg_command)
+            process = await asyncio.create_subprocess_exec(
+                ffmpeg_command[0],
+                *ffmpeg_command[1:],
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+
+            stdout, stderr = await process.communicate()
             if process.returncode != 0:
                 raise subprocess.CalledProcessError(
                     returncode=process.returncode,
