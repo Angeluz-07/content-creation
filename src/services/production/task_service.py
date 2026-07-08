@@ -29,7 +29,6 @@ class TaskService:
     def create_task(self, type, payload=None):
         payload["id"] = self.get_new_uuid()
         task = Task(
-            target_entity_id=payload["id"],
             type=type,
             payload=(payload or {}),
         )

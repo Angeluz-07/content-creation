@@ -39,7 +39,6 @@ class Task:
     Entity to track asychronous tasks
     """
 
-    target_entity_id: str  # linked domain model
     type: str
     status: TaskStatus = TaskStatus.PENDING
     payload: dict = field(default_factory=dict)
