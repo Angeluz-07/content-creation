@@ -1,6 +1,7 @@
 from src.services.common.asset import AssetProvider
 from src.config import (
     DOWNLOAD_DIR_VIDEO,
+    DOWNLOAD_DIR_AUDIO,
     ASSETS_DIR,
     OUTPUT_DIR,
     TEMP_DIR,
@@ -8,6 +9,7 @@ from src.config import (
     LAYOUT_DIR,
     VTT_DIR,
     METALS_DIR,
+    TRANSCRIPTION_DIR
 )
 
 assets = (
@@ -20,4 +22,6 @@ assets = (
     .add_source("layout", LAYOUT_DIR, extension=".png")
     .add_source("vtt", VTT_DIR, extension=".vtt")
     .add_source("metals", METALS_DIR, extension=".json")
+    .add_source("audio", DOWNLOAD_DIR_AUDIO, extension=".m4a")    
+    .add_source("transcriptions", TRANSCRIPTION_DIR, extension=".json")
 )

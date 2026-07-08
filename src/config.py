@@ -8,11 +8,13 @@ DATA_DIR = PROJECT_DIR / ".data"
 
 DOWNLOAD_DIR = str(DATA_DIR / "downloads")
 DOWNLOAD_DIR_VIDEO = str(DATA_DIR / "downloads" / "video")
+DOWNLOAD_DIR_AUDIO = str(DATA_DIR / "downloads" / "audio")
 TEMP_DIR = str(DATA_DIR / "temp")
 OUTPUT_DIR = str(DATA_DIR / "output_videos")
 VTT_DIR = str(DATA_DIR / "downloads" / "vtt")
 METALS_DIR = str(DATA_DIR / "metals")
 INGESTION_DIR =  str(DATA_DIR / "gold_samples")
+TRANSCRIPTION_DIR = str(DATA_DIR / "transcriptions")
 
 MONGO_DB_NAME = "cc_db"
 MONGODB_URI = os.getenv("MONGODB_URI")
