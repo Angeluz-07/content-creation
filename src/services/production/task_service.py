@@ -20,24 +20,17 @@ class TaskService:
             self.mark_as_failed(task_id)
         else:
             print("Unknown state for ", task_id)
-    
-    def get_all(self) -> List[Task]:
-        result = self.task_repo.get_all()
-        result.reverse()
+
+    def get_all(self, type: str = None) -> List[Task]:
+        filters = {"type": type} if type else {}
+        result = self.task_repo.get_all(filters)
         return result
 
-    def get_all_filtered_by_type(self, target_entity_type: str) -> List[Dict]:
-        # todo: make method to group by target_entity_type
-        result: List[Task] = self.task_repo.get_all()
-        result = [x for x in result if x.target_entity_type == target_entity_type]
-        result.reverse()
-        return result
-
-    def create_task(self, entity_type, payload=None):
+    def create_task(self, type, payload=None):
         payload["id"] = self.get_new_uuid()
         task = Task(
             target_entity_id=payload["id"],
-            target_entity_type=entity_type,
+            type=type,
             payload=(payload or {}),
         )
         self.task_repo.add(task)

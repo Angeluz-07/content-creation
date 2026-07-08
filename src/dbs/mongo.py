@@ -49,6 +49,17 @@ class MongoRepository(IRepository):
         documents = self._collection.find()
         return [self._map_to_object(doc) for doc in documents]
 
+    def get_all(self, filters: Optional[dict] = None) -> List[Any]:
+        # Si no se pasan filtros, usamos un diccionario vacío para traer todo
+        query = filters if filters is not None else {}
+        
+        # Si tu filtro busca por "id", recuerda mapearlo a "_id" para Mongo
+        if "id" in query:
+            query["_id"] = query.pop("id")
+            
+        documents = self._collection.find(query).sort("created_at", -1)
+        return [self._map_to_object(doc) for doc in documents]
+
     def add(self, entity: Any) -> None:
         doc = self._map_to_dict(entity)
         result = self._collection.insert_one(doc)

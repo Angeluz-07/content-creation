@@ -11,8 +11,10 @@ from src.config import (
     MONGODB_URI,
     MONGO_DB_NAME,
 )
+
 client = get_mongo_client(MONGODB_URI)
 prefect_service = PrefectService()
+
 
 class RepositoryHub:
     def __init__(self):
@@ -21,6 +23,8 @@ class RepositoryHub:
         self.download_repo   = MongoRepository(client, MONGO_DB_NAME, "downloads", Download)
         self.production_repo = MongoRepository(client, MONGO_DB_NAME, "short_productions", Production)
         self.task_repo       = MongoRepository(client, MONGO_DB_NAME, "tasks", Task)
+        
+        self.task_repo._collection.create_index([("type",1),("created_at", -1)])
         # fmt: on
 
 
@@ -34,6 +38,7 @@ class ServiceHub:
         self.download_service   = DownloadService(download_repo) 
         self.production_service = ProductionService(production_repo)
         self.task_service       = TaskService(task_repo)
+
         # fmt : on
 
 

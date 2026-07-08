@@ -40,9 +40,10 @@ class Task:
     """
 
     target_entity_id: str  # linked domain model
-    target_entity_type: str
+    type: str
     status: TaskStatus = TaskStatus.PENDING
     payload: dict = field(default_factory=dict)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     id: str = field(default_factory=lambda: str(uuid4()))
 
 

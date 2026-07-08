@@ -73,13 +73,8 @@ def get_last_download_params():
 
 
 @router.get("/tasks")
-def get_tasks(target_entity_type: str = None):
-    if target_entity_type:
-        result = task_service.get_all_filtered_by_type(
-            target_entity_type=target_entity_type
-        )
-    else:
-        result = task_service.get_all()
+def get_tasks(type: str = None):
+    result = task_service.get_all(type=type)
     return {"status": "success", "value": result}
 
 
@@ -95,7 +90,7 @@ async def download_video(data: DownloadInput):
         data = data.model_dump()
         download_service.validate(data)
 
-        task_id = task_service.create_task(entity_type="download", payload=data)
+        task_id = task_service.create_task(type="download", payload=data)
         await prefect_service.trigger_download(task_id, data)
         return {
             "message": f"Sent to download: {data.get("output_filename")}",
@@ -108,7 +103,7 @@ async def download_video(data: DownloadInput):
 async def discovery(data: DiscoveryInput):
     try:
         data = data.model_dump()
-        task_id = task_service.create_task(entity_type="discovery", payload=data)
+        task_id = task_service.create_task(type="discovery", payload=data)
         await prefect_service.trigger_discovery(task_id, data)
         return {
             "message": f"Sent to discovery: {data.get('output_filename')}",
@@ -125,7 +120,7 @@ async def process_video_async(data: ProductionInput):
     try:
         data = data.model_dump()
         short_producer.validate(data)
-        task_id = task_service.create_task(entity_type="short_production", payload=data)
+        task_id = task_service.create_task(type="video_build", payload=data)
 
         await prefect_service.trigger_video_build(task_id, data)
         return {
@@ -145,7 +140,7 @@ async def process_video_async(data: ProductionInput):
 async def ingestion(folder_name: str):
     try:
         data = {"folder_name": folder_name}
-        task_id = task_service.create_task(entity_type="ingestion", payload=data)
+        task_id = task_service.create_task(type="ingestion", payload=data)
         await prefect_service.trigger_ingestion(task_id, data)
         return {"message": "ok"}
     except Exception as e:
@@ -165,7 +160,7 @@ async def trigger_download_for_discovery_result(result_id: str):
     result = read_json(filepath)
 
     for data in result:
-        task_id = task_service.create_task(entity_type="download", payload=data)
+        task_id = task_service.create_task(type="download", payload=data)
         await prefect_service.trigger_download(task_id, data)
     return {"status": "success"}
 

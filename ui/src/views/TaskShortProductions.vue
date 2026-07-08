@@ -44,7 +44,7 @@ watch(
 const { loading: loadingItems, get: getItems } = useApi()
 
 const loadItems = async () => {
-  const { data } = await getItems('/tasks?target_entity_type=short_production')
+  const { data } = await getItems('/tasks?type=video_build')
   if (data) {
     //console.log(data)
     raw_items.value = data.value
