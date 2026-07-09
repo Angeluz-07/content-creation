@@ -1,4 +1,4 @@
-from src.domain.discovery.parser import parse_vtt
+from src.domain.discovery.parser import parse_vtt, format_to_text_block
 from src.config import TEST_DATA_DIR
 from pathlib import Path
 
@@ -29,7 +29,7 @@ expected_result = [
 
 def test_parse_vtt():
     result = parse_vtt(test_vtts[0])
-
+    # result = format_to_text_block(result)
     # test mapped structured
     assert "start" in result[0].keys()
     assert "end" in result[0].keys()

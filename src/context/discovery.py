@@ -8,7 +8,7 @@ from src.services.discovery.embedding import Embedder
 from src.services.discovery.ingestion import Ingester
 from src.services.discovery.transcription import GroqAudioTranscriber
 from src.services.discovery.detection import DetectorV2
-from src.domain.services.discovery.scanner import Scanner
+from src.domain.discovery.scanner import Scanner
 from src.context.common import assets
 
 qdrant_client = get_client(QDRANTDB_URI)
