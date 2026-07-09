@@ -1,6 +1,5 @@
-from services.detection import Detector
-from unittest.mock import MagicMock
-from config import TEST_DATA_DIR
+from src.domain.discovery.parser import parse_vtt
+from src.config import TEST_DATA_DIR
 from pathlib import Path
 
 test_vtts = [str(Path(TEST_DATA_DIR) / "example00.es.vtt")]
@@ -12,7 +11,7 @@ expected_result = [
     {
         "start": "00:01:58.439",
         "end": "00:02:02.630",
-        "text": "La [&nbsp;__&nbsp;] está en Mecausa.",
+        "text": "La [ __ ] está en Mecausa.",
     },
     {
         "start": "00:02:06.709",
@@ -28,17 +27,13 @@ expected_result = [
 ]
 
 
-class TestDetector:
-    def test_clean_vtt(self):
-        vector_store_mock = MagicMock()
-        embedder_mock = MagicMock()
-        d = Detector(vector_store_mock, embedder_mock)
-        result = d.clean_vtt(test_vtts[0])
+def test_parse_vtt():
+    result = parse_vtt(test_vtts[0])
 
-        # test mapped structured
-        assert "start" in result[0].keys()
-        assert "end" in result[0].keys()
-        assert "text" in result[0].keys()
+    # test mapped structured
+    assert "start" in result[0].keys()
+    assert "end" in result[0].keys()
+    assert "text" in result[0].keys()
 
-        # test expected output
-        assert result == expected_result
+    # test expected output
+    assert result == expected_result

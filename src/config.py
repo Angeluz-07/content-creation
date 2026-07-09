@@ -16,6 +16,7 @@ METALS_DIR = str(DATA_DIR / "metals")
 INGESTION_DIR =  str(DATA_DIR / "gold_samples")
 TRANSCRIPTION_DIR = str(DATA_DIR / "transcriptions")
 
+TEST_DATA_DIR = str(PROJECT_DIR / "src" / "tests" / ".data")
 MONGO_DB_NAME = "cc_db"
 MONGODB_URI = os.getenv("MONGODB_URI")
 REDIS_URI = os.getenv("REDIS_URI")
