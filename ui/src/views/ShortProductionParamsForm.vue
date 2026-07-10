@@ -44,6 +44,7 @@ const backgroundColorList = ref([
   'black-serious',
   'purple-sober',
   'purple-fun',
+  'green-leaf'
 ])
 
 const fileNames = ref([])
