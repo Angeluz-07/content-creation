@@ -1,5 +1,6 @@
 import webvtt
 import re
+from src.domain.common import read_json
 
 
 def parse_vtt(file_path):
@@ -20,6 +21,32 @@ def parse_vtt(file_path):
         bloque_anterior = set(lineas_actuales)
 
     return resultado
+
+
+def format_seconds(secs: float) -> str:
+    """
+    print(format_seconds(116.2))       # Output: 00:01:56.200
+    print(format_seconds(119.979996))  # Output: 00:01:59.980
+    print(format_seconds(46.920))      # Output: 00:00:46.920
+    """
+    # Rounding first prevents edge cases like 59.9999 turning into 00:00:60.000
+    m, s = divmod(round(secs, 3), 60)
+    h, m = divmod(m, 60)
+    return f"{int(h):02}:{int(m):02}:{s:06.3f}"
+
+
+def parse_transcription(file_path):
+    result = read_json(file_path)
+    result = result["segments"]
+    _result = []
+    for seg in result:
+        item = {
+            "start": format_seconds(seg["start"]),
+            "end": format_seconds(seg["end"]),
+            "text": seg["text"],
+        }
+        _result.append(item)
+    return _result
 
 
 def compute_duration(start_ts: str, end_ts: str) -> float:
@@ -129,7 +156,10 @@ def filter_by_duration(text_segments, min_sec=25.0, max_sec=70.0):
 
     return segmentos_filtrados
 
+
 from .models import TextSegment
+
+
 class VTTParser:
 
     def run(self, archivo_vtt):
@@ -140,4 +170,4 @@ class VTTParser:
         result = filter_by_duration(result)
         result = [TextSegment(**values) for values in result]
         return result
-    
+
