@@ -28,7 +28,7 @@ watch(
     const sensStr = sensitivity.toString().replaceAll('.', '');
 
     // 4. Update the output name
-    form.outputFileName = `${stem}_candidates_${sensStr}_${minWords}`;
+    form.outputFileName = `${stem}_${sensStr}_${minWords}`;
   }
 );
 
