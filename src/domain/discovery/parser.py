@@ -114,3 +114,30 @@ def format_to_text_block(text_segments):
         line = f"[id:{i}][duration:{duration}s] {ts["text"]}"
         lines.append(line)
     return "\n".join(lines)
+
+
+def filter_by_duration(text_segments, min_sec=25.0, max_sec=70.0):
+    segmentos_filtrados = []
+
+    for seg in text_segments:
+
+        duration = compute_duration(seg["start"], seg["end"])
+
+        # 3. Filtrar estrictamente por tu rango de interés
+        if min_sec <= duration <= max_sec:
+            segmentos_filtrados.append(seg)
+
+    return segmentos_filtrados
+
+from .models import TextSegment
+class VTTParserV2:
+
+    def run(self, archivo_vtt):
+        result = parse_vtt(archivo_vtt)
+        result = group_when_starts_with_uppercase(result)
+        result = group_when_ends_without_dot(result)
+        result = group_when_starts_with_connector(result)
+        result = filter_by_duration(result)
+        result = [TextSegment(**values) for values in result]
+        return result
+    
