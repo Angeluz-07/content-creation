@@ -39,6 +39,64 @@ def compute_duration(start_ts: str, end_ts: str) -> float:
     return round(duration, 2)
 
 
+def group_when_starts_with_uppercase(text_segments):
+    result = []
+    result.append(text_segments[0])
+    for seg in text_segments[1:]:
+        new_topic = seg["text"][0].isupper()
+        if new_topic:
+            result.append(seg)
+        else:
+            result[-1]["end"] = seg["end"]
+            result[-1]["text"] += " " + seg["text"]
+
+    return result
+
+
+def group_when_ends_without_dot(text_segments):
+    result = []
+    result.append(text_segments[0])
+    for seg in text_segments[1:]:
+        the_topic_continues = not result[-1]["text"].endswith(".")
+        if the_topic_continues:
+            result[-1]["end"] = seg["end"]
+            result[-1]["text"] += " " + seg["text"]
+        else:
+            result.append(seg)
+
+    return result
+
+
+def group_when_starts_with_connector(text_segments):
+    # fmt: off
+    MONOSILABOS_CONNECTORS = {"sí", "no", "ya", "uy", "ah", "eh", "ay", "ajá", "dale",}
+    CONTINUITY_CONNECTORS = {
+        "pero", "porque", "entonces", "aunque", "y", "o", "además",
+        "también", "asimismo", "tampoco", "inclusive", "incluso", "luego", "después",
+        "mientras", "ahora", "total","aparte"
+    }
+    SUBJECT_CONNECTORS = {
+        "él", "ella", "ellos", "ellas", "este", "esta", "esto", "estos", "estas",
+        "ese", "esa", "eso", "esos", "esas", "alguien", "nadie", "todos", "todas",
+        "algunos", "algunas", "ninguno", "ambos", "ambas", "nosotros",
+    }
+    # fmt: on
+    CONNECTORS = MONOSILABOS_CONNECTORS | CONTINUITY_CONNECTORS | SUBJECT_CONNECTORS
+
+    result = []
+    result.append(text_segments[0])
+    for seg in text_segments[1:]:
+        first_word = seg["text"].split()[0].lower().strip(". , ? ! ¿ i [ ]")
+        the_topic_continues = first_word in CONNECTORS
+        if the_topic_continues:
+            result[-1]["end"] = seg["end"]
+            result[-1]["text"] += " " + seg["text"]
+        else:
+            result.append(seg)
+
+    return result
+
+
 def format_to_text_block(text_segments):
     """
     text_segments = [
