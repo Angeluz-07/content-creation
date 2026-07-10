@@ -6,6 +6,14 @@ from src.domain.video.assembler import Assembler
 from src.domain.video.extractor import Extractor
 from src.services.common.asset import AssetProvider
 
+COLOR_MAP = {
+    "purple-gradient": "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%)",
+    "green-stylish": "linear-gradient(57deg, #574BCD, #2999AD, #41E975)",
+    "black-serious": "linear-gradient(180deg, #1F2124, #111215)",
+    "purple-sober": "linear-gradient(to right, #24243e, #302b63, #0f0c29)",
+    "purple-fun": "linear-gradient(315deg, #4F00BC 0%, #29007B 100%)",
+}
+
 
 @dataclass
 class BaseBuilder(ABC):
@@ -39,9 +47,8 @@ class BuilderV1(BaseBuilder):
         font = self.assets.get_path("font", font_name)
         watermark_text = params.get("watermark_text")
         hook_text = params.get("hook_text")
-        purple_gradient = "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%)"
-        green_stylish = "linear-gradient(57deg, #574BCD, #2999AD, #41E975)"
-        background_color = params.get("background_color", purple_gradient)
+        background_color = params.get("background_color", "black-serious")
+        background_color = COLOR_MAP.get(background_color)
         layer = (
             self.layer_builder.reset()
             .set_font(font)
@@ -67,13 +74,14 @@ class BuilderV1(BaseBuilder):
         font = self.assets.get_path("font", font_name)
         watermark_text = params.get("watermark_text")
         hook_text = params.get("hook_text")
-        purple_gradient = "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%)"
-        green_stylish = "linear-gradient(57deg, #574BCD, #2999AD, #41E975)"
+        hook_text = hook_text.replace("\\n", "\n")
+        background_color = params.get("background_color", "black-serious")
+        background_color = COLOR_MAP.get(background_color)
         layer = (
             self.layer_builder.reset()
             .set_font(font)
-            .add_watermark(watermark_text)            
-            .add_banner_bottom(hook_text, purple_gradient)
+            .add_watermark(watermark_text)
+            .add_banner_bottom(hook_text, background_color)
             .run()
         )
 

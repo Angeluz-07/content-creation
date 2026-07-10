@@ -26,6 +26,7 @@ class ProductionInput(BaseModel):
     hook_text: str
     output_filename: str
     debug_frame: bool = True
+    background_color: str
 
 
 class TaskSyncInput(BaseModel):

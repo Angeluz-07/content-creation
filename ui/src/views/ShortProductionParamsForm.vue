@@ -16,13 +16,15 @@ const form = reactive<ShortProductionParams>({
   hookText: 'test',
   frameTs: '00:00:03',
   fontName: 'GoogleSans-Medium',
+  backgroundColor: 'purple-gradient',
   outputFileName: '',
 })
 
 watch(
   () => form.inputFileName,
   (fileName) => {
-    form.outputFileName = `${fileName}_produced`
+    const outputFileName = fileName.substring(0, fileName.lastIndexOf('.'))
+    form.outputFileName = `${outputFileName}_produced`
   },
 )
 const fontList = ref([
@@ -34,6 +36,14 @@ const fontList = ref([
   'Montserrat-Bold',
   'PassionOne-Regular',
   'ProtestStrike-Regular',
+])
+
+const backgroundColorList = ref([
+  'purple-gradient',
+  'green-stylish',
+  'black-serious',
+  'purple-sober',
+  'purple-fun',
 ])
 
 const fileNames = ref([])
@@ -153,6 +163,20 @@ onMounted(async () => {
             required
           />
         </div>
+        <div class="form-control w-full">
+          <label class="label">
+            <span class="label-text font-semibold">Background Color</span>
+          </label>
+          <!-- Use v-model for binding and select tag instead of input -->
+          <select v-model="form.backgroundColor" class="select select-bordered w-full" required>
+            <option value="" disabled selected>Select a color</option>
+            <!-- Loop through the list of strings -->
+            <option v-for="item in backgroundColorList" :key="item" :value="item">
+              {{ item }}
+            </option>
+          </select>
+        </div>
+
         <div class="form-control w-full">
           <label class="label">
             <span class="label-text">Hook Text</span>

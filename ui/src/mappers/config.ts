@@ -12,6 +12,7 @@ export interface ShortProductionParamsPayload {
   frame_ts: string
   font_name: string
   output_filename: string
+  background_color: string
 }
 
 export const toShortProductionParamsPayload = (
@@ -25,6 +26,7 @@ export const toShortProductionParamsPayload = (
     frame_ts: data.frameTs,
     font_name: data.fontName,
     output_filename: data.outputFileName,
+    background_color: data.backgroundColor
   }
 }
 
