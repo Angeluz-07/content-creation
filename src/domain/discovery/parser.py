@@ -171,3 +171,14 @@ class VTTParser:
         result = [TextSegment(**values) for values in result]
         return result
 
+
+class TranscriptionParser:
+
+    def run(self, filepath: str):
+        result = parse_transcription(filepath)
+        result = group_when_starts_with_uppercase(result)
+        result = group_when_ends_without_dot(result)
+        result = group_when_starts_with_connector(result)
+        # result = filter_by_duration(result)
+        result = [TextSegment(**values) for values in result]
+        return result
