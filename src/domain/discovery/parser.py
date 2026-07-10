@@ -130,7 +130,7 @@ def filter_by_duration(text_segments, min_sec=25.0, max_sec=70.0):
     return segmentos_filtrados
 
 from .models import TextSegment
-class VTTParserV2:
+class VTTParser:
 
     def run(self, archivo_vtt):
         result = parse_vtt(archivo_vtt)
