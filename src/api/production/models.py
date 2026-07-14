@@ -14,7 +14,6 @@ class DiscoveryInput(BaseModel):
     input_filename: str
     output_filename: str
     sensitivity: float = 0.75
-    min_words: int = 80
     url: str
 
 

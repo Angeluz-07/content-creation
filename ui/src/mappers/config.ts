@@ -43,7 +43,6 @@ export interface DiscoveryPayload {
   input_filename: string
   output_filename: string
   sensitivity: number
-  min_words: number
   url: string
 }
 
@@ -63,7 +62,6 @@ export const toDiscoveryPayload = (data: DiscoveryInput): DiscoveryPayload => {
     input_filename: data.inputFileName,
     output_filename: data.outputFileName,
     sensitivity: data.sensitivity,
-    min_words: data.min_words,
     url: data.url,
   }
 }

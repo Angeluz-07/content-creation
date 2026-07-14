@@ -12,23 +12,22 @@ const form = reactive<DiscoveryInput>({
   inputFileName: '',
   outputFileName: 'test',
   sensitivity: 0.71,
-  min_words: 110,
   url: 'https://www.youtube.com/watch',
 })
 
 watch(
   // 1. Single watcher listening to all 3 properties
-  () => [form.inputFileName, form.sensitivity, form.min_words],
+  () => [form.inputFileName, form.sensitivity],
   // 2. Safely extract those 3 exact values
-  ([fileName, sensitivity, minWords]) => {
+  ([fileName, sensitivity]) => {
     // 3. Stop if any value is missing to prevent breaking
-    if (!fileName || sensitivity == null || minWords == null) return;
+    if (!fileName || sensitivity == null) return;
 
     const stem = getFilenameStem(fileName);
     const sensStr = sensitivity.toString().replaceAll('.', '');
 
     // 4. Update the output name
-    form.outputFileName = `${stem}_${sensStr}_${minWords}`;
+    form.outputFileName = `${stem}_${sensStr}`;
   }
 );
 
@@ -114,15 +113,6 @@ const handleSubmit = async () => {
           <label class="label"><span class="label-text">Sensitivity</span></label>
           <input
             v-model="form.sensitivity"
-            type="text"
-            class="input input-bordered w-full"
-            required
-          />
-        </div>
-        <div class="form-control w-full">
-          <label class="label"><span class="label-text">Min Words</span></label>
-          <input
-            v-model="form.min_words"
             type="text"
             class="input input-bordered w-full"
             required
