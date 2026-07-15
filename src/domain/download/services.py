@@ -5,6 +5,7 @@ from typing import Dict
 import subprocess
 import sys
 
+
 def remove_middle_extension(file_path: str):
     path = Path(file_path)
     if len(path.suffixes) >= 2:
@@ -41,7 +42,7 @@ class YTDownloader:
                 url, start_ts, end_ts, force_download, output_filename
             )
             print("File saved in ", result_filepath)
-        
+
         elif file_type == "audio":
             result_filepath = await self.get_audio(
                 url, force_download, output_filename, start_ts, end_ts
@@ -76,7 +77,8 @@ class YTDownloader:
         print(
             f"Starting download raw segment (via Async Subprocess): {start_ts} - {end_ts}"
         )
-
+        filter_1080 = "bestvideo[height=1080]+bestaudio/bestvideo[height=720]+bestaudio/best[height=1080]/best[height=720]"
+        filter_720 = "bestvideo[height=720]+bestaudio/best[height=720]"
         # fmt: off
         command = [
             "yt-dlp", url,
@@ -88,8 +90,7 @@ class YTDownloader:
             "--cookies", self.cookies_path,
             "--js-runtimes", "node",
             "--remote-components", "ejs:github",
-            # Filter 1080/720
-            "-f", "bestvideo[height=1080]+bestaudio/bestvideo[height=720]+bestaudio/best[height=1080]/best[height=720]",
+            "-f", filter_720,
             "--download-sections", f"*{start_ts}-{end_ts}",
             "--force-keyframes-at-cuts",
             "-o", output_path,
@@ -111,7 +112,7 @@ class YTDownloader:
             # Esperamos a que el proceso muera físicamente en el Kernel
             stdout, stderr = await process.communicate()
 
-            stdout_text = stdout.decode('utf-8', errors='ignore')
+            stdout_text = stdout.decode("utf-8", errors="ignore")
             if stdout_text:
                 sys.stdout.write(stdout_text)
                 sys.stdout.flush()
@@ -221,8 +222,8 @@ class YTDownloader:
         self,
         url: str,
         output_path: str,
-        start_ts: str ,
-        end_ts: str ,
+        start_ts: str,
+        end_ts: str,
     ):
         print(f"Starting download audio (via Async Subprocess): {url}")
 
@@ -256,7 +257,7 @@ class YTDownloader:
 
             stdout, stderr = await process.communicate()
 
-            stdout_text = stdout.decode('utf-8', errors='ignore')
+            stdout_text = stdout.decode("utf-8", errors="ignore")
             if stdout_text:
                 sys.stdout.write(stdout_text)
                 sys.stdout.flush()
@@ -269,18 +270,24 @@ class YTDownloader:
                 )
 
             ### extra step
-            input_audio =f"{output_path}.m4a"
-            output_segment = str(Path(input_audio).parent / f"{str(Path(input_audio).stem)}_segment.m4a")
+            input_audio = f"{output_path}.m4a"
+            output_segment = str(
+                Path(input_audio).parent / f"{str(Path(input_audio).stem)}_segment.m4a"
+            )
             ffmpeg_command = [
                 "ffmpeg",
-                "-y",                 # Sobrescribe el archivo de salida si ya existe
-                "-ss", start_ts,      # Tiempo de inicio (Ponerlo ANTES del -i activa el buscador rápido por keyframes)
-                "-to", end_ts,        # Tiempo de finalización
-                "-i", input_audio,    # Tu archivo de 52MB calibrado
-                "-c:a", "copy",       # Extracción instantánea sin re-decodificar (0% CPU)
-                output_segment
+                "-y",  # Sobrescribe el archivo de salida si ya existe
+                "-ss",
+                start_ts,  # Tiempo de inicio (Ponerlo ANTES del -i activa el buscador rápido por keyframes)
+                "-to",
+                end_ts,  # Tiempo de finalización
+                "-i",
+                input_audio,  # Tu archivo de 52MB calibrado
+                "-c:a",
+                "copy",  # Extracción instantánea sin re-decodificar (0% CPU)
+                output_segment,
             ]
-            
+
             print("calling command", ffmpeg_command)
             process = await asyncio.create_subprocess_exec(
                 ffmpeg_command[0],

@@ -47,6 +47,19 @@ class Assembler:
         self, video_input: str, ui_png: str, target_output: str, debug: bool
     ) -> list[str]:
         """Generates the appropriate FFmpeg execution array."""
+        CANVAS_W = 720
+        CANVAS_H = 1280
+        POS_Y = 120  # La posición vertical donde caerá tu video recortado
+
+        # Creamos la cadena de filtros para el filter_complex.
+        # 1. Tomamos el video [0:v] y le creamos el lienzo vertical negro.
+        # 2. El resultado se guarda temporalmente en la etiqueta [padded].
+        # 3. Encimamos la UI [1:v] sobre [padded] en la coordenada 0,0.
+        filter_spec = (
+            f"[0:v]pad={CANVAS_W}:{CANVAS_H}:(ow-iw)/2:{POS_Y}:black[padded];"
+            f"[padded][1:v]overlay=0:0"
+        )
+        
         # fmt: off
         if debug:
             command = [
@@ -56,7 +69,7 @@ class Assembler:
                 "-ss", "00:00:01",  # Fast jump to second 1
                 "-i", video_input,
                 "-i", ui_png,
-                "-filter_complex", "[0:v][1:v]overlay=0:0",
+                "-filter_complex", filter_spec,
                 "-frames:v", "1",
                 "-q:v", "2",
                 target_output
@@ -65,8 +78,9 @@ class Assembler:
         else:
             encoders = [
                 "-c:v", "libx264", 
-                "-crf", "21",
-                "-preset", "fast"
+                "-crf", "18",
+                "-preset", "ultrafast",
+                "-threads", "3"
             ]
             command = [
                 "ffmpeg", "-y",
@@ -74,7 +88,7 @@ class Assembler:
                 "-stats", "-y",
                 "-i", video_input,
                 "-i", ui_png,
-                "-filter_complex", "[0:v][1:v]overlay=0:0",
+                "-filter_complex", filter_spec,
                 *encoders,
                 "-pix_fmt", "yuv420p",
                 "-c:a", "copy",

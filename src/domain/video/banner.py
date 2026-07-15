@@ -75,7 +75,7 @@ class BasicBanner(SkiaCanvas):
             "width": width,
             "height": height,
             "padding": 60,
-            "font_size": 90,
+            "font_size": 60,
             "line_spacing": 1.1,
             "letter_spacing": 0.05,
             "text_color": "#E0E0E0",

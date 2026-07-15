@@ -70,8 +70,8 @@ class Resizer:
         # fmt: off
         encoders = [
             "-c:v", "libx264",
-            "-crf", "21",
-            "-preset", "fast"
+            "-crf", "14", # the lower the better fidelity quality of input, 14 is ok.
+            "-preset", "superfast",
         ]
         ffmpeg_cmd = [
             "ffmpeg", "-y",
@@ -104,17 +104,15 @@ class Resizer:
         return safe_filter
 
     def get_filter_almost_at_top(self):
-        POS_Y = 180
-        CANVAS_W, CANVAS_H = 1080, 1920
+        CANVAS_W, CANVAS_H = 720, 1280
         ZOOM_FACTOR = 1.53
         TARGET_W = int(CANVAS_W * ZOOM_FACTOR)  # 1620px
 
         # fmt: off
         safe_filter = (
-            f"scale={TARGET_W}:-1,"
+            f"scale={TARGET_W}:-1:flags=fast_bilinear,"
             "setsar=1:1,"
             f"crop={CANVAS_W}:ih,"
-            f"pad={CANVAS_W}:{CANVAS_H}:(ow-iw)/2:{POS_Y}:black"
         )        
         # fmt: on
         return safe_filter

@@ -211,7 +211,7 @@ services:
     command: >
       sh -c "prefect work-pool create 'local-docker-pool' --type process || true && 
              prefect deploy --all && 
-             prefect worker start --pool 'local-docker-pool' --limit 4"
+             prefect worker start --pool 'local-docker-pool' --limit 2"
     environment:
       - PREFECT_API_URL=http://prefect-server:4200/api
       - QDRANTDB_URI=${QDRANTDB_URI}
