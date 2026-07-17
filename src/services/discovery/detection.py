@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from dataclasses import field
 from abc import ABC, abstractmethod
-from src.domain.discovery.parser import VTTParser
+from src.domain.discovery.parser import VTTParser, VTTParser2
 from src.domain.discovery.discovery_parser import DiscoveryParser
 from src.domain.discovery.scanner import Scanner
 from src.services.common.asset import AssetProvider
@@ -12,12 +12,13 @@ from src.domain.common import save_json
 class BaseDetector(ABC):
     assets: AssetProvider
     scanner: Scanner
-    vtt_parser: VTTParser = field(default_factory=VTTParser)
+    vtt_parser: VTTParser2 = field(default_factory=VTTParser2)
     discovery_parser: DiscoveryParser = field(default_factory=DiscoveryParser)
 
     @abstractmethod
     def run(self):
         pass
+
 
 class DetectorV2(BaseDetector):
 
@@ -27,12 +28,13 @@ class DetectorV2(BaseDetector):
         url = data.get("url")
         vtt_path = self.assets.get_path("vtt", input_filename)
         output_path = self.assets.get_path("metals", output_filename)
-        result = self.vtt_parser.run(vtt_path)
+        result = self.vtt_parser.run(vtt_path, self.scanner.embedder)
         print("debug v2", result[0])
         result = self.scanner.run(result, data.get("sensitivity"))
         result = self.discovery_parser.run(result, output_filename, url)
         save_json(result, output_path)
         return result
+
 
 class DetectorV3(BaseDetector):
 
