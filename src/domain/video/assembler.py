@@ -49,7 +49,7 @@ class Assembler:
         """Generates the appropriate FFmpeg execution array."""
         CANVAS_W = 720
         CANVAS_H = 1280
-        POS_Y = 120  # La posición vertical donde caerá tu video recortado
+        POS_Y = 180  # La posición vertical donde caerá tu video recortado
 
         # Creamos la cadena de filtros para el filter_complex.
         # 1. Tomamos el video [0:v] y le creamos el lienzo vertical negro.

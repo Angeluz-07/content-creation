@@ -57,13 +57,13 @@ class LayerBuilder:
         self._components.append(img)
         return self
 
-    def add_watermark(self, watermark_text, coords=(33, 10), opacity=1):
+    def add_watermark(self, watermark_text, coords=(33, 60), opacity=0.5):
         # Ajustamos el tamaño de fuente (55 -> 37) y caja (460x155 -> 306x103)
         watermark = (
             TextClip(
                 text=watermark_text,
-                font_size=37,
-                color="gray",
+                font_size=40,
+                color="white",
                 size=(306, 103),
                 font=self.font,
             )
@@ -90,7 +90,7 @@ class LayerBuilder:
             .save_img(banner_filepath)
         )
         # La posición en Y se ajusta proporcionalmente al lienzo de 1280 (1150 * 0.666 = ~766)
-        banner = ImageClip(banner_filepath).with_position(("center", 766))
+        banner = ImageClip(banner_filepath).with_position(("center", 756))
         self._components.append(banner)
         return self
 

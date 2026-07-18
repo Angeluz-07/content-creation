@@ -186,6 +186,11 @@ class YTDownloader:
             stdout, stderr = await process.communicate()
 
             if process.returncode != 0:
+                print("\n" + "="*50)
+                print("DETAILED ERROR OUTPUT:")
+                print("="*50)
+                print(stderr.decode().strip())
+                print("="*50 + "\n")
                 raise subprocess.CalledProcessError(
                     returncode=process.returncode,
                     cmd=command,  # O la variable donde guardes el comando ejecutado
