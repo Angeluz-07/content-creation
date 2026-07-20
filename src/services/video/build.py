@@ -6,6 +6,7 @@ from src.domain.video.assembler import Assembler
 from src.domain.video.extractor import Extractor
 from src.services.common.asset import AssetProvider
 from pathlib import Path
+from src.domain.video.resizer import resize_zoomed_square_async
 
 # todo: move to domain layer
 COLOR_MAP = {
@@ -134,16 +135,13 @@ class BuilderV4(BaseBuilder):
 
     async def run_async(self, params):
         input_filename = params.get("input_filename")
-        force_resize = params.get("force_resize")
+        force_resize = params.get("force_resize", True)
         input = self.assets.get_path("input", input_filename)
-        resized = self.assets.get_path(
-            "temp", f"{Path(input_filename).stem}_resized.mp4"
-        )  #
-        from src.domain.video.resizer import resize_zoomed_square_async
+        resized = self.assets.get_path("temp", "temp_resized.mp4")  #
         resized = await resize_zoomed_square_async(input, resized, force=force_resize)
 
         template_name = "template_fp.png"
-        #template_name = "template_bM.png"
+        # template_name = "template_bM.png"
         template_path = self.assets.get_path("temp", template_name)
         font_name = "GoogleSans-Bold"
         font_path = self.assets.get_path("font", font_name)
