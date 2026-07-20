@@ -175,6 +175,33 @@ def get_filter_zoomed_square(input, output):
     # fmt: on
     return ffmpeg_cmd
 
+def get_filter_full_vertical(input, output, percentage):
+    CANVAS_W, CANVAS_H = 720, 1280    
+    # fmt: off
+    video_filter = (
+        f"scale=-1:{CANVAS_H}:flags=lanczos,"
+        f"crop={CANVAS_W}:{CANVAS_H}:"
+        f"(iw-{CANVAS_W})*{percentage}:0,"
+        f"setsar=1:1"
+    ) 
+    encoders = [
+        "-c:v", "libx264",
+        "-crf", "14", # the lower the better fidelity quality of input, 14 is ok.
+        "-preset", "superfast",
+    ]
+    ffmpeg_cmd = [
+        "ffmpeg", "-y",
+        "-loglevel","error",
+        "-stats",
+        "-i", input,
+        "-vf", video_filter,
+        *encoders,
+        "-pix_fmt", "yuv420p", # ensures compatibility
+        "-c:a", "copy",
+        output,
+    ]
+    # fmt: on
+    return ffmpeg_cmd
 
 def resize_zoomed_square(input: str, output: str, force: bool):
     resized = output
@@ -182,6 +209,19 @@ def resize_zoomed_square(input: str, output: str, force: bool):
     if force or not resized_exists:
         print("Start resizing (Sync)...")
         ffmpeg_cmd = get_filter_zoomed_square(input, output)
+        run_subprocess(command=ffmpeg_cmd)
+        print(f"Resizing successful with file: {resized}")
+        return resized
+    else:
+        print("Resized file exists. Skipping resizing...")
+        return resized
+
+def resize_full_vertical(input: str, output: str, force: bool, percentage=0.0):
+    resized = output
+    resized_exists = Path(output).is_file()
+    if force or not resized_exists:
+        print("Start resizing (Sync)*...")
+        ffmpeg_cmd = get_filter_full_vertical(input, output, percentage)
         run_subprocess(command=ffmpeg_cmd)
         print(f"Resizing successful with file: {resized}")
         return resized
