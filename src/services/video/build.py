@@ -1,10 +1,11 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
-from src.domain.video.resizer import Resizer
-from src.domain.video.layer import LayerBuilder
+from src.domain.video.resizer import Resizer, ResizerV2
+from src.domain.video.layer import LayerBuilder, LayerBuilderV2
 from src.domain.video.assembler import Assembler
 from src.domain.video.extractor import Extractor
 from src.services.common.asset import AssetProvider
+from pathlib import Path
 
 # todo: move to domain layer
 COLOR_MAP = {
@@ -15,17 +16,17 @@ COLOR_MAP = {
     "purple-fun": "linear-gradient(315deg, #4F00BC 0%, #29007B 100%)",
     "green-leaf": "linear-gradient(-225deg, #7A9D54 0%, #557A46 55%, #1A3C1E 100%)",
     "redone": "linear-gradient(90deg, #D90235 0%, #5E0C5E 48%, #1D052B 100%)",
-    "test": "linear-gradient(135deg, #7A0016 0%, #2E0014 50%, #000000 100%)"
+    "test": "linear-gradient(135deg, #7A0016 0%, #2E0014 50%, #000000 100%)",
 }
 
 
 @dataclass
 class BaseBuilder(ABC):
     assets: AssetProvider
-    resizer: Resizer
-    layer_builder: LayerBuilder
     assembler: Assembler
     extractor: Extractor
+    resizer: ResizerV2 = field(default_factory=ResizerV2)
+    layer_builder: LayerBuilderV2 = field(default_factory=LayerBuilderV2)
 
     @abstractmethod
     def run(self):
@@ -104,36 +105,6 @@ class BuilderV4(BaseBuilder):
     Original the font used was cascadiacode.ttf.
     """
 
-    def build_layer(self, template_path, font_path, text, output_path):
-        from PIL import Image, ImageDraw, ImageFont
-        imagen = Image.open(template_path).convert("RGBA")
-        capa_texto = Image.new("RGBA", imagen.size, (255, 255, 255, 0))
-        canvas = ImageDraw.Draw(capa_texto)
-
-        fuente = ImageFont.truetype(font_path, size=60)
-        texto_dinamico = text
-
-        # fixed for the template
-        x_centro = 720 // 2  
-        y_pos = 920
-
-        canvas.text(
-            (x_centro, y_pos), 
-            texto_dinamico, 
-            font=fuente, 
-            fill="#E0E0E0",  # Blanco sólido en RGBA
-            anchor="mm",                # Centro geométrico
-            align="center",              # Centra las líneas de texto entre sí
-            stroke_width=1,              # <--- Grosor del borde en píxeles (Prueba con 2 o 3)
-            stroke_fill="#E0E0E0" # <--- El mismo color del texto para engrosarlo
-        )
-
-        enfoque_final = Image.alpha_composite(imagen, capa_texto)
-
-        # 8. Guardar en PNG (mantiene la transparencia del fondo si la había)
-        enfoque_final.save(output_path, "PNG")
-        return output_path
-
     def run(self, params):
         input = params.get("input_filename")
         force_resize = params.get("force_resize")
@@ -142,28 +113,18 @@ class BuilderV4(BaseBuilder):
             input, output_type="almost_at_top", force=force_resize
         )
 
-        font_name = params.get("font_name")
-        font = self.assets.get_path("font", font_name)
-        watermark_text = params.get("watermark_text")
-        hook_text = params.get("hook_text")
-        background_color = params.get("background_color", "black-serious")
-        background_color = COLOR_MAP.get(background_color)
-        # layer = (
-        #     self.layer_builder.reset()
-        #     .set_font(font)
-        #     .add_watermark(watermark_text)
-        #     .add_banner_bottom(hook_text, background_color)
-        #     .run()
-        # )
         template_name = "template_fp.png"
         template_name = "template_bM.png"
         template_path = self.assets.get_path("temp", template_name)
-        font_path = self.assets.get_path("font",  "GoogleSans-Bold")
-        layer = self.build_layer(
+        font_name = "GoogleSans-Bold"
+        font_path = self.assets.get_path("font", font_name)
+        hook_text = params.get("hook_text")
+        layer = self.assets.get_path("temp", "temp_ui.png")  #
+        layer = self.layer_builder.run(
             template_path,
             font_path,
             hook_text,
-            output_path=self.assets.get_path("temp", "temp_ui.png")
+            output_path=layer,
         )
 
         output = params.get("output_filename")
@@ -172,31 +133,27 @@ class BuilderV4(BaseBuilder):
         return result
 
     async def run_async(self, params):
-        input = params.get("input_filename")
+        input_filename = params.get("input_filename")
         force_resize = params.get("force_resize")
-        input = self.assets.get_path("input", input)
-        resized = await self.resizer.run_async(
-            input, output_type="almost_at_top", force=force_resize
-        )
+        input = self.assets.get_path("input", input_filename)
+        resized = self.assets.get_path(
+            "temp", f"{Path(input_filename).stem}_resized.mp4"
+        )  #
+        resized = await self.resizer.run_async(input, resized, force=force_resize)
 
-        font_name = params.get("font_name")
-        font = self.assets.get_path("font", font_name)
-        watermark_text = params.get("watermark_text")
-        hook_text = params.get("hook_text")
-        hook_text = hook_text.replace("\\n", "\n")
-        background_color = params.get("background_color", "black-serious")
-        background_color = COLOR_MAP.get(background_color)
-      
         template_name = "template_fp.png"
         #template_name = "template_bM.png"
         template_path = self.assets.get_path("temp", template_name)
-        font_path = self.assets.get_path("font",  "GoogleSans-Bold")
-       
-        layer = self.build_layer(
+        font_name = "GoogleSans-Bold"
+        font_path = self.assets.get_path("font", font_name)
+        hook_text = params.get("hook_text")
+        hook_text = hook_text.replace("\\n", "\n")
+        layer = self.assets.get_path("temp", "temp_ui.png")  #
+        layer = self.layer_builder.run(
             template_path,
             font_path,
             hook_text,
-            output_path=self.assets.get_path("temp", "temp_ui.png")
+            output_path=layer,
         )
 
         output = params.get("output_filename")
@@ -205,6 +162,7 @@ class BuilderV4(BaseBuilder):
             resized, layer, output, debug=debug_frame
         )
         return result
+
 
 class BuilderV2(BaseBuilder):
     """

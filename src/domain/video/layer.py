@@ -7,7 +7,6 @@ class LayerBuilder:
 
     def __init__(self, temp_path):
         self.temp_path = temp_path
-        self._font = None
         self._components = []
 
     def reset(self):
@@ -16,7 +15,11 @@ class LayerBuilder:
         return self
 
     def set_font(self, font_path: str):
-        self.font = font_path
+        self._font = font_path
+        return self
+
+    def set_template(self, template_path: str):
+        self._template_path = template_path
         return self
 
     def add_layout(self, layout_path: str):
@@ -119,3 +122,37 @@ class LayerBuilder:
 
         ui_composite.save_frame(output_png, t=0)
         return output_png
+
+
+class LayerBuilderV2:
+
+    def run(self, template_path, font_path, text, output_path):
+        from PIL import Image, ImageDraw, ImageFont
+
+        imagen = Image.open(template_path).convert("RGBA")
+        capa_texto = Image.new("RGBA", imagen.size, (255, 255, 255, 0))
+        canvas = ImageDraw.Draw(capa_texto)
+
+        fuente = ImageFont.truetype(font_path, size=60)
+        texto_dinamico = text
+
+        # fixed for the template
+        x_centro = 720 // 2
+        y_pos = 920
+
+        canvas.text(
+            (x_centro, y_pos),
+            texto_dinamico,
+            font=fuente,
+            fill="#E0E0E0",  # Blanco sólido en RGBA
+            anchor="mm",  # Centro geométrico
+            align="center",  # Centra las líneas de texto entre sí
+            stroke_width=1,  # <--- Grosor del borde en píxeles (Prueba con 2 o 3)
+            stroke_fill="#E0E0E0",  # <--- El mismo color del texto para engrosarlo
+        )
+
+        enfoque_final = Image.alpha_composite(imagen, capa_texto)
+
+        # 8. Guardar en PNG (mantiene la transparencia del fondo si la había)
+        enfoque_final.save(output_path, "PNG")
+        return output_path
