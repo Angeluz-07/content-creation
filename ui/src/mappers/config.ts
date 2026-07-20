@@ -8,11 +8,9 @@ export interface VideoBuildPayload {
   debug_frame: boolean
   hook_text: string
   input_filename: string
-  watermark_text: string
   frame_ts: string
-  font_name: string
+  template_name: string
   output_filename: string
-  background_color: string
 }
 
 export const toVideoBuildPayload = (
@@ -22,11 +20,9 @@ export const toVideoBuildPayload = (
     debug_frame: data.debugVideoFrame,
     hook_text: data.hookText,
     input_filename: data.inputFileName,
-    watermark_text: data.watermarkText,
     frame_ts: data.frameTs,
-    font_name: data.fontName,
+    template_name: data.templateName,
     output_filename: data.outputFileName,
-    background_color: data.backgroundColor
   }
 }
 

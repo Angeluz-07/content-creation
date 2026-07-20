@@ -51,9 +51,8 @@ class BuilderV4(BaseBuilder):
         resized = self.assets.get_path("temp", "temp_resized.mp4")  #
         resized = await resize_zoomed_square_async(input, resized, force=force_resize)
 
-        template_name = "template_fp.png"
-        # template_name = "template_bM.png"
-        template_path = self.assets.get_path("temp", template_name)
+        template_name = params.get("template_name", "fp.png")
+        template_path = self.assets.get_path("temp", f"template_{template_name}")
         font_name = "GoogleSans-Bold"
         font_path = self.assets.get_path("font", font_name)
         hook_text = params.get("hook_text")
@@ -69,7 +68,7 @@ class BuilderV4(BaseBuilder):
         output = params.get("output_filename")
         output_path = self.assets.get_path("output_videos", output)
         debug_frame = params.get("debug_frame")
-        result = assemble_video_and_template_async(
+        result = await assemble_video_and_template_async(
             resized, output_path, layer, debug=debug_frame
         )
         return result

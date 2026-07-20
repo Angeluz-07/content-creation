@@ -19,13 +19,11 @@ class DiscoveryInput(BaseModel):
 
 class ProductionInput(BaseModel):
     input_filename: str
-    font_name: str
-    watermark_text: str
+    template_name: str
     frame_ts: str
     hook_text: str
     output_filename: str
     debug_frame: bool = True
-    background_color: str
 
 
 class TaskSyncInput(BaseModel):

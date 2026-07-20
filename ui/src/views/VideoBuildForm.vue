@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useApi } from '@/composables/useApi'
 import type { VideoBuildInput } from '../types/config'
-import { toShortProductionParamsPayload } from '../mappers/config'
+import { toVideoBuildPayload } from '../mappers/config'
 import { reactive, ref, onMounted, computed, watch } from 'vue'
 import ModalVideoPlayer from './ModalVideoPlayer.vue'
 import { useVideoStore } from '@/stores/useVideoStore'
@@ -11,12 +11,10 @@ const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT
 
 const form = reactive<VideoBuildInput>({
   inputFileName: '',
-  watermarkText: WATERMARK_TEXT,
   debugVideoFrame: true,
   hookText: 'test',
   frameTs: '00:00:03',
-  fontName: 'GoogleSans-Medium',
-  backgroundColor: 'purple-gradient',
+  templateName: 'fp.png',
   outputFileName: '',
 })
 
@@ -27,25 +25,12 @@ watch(
     form.outputFileName = `${outputFileName}_produced`
   },
 )
-const fontList = ref([
-  'GoogleSans-Medium',
-  'Anton-Regular',
-  'Bangers-Regular',
-  'CascadiaCode',
-  'LuckiestGuy-Regular',
-  'Montserrat-Bold',
-  'PassionOne-Regular',
-  'ProtestStrike-Regular',
+const templateList = ref([
+  'fp.png',
+  'bM.png',
 ])
 
-const backgroundColorList = ref([
-  'purple-gradient',
-  'green-stylish',
-  'black-serious',
-  'purple-sober',
-  'purple-fun',
-  'green-leaf'
-])
+
 
 const fileNames = ref([])
 const { loading: isSubmitting, error: submitError, post: sendForm } = useApi()
@@ -53,7 +38,7 @@ const { loading: loadingVideoFileNames, get: getVideoFileNames } = useApi()
 const videoStore = useVideoStore()
 
 const handleSubmit = async () => {
-  const payload = toShortProductionParamsPayload(form)
+  const payload = toVideoBuildPayload(form)
   const debugMode = form.debugVideoFrame
   if (debugMode) {
     const { success, data } = await sendForm('/produce-short/synchronous', payload)
@@ -140,44 +125,19 @@ onMounted(async () => {
 
         <div class="form-control w-full">
           <label class="label">
-            <span class="label-text font-semibold">Font</span>
+            <span class="label-text font-semibold">Template</span>
           </label>
           <!-- Use v-model for binding and select tag instead of input -->
-          <select v-model="form.fontName" class="select select-bordered w-full" required>
+          <select v-model="form.templateName" class="select select-bordered w-full" required>
             <option value="" disabled selected>Select a font</option>
             <!-- Loop through the list of strings -->
-            <option v-for="fontName in fontList" :key="fontName" :value="fontName">
-              {{ fontName }}
-            </option>
-          </select>
-        </div>
-
-        <div class="form-control w-full">
-          <label class="label">
-            <span class="label-text font-semibold">Watermark text</span>
-          </label>
-          <input
-            v-model="form.watermarkText"
-            type="text"
-            placeholder="@theExample"
-            class="input input-bordered w-full"
-            required
-          />
-        </div>
-        <div class="form-control w-full">
-          <label class="label">
-            <span class="label-text font-semibold">Background Color</span>
-          </label>
-          <!-- Use v-model for binding and select tag instead of input -->
-          <select v-model="form.backgroundColor" class="select select-bordered w-full" required>
-            <option value="" disabled selected>Select a color</option>
-            <!-- Loop through the list of strings -->
-            <option v-for="item in backgroundColorList" :key="item" :value="item">
+            <option v-for="item in templateList" :key="item" :value="item">
               {{ item }}
             </option>
           </select>
         </div>
 
+  
         <div class="form-control w-full">
           <label class="label">
             <span class="label-text">Hook Text</span>

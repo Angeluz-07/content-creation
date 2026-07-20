@@ -1,13 +1,11 @@
 // types/config.ts
 export interface VideoBuildInput {
   inputFileName: string;
-  fontName: string;
-  watermarkText: string; 
+  templateName: string;
   frameTs: string;  
   hookText: string;
   debugVideoFrame: boolean;
   outputFileName: string;
-  backgroundColor: string;
 }
 
 export interface DownloadParams {
