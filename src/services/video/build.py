@@ -1,30 +1,14 @@
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
-from src.domain.video.assembler import Assembler
-from src.domain.video.extractor import Extractor
 from src.services.common.asset import AssetProvider
-from pathlib import Path
 from src.domain.video.resizer import resize_zoomed_square_async
 from src.domain.video.layer import add_text_to_template
-
-# todo: move to domain layer
-COLOR_MAP = {
-    "purple-gradient": "linear-gradient(-225deg, #FF3CAC 0%, #562B7C 52%, #2B86C5 100%)",
-    "green-stylish": "linear-gradient(57deg, #574BCD, #2999AD, #41E975)",
-    "black-serious": "linear-gradient(180deg, #1F2124, #111215)",
-    "purple-sober": "linear-gradient(315deg, #440047 0%, #220024 100%)",
-    "purple-fun": "linear-gradient(315deg, #4F00BC 0%, #29007B 100%)",
-    "green-leaf": "linear-gradient(-225deg, #7A9D54 0%, #557A46 55%, #1A3C1E 100%)",
-    "redone": "linear-gradient(90deg, #D90235 0%, #5E0C5E 48%, #1D052B 100%)",
-    "test": "linear-gradient(135deg, #7A0016 0%, #2E0014 50%, #000000 100%)",
-}
+from src.domain.video.assembler import assemble_video_and_template_async
 
 
 @dataclass
 class BaseBuilder(ABC):
     assets: AssetProvider
-    assembler: Assembler
-    extractor: Extractor
 
     @abstractmethod
     def run(self):
@@ -32,11 +16,6 @@ class BaseBuilder(ABC):
 
 
 class BuilderV4(BaseBuilder):
-    """
-    First version of video builder, with zoomed video,
-    watermark text, simple comment emoji and text.
-    Original the font used was cascadiacode.ttf.
-    """
 
     def run(self, params):
         input = params.get("input_filename")
@@ -88,8 +67,9 @@ class BuilderV4(BaseBuilder):
         )
 
         output = params.get("output_filename")
+        output_path = self.assets.get_path("output_videos", output)
         debug_frame = params.get("debug_frame")
-        result = await self.assembler.run_async(
-            resized, layer, output, debug=debug_frame
+        result = assemble_video_and_template_async(
+            resized, output_path, layer, debug=debug_frame
         )
         return result
