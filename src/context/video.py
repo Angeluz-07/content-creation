@@ -1,12 +1,10 @@
 from src.config import  OUTPUT_DIR, TEMP_DIR
-from src.domain.video.layer import LayerBuilder
 from src.domain.video.extractor import Extractor
 from src.domain.video.assembler import Assembler
 from src.services.video.build import *
 from src.context.common import assets
 
 
-layer_builder = LayerBuilder(TEMP_DIR)
 assembler = Assembler(TEMP_DIR, OUTPUT_DIR)
 extractor = Extractor(TEMP_DIR)
 

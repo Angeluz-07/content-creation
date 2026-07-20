@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
 from abc import ABC, abstractmethod
-from src.domain.video.layer import LayerBuilder, LayerBuilderV2
 from src.domain.video.assembler import Assembler
 from src.domain.video.extractor import Extractor
 from src.services.common.asset import AssetProvider
 from pathlib import Path
 from src.domain.video.resizer import resize_zoomed_square_async
+from src.domain.video.layer import add_text_to_template
 
 # todo: move to domain layer
 COLOR_MAP = {
@@ -25,12 +25,10 @@ class BaseBuilder(ABC):
     assets: AssetProvider
     assembler: Assembler
     extractor: Extractor
-    layer_builder: LayerBuilderV2 = field(default_factory=LayerBuilderV2)
 
     @abstractmethod
     def run(self):
         pass
-
 
 
 class BuilderV4(BaseBuilder):
@@ -82,7 +80,7 @@ class BuilderV4(BaseBuilder):
         hook_text = params.get("hook_text")
         hook_text = hook_text.replace("\\n", "\n")
         layer = self.assets.get_path("temp", "temp_ui.png")  #
-        layer = self.layer_builder.run(
+        layer = add_text_to_template(
             template_path,
             font_path,
             hook_text,
@@ -95,4 +93,3 @@ class BuilderV4(BaseBuilder):
             resized, layer, output, debug=debug_frame
         )
         return result
-
