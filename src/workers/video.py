@@ -1,6 +1,6 @@
 import traceback
 from prefect import flow, tags
-from src.context.video import vb1 as video_builder
+from src.context.video import vb4 as video_builder
 from src.config import WEBHOOK_URI
 import httpx
 
