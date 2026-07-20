@@ -1,5 +1,5 @@
 from pathlib import Path
-from .common import run_async_subprocess, run_subprocess
+from src.domain.common import run_async_subprocess, run_subprocess
 
 
 class Assembler:

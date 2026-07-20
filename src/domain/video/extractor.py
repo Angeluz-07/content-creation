@@ -1,6 +1,6 @@
 from pathlib import Path
-from .common import run_async_subprocess
-from .common import run_subprocess
+from src.domain.common import run_async_subprocess
+from src.domain.common import run_subprocess
 
 
 class Extractor:
