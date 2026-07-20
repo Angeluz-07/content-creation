@@ -139,7 +139,8 @@ class BuilderV4(BaseBuilder):
         resized = self.assets.get_path(
             "temp", f"{Path(input_filename).stem}_resized.mp4"
         )  #
-        resized = await self.resizer.run_async(input, resized, force=force_resize)
+        from src.domain.video.resizer import resize_zoomed_square_async
+        resized = await resize_zoomed_square_async(input, resized, force=force_resize)
 
         template_name = "template_fp.png"
         #template_name = "template_bM.png"

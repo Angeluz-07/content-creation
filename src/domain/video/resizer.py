@@ -145,11 +145,72 @@ class Resizer:
         return safe_filter
 
 
+def get_filter_zoomed_square(input, output):
+    CANVAS_W, CANVAS_H = 720, 1280
+    ZOOM_FACTOR = 1.53
+    TARGET_W = int(CANVAS_W * ZOOM_FACTOR)  # 1620px
+
+    # fmt: off
+    video_filter = (
+        f"scale={TARGET_W}:-1:flags=fast_bilinear,"
+        f"setsar=1:1,"
+        f"crop={CANVAS_W}:ih,"
+    )        
+    encoders = [
+        "-c:v", "libx264",
+        "-crf", "14", # the lower the better fidelity quality of input, 14 is ok.
+        "-preset", "superfast",
+    ]
+    ffmpeg_cmd = [
+        "ffmpeg", "-y",
+        "-loglevel","error",
+        "-stats",
+        "-i", input,
+        "-vf", video_filter,
+        *encoders,
+        "-pix_fmt", "yuv420p", # ensures compatibility
+        "-c:a", "copy",
+        output,
+    ]
+    # fmt: on
+    return ffmpeg_cmd
+
+
+def resize_zoomed_square(input: str, output: str, force: bool):
+    resized = output
+    resized_exists = Path(output).is_file()
+    if force or not resized_exists:
+        print("Start resizing (Sync)...")
+        ffmpeg_cmd = get_filter_zoomed_square(input, output)
+        run_subprocess(command=ffmpeg_cmd)
+        print(f"Resizing successful with file: {resized}")
+        return resized
+    else:
+        print("Resized file exists. Skipping resizing...")
+        return resized
+
+async def resize_zoomed_square_async(input: str, output: str, force: bool):
+    resized = output
+    resized_exists = Path(output).is_file()
+    if force or not resized_exists:
+        print("Start resizing (Async)*...")
+        ffmpeg_cmd = get_filter_zoomed_square(input, output)
+        await run_async_subprocess(command=ffmpeg_cmd)
+        print(f"Resizing successful with file: {resized}")
+        return resized
+    else:
+        print("Resized file exists. Skipping resizing...")
+        return resized
 
 class ResizerV2:
 
     async def run_async(
-        self, input: str, output: str, output_type: str = "zoomed_square", force=False, **kwargs
+        self,
+        input: str,
+        output: str,
+        output_type: str = "zoomed_square",
+        force=False,
+        **kwargs,
     ):
         resized = output
         resized_exists = Path(resized).is_file()
@@ -168,7 +229,12 @@ class ResizerV2:
             return resized
 
     def run(
-        self, input: str, output: str, output_type: str = "zoomed_square", force=False, **kwargs
+        self,
+        input: str,
+        output: str,
+        output_type: str = "zoomed_square",
+        force=False,
+        **kwargs,
     ):
         resized = output
         resized_exists = Path(output).is_file()
@@ -185,7 +251,6 @@ class ResizerV2:
         else:
             print("Resized file exists. Skipping resizing...")
             return resized
-
 
     def get_video_filter(self, output_type: str, **kwargs):
         video_filters = {
@@ -220,7 +285,6 @@ class ResizerV2:
         ]
         # fmt: on
         return ffmpeg_cmd
-
 
     def get_filter_zoomed_square(self):
         CANVAS_W, CANVAS_H = 720, 1280
