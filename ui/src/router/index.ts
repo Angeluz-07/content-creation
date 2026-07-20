@@ -14,9 +14,9 @@ const router = createRouter({
       component: () => import('../views/DiscoverySection.vue'),
     },
     {
-      path: '/short-production',
-      name: 'shortProductionSection',
-      component: () => import('../views/ShortProductionSection.vue'),
+      path: '/video-build-section',
+      name: 'videoBuildSection',
+      component: () => import('../views/VideoBuildSection.vue'),
     },
   ],
 })

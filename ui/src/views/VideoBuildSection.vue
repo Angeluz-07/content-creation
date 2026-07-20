@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import ShortProductionParamsForm from './ShortProductionParamsForm.vue'
+import VideoBuildForm from './VideoBuildForm.vue'
 import { useVideoStore } from '@/stores/useVideoStore'
 import ShortPreviewVideo from './ShortPreviewVideo.vue'
 import ShortPreviewImg from './ShortPreviewImg.vue'
-import TaskShortProductions from './TaskShortProductions.vue'
-
+import VideoBuildTasks from './VideoBuildTasks.vue'
 const videoStore = useVideoStore()
 const { lastProductionTs, latestVideoId } = storeToRefs(videoStore)
 const imageId = ref(`images/`)
@@ -32,7 +31,7 @@ watch(lastProductionTs, (newTs) => {
 
 <template>
   <div class="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-    <ShortProductionParamsForm></ShortProductionParamsForm>
+    <VideoBuildForm></VideoBuildForm>
     <!-- name of each tab group should be unique -->
     <div class="tabs tabs-box md:col-span-2">
       <label class="tab">
@@ -52,7 +51,7 @@ watch(lastProductionTs, (newTs) => {
       </label>
       <div class="tab-content bg-base-100 p-6">
         <div class="card w-full md:w-fit mx-auto bg-base-100 overflow-hidden p-light col-span-2">
-          <TaskShortProductions></TaskShortProductions>
+          <VideoBuildTasks></VideoBuildTasks>
         </div>
       </div>
     </div>

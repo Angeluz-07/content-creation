@@ -1,10 +1,10 @@
 // mappers/config.ts
-import type { ShortProductionParams, DownloadParams, DiscoveryInput } from '../types/config'
+import type { VideoBuildInput, DownloadParams, DiscoveryInput } from '../types/config'
 
 // todo: I could prescind of mappers by defining the API to receive properties as camelCase
 // since by now the mapping is redundant
 // Definimos el tipo de lo que espera el API (opcional, pero recomendado)
-export interface ShortProductionParamsPayload {
+export interface VideoBuildPayload {
   debug_frame: boolean
   hook_text: string
   input_filename: string
@@ -15,9 +15,9 @@ export interface ShortProductionParamsPayload {
   background_color: string
 }
 
-export const toShortProductionParamsPayload = (
-  data: ShortProductionParams,
-): ShortProductionParamsPayload => {
+export const toVideoBuildPayload = (
+  data: VideoBuildInput,
+): VideoBuildPayload => {
   return {
     debug_frame: data.debugVideoFrame,
     hook_text: data.hookText,

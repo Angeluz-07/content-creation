@@ -1,5 +1,5 @@
 // types/config.ts
-export interface ShortProductionParams {
+export interface VideoBuildInput {
   inputFileName: string;
   fontName: string;
   watermarkText: string; 

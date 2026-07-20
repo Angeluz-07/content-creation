@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useApi } from '@/composables/useApi'
-import type { ShortProductionParams } from '../types/config'
+import type { VideoBuildInput } from '../types/config'
 import { toShortProductionParamsPayload } from '../mappers/config'
 import { reactive, ref, onMounted, computed, watch } from 'vue'
 import ModalVideoPlayer from './ModalVideoPlayer.vue'
@@ -9,7 +9,7 @@ import { toast } from 'vue-sonner'
 
 const WATERMARK_TEXT = import.meta.env.VITE_WATERMARK_TEXT
 
-const form = reactive<ShortProductionParams>({
+const form = reactive<VideoBuildInput>({
   inputFileName: '',
   watermarkText: WATERMARK_TEXT,
   debugVideoFrame: true,
