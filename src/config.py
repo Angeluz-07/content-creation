@@ -15,6 +15,9 @@ VTT_DIR = str(DATA_DIR / "downloads" / "vtt")
 METALS_DIR = str(DATA_DIR / "metals")
 INGESTION_DIR =  str(DATA_DIR / "gold_samples")
 TRANSCRIPTION_DIR = str(DATA_DIR / "transcriptions")
+INPUT_IMGS = str(DATA_DIR / "input_imgs")
+TEMPLATES_DIR = str(DATA_DIR / "templates")
+OUTPUT_IMGS_DIR = str(DATA_DIR / "output_imgs")
 
 TEST_DATA_DIR = str(PROJECT_DIR / "src" / "tests" / ".data")
 MONGO_DB_NAME = "cc_db"

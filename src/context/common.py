@@ -9,7 +9,10 @@ from src.config import (
     LAYOUT_DIR,
     VTT_DIR,
     METALS_DIR,
-    TRANSCRIPTION_DIR
+    TRANSCRIPTION_DIR,
+    INPUT_IMGS,
+    TEMPLATES_DIR,
+    OUTPUT_IMGS_DIR
 )
 
 assets = (
@@ -17,6 +20,9 @@ assets = (
     .add_source("temp", TEMP_DIR)
     .add_source("output_videos", OUTPUT_DIR, extension=".mp4")
     .add_source("input", DOWNLOAD_DIR_VIDEO, extension=".mp4")
+    .add_source("input_imgs", INPUT_IMGS, extension=".png")
+    .add_source("templates", TEMPLATES_DIR, extension=".png")
+    .add_source("output_imgs",OUTPUT_IMGS_DIR, extension=".png" )
     .add_source("font", ASSETS_DIR, extension=".ttf")
     .add_source("emoji", EMOJI_DIR, extension=".png")
     .add_source("layout", LAYOUT_DIR, extension=".png")
