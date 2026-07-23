@@ -94,6 +94,37 @@ def group_when_ends_without_dot(text_segments):
     return result
 
 
+def group_by_duration(
+    segments: list[dict], min_dur: float = 45, max_dur: float = 90
+) -> list[dict]:
+    grouped = []
+    current = {
+        "start": segments[0]["start"],
+        "end": segments[0]["end"],
+        "text": segments[0]["text"],
+    }
+    grouped.append(current)
+    # Iteramos desde el segundo elemento
+    for seg in segments[1:]:
+        curr_dur = compute_duration(current["start"], current["end"])
+        new_dur = curr_dur + compute_duration(seg["start"], seg["end"])
+
+        # Si no hemos alcanzado el mínimo y no excedemos el máximo al sumarle el segmento actual, agrupamos
+        if curr_dur < min_dur and new_dur <= max_dur:
+            current["end"] = seg["end"]
+            current["text"] += " " + seg["text"]
+        else:
+            # Creamos un nuevo grupo y avanzamos el puntero de referencia
+            current = {
+                "start": seg["start"],
+                "end": seg["end"],
+                "text": seg["text"],
+            }
+            grouped.append(current)
+
+    return grouped
+
+
 def group_when_starts_with_connector(text_segments):
     # fmt: off
     MONOSILABOS_CONNECTORS = {"sí", "no", "ya", "uy", "ah", "eh", "ay", "ajá", "dale",}
@@ -138,7 +169,7 @@ def format_to_text_block(text_segments):
     lines = []
     for i, ts in enumerate(text_segments):
         duration = compute_duration(ts["start"], ts["end"])
-        line = f"[id:{i}][duration:{duration}s] {ts["text"]}"
+        line = f"[{duration:05.2f}s]{ts["text"]}"
         lines.append(line)
     return "\n".join(lines)
 
@@ -156,78 +187,6 @@ def filter_by_duration(text_segments, min_sec=25.0, max_sec=70.0):
 
     return segmentos_filtrados
 
-import numpy as np
-from scipy.signal import find_peaks
-from sklearn.metrics.pairwise import cosine_similarity
-
-def segmentar_por_ideas_espectral(result, embedder, window_size=5, threshold_factor=0.9):
-    """
-    Toma la lista de diccionarios de entrada, calcula embeddings para cada fragmento,
-    agrupa semánticamente usando grafos espectrales locales, y retorna los nuevos bloques
-    con sus tiempos consolidados ('start' del primer elemento, 'end' del último).
-    """
-    if not result:
-        return []
-    
-    # 1. Extraer los textos y generar los embeddings
-    texts = [item['text'] for item in result]
-    
-    # --- NOTA DE IMPLEMENTACIÓN ---
-    # Reemplaza esta línea con la llamada real a tu generador de embeddings.
-    # Ej: embeddings = embedder.encode(texts)
-    embeddings = embedder.get_vectors(texts)
-
-    
-    n_samples = len(embeddings)
-    if n_samples <= window_size:
-        # Si hay muy pocas líneas, devolvemos un solo gran bloque unificado
-        return [{
-            'start': result[0]['start'],
-            'end': result[-1]['end'],
-            'text': " ".join(texts)
-        }]
-
-    # 2. Construir la matriz de afinidad (Similitud de coseno)
-    similarity_matrix = cosine_similarity(embeddings)
-    
-    # 3. Calcular Cohesión Local
-    local_cohesion = np.zeros(n_samples - 1)
-    for i in range(n_samples - 1):
-        start_win = max(0, i - window_size + 1)
-        end_win = min(n_samples, i + window_size + 1)
-        left_window = similarity_matrix[start_win:i+1, i+1:end_win]
-        local_cohesion[i] = np.mean(left_window)
-
-    # 4. Detectar cortes (Valles de cohesión por debajo del umbral)
-    cohesion_mean = np.mean(local_cohesion)
-    cohesion_std = np.std(local_cohesion)
-    cutoff = cohesion_mean - (threshold_factor * cohesion_std)
-    
-    peaks, _ = find_peaks(-local_cohesion, height=-cutoff, distance=window_size)
-    cuts = sorted(list(peaks))
-    
-    # 5. Agrupar físicamente los diccionarios originales consolidando tiempos
-    bloques_agrupados = []
-    prev_idx = 0
-    
-    # Añadimos un corte virtual al final para procesar secuencialmente
-    all_cuts = cuts + [n_samples - 1]
-    
-    for cut in all_cuts:
-        grupo = result[prev_idx:cut+1]
-        if not grupo:
-            continue
-            
-        # Unificamos el texto y consolidamos la línea de tiempo
-        texto_unificado = " ".join([item['text'] for item in grupo])
-        bloques_agrupados.append({
-            'start': grupo[0]['start'],
-            'end': grupo[-1]['end'],
-            'text': texto_unificado
-        })
-        prev_idx = cut + 1
-        
-    return bloques_agrupados
 
 from .models import TextSegment
 
@@ -238,8 +197,7 @@ class VTTParser:
         result = parse_vtt(archivo_vtt)
         result = group_when_starts_with_uppercase(result)
         result = group_when_ends_without_dot(result)
-        result = group_when_starts_with_connector(result)
-        result = filter_by_duration(result)
+        result = group_by_duration(result)
         result = [TextSegment(**values) for values in result]
         return result
 
@@ -252,25 +210,5 @@ class TranscriptionParser:
         result = group_when_ends_without_dot(result)
         result = group_when_starts_with_connector(result)
         # result = filter_by_duration(result)
-        result = [TextSegment(**values) for values in result]
-        return result
-
-class VTTParser2:
-
-    def run(self, archivo_vtt, embedder):
-        result = parse_vtt(archivo_vtt)
-        result = group_when_starts_with_uppercase(result)
-        result = group_when_ends_without_dot(result)
-        
-        # --- AQUÍ INYECTAMOS EL DETECTOR DE METALES ---
-        # window_size=5 y threshold_factor=0.9 son ideales para buscar bloques 
-        # con la densidad y duración que necesitas (clips de ~45s a 1m15s)
-        result = segmentar_por_ideas_espectral(
-            result, 
-            embedder, 
-            window_size=5, 
-            threshold_factor=0.5
-        )
-        
         result = [TextSegment(**values) for values in result]
         return result
