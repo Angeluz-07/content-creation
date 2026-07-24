@@ -191,13 +191,32 @@ def filter_by_duration(text_segments, min_sec=25.0, max_sec=70.0):
 from .models import TextSegment
 
 
-def parse_vtt( archivo_vtt):
+def parse_vtt(archivo_vtt):
     result = parse_raw_vtt(archivo_vtt)
     result = group_when_starts_with_uppercase(result)
     result = group_when_ends_without_dot(result)
     result = group_by_duration(result)
     result = [TextSegment(**values) for values in result]
     return result
+
+
+def parse_discovery_results(result, prefix, url):
+    mapped_data = []
+    for idx, item in enumerate(result):
+        mapped_data.append(
+            {
+                "start_segment": item["start"],
+                "end_segment": item["end"],
+                "text": item["text"],
+                "output_filename": f"{prefix}_{idx:02d}",
+                "force_download": False,
+                "url": url,
+                "file_type": "video",
+                "duration": compute_duration(item["start"], item["end"]),
+            }
+        )
+
+    return mapped_data
 
 
 class TranscriptionParser:

@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from dataclasses import field
 from abc import ABC, abstractmethod
-from src.domain.discovery.parser import parse_vtt
-from src.domain.discovery.discovery_parser import DiscoveryParser
+from src.domain.discovery.parser import parse_vtt, parse_discovery_results
 from src.dbs.qdrant import IVectorStore
 from src.services.common.asset import AssetProvider
 from src.domain.common import save_json
@@ -59,7 +58,7 @@ class DetectorV2(BaseDetector):
         result = find_metals(
             result, self.embedder, self.vector_store, data.get("sensitivity")
         )
-        result = DiscoveryParser().run(result, output_filename, url)
+        result = parse_discovery_results(result, output_filename, url)
         save_json(result, output_path)
         return result
 
