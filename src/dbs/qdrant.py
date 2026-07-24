@@ -1,7 +1,7 @@
 from qdrant_client import QdrantClient
 from abc import ABC, abstractmethod
 from typing import List, Optional, Any
-from qdrant_client.models import VectorParams, Distance
+from qdrant_client.models import VectorParams, Distance, QueryRequest
 from typing import List, Dict
 
 
@@ -23,6 +23,10 @@ class IVectorStore(ABC):
 
     @abstractmethod
     def search(self):
+        pass
+
+    @abstractmethod
+    def search_batch(self):
         pass
 
 
@@ -57,5 +61,15 @@ class QdrantVectorStore(IVectorStore):
     def search(self, query_vector: List[float], top_k: int = 5) -> List:
         results = self.client.query_points(
             collection_name=self.collection_name, query=query_vector, limit=top_k
+        )
+        return results
+
+    def search_batch(self, query_vectors: List[List[float]]) -> List:
+        requests = [
+            QueryRequest(query=vec, limit=1, with_payload=True) for vec in query_vectors
+        ]
+
+        results = self.client.query_batch_points(
+            collection_name=self.collection_name, requests=requests
         )
         return results

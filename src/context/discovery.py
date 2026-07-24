@@ -8,7 +8,6 @@ from src.services.discovery.embedding import Embedder
 from src.services.discovery.ingestion import Ingester
 from src.services.discovery.transcription import GroqAudioTranscriber
 from src.services.discovery.detection import DetectorV2
-from src.domain.discovery.scanner import Scanner
 from src.context.common import assets
 
 qdrant_client = get_client(QDRANTDB_URI)
@@ -21,8 +20,7 @@ vector_size = embedder.get_dimension()
 qvs = QdrantVectorStore(qdrant_client, collection_name, vector_size)
 qvs.ensure_collection_exists()
 
-scanner = Scanner(qvs, embedder)
-metal_detector = DetectorV2(assets, scanner)
+metal_detector = DetectorV2(assets, embedder, qvs)
 
 transcriber = GroqAudioTranscriber(GROQ_API_KEY)
 ingester = Ingester(vector_store=qvs, embedder=embedder, transcriber=transcriber, ingestion_dir=INGESTION_DIR)

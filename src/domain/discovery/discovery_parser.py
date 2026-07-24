@@ -31,7 +31,7 @@ def map_discovery_results(result, prefix, url):
             {
                 "start_segment": start,
                 "end_segment": end,
-                "text": item["full_context"],
+                "text": item["text"],
                 "output_filename": f"{prefix}_{idx:02d}",
                 "force_download": False,
                 "url": url,

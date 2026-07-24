@@ -3,7 +3,7 @@ import re
 from src.domain.common import read_json
 
 
-def parse_vtt(file_path):
+def parse_raw_vtt(file_path):
     resultado = []
     bloque_anterior = set()  # Mantenemos el set para búsquedas rápidas
 
@@ -95,7 +95,7 @@ def group_when_ends_without_dot(text_segments):
 
 
 def group_by_duration(
-    segments: list[dict], min_dur: float = 45, max_dur: float = 90
+    segments: list[dict], min_dur: float = 75, max_dur: float = 90
 ) -> list[dict]:
     grouped = []
     current = {
@@ -191,15 +191,13 @@ def filter_by_duration(text_segments, min_sec=25.0, max_sec=70.0):
 from .models import TextSegment
 
 
-class VTTParser:
-
-    def run(self, archivo_vtt):
-        result = parse_vtt(archivo_vtt)
-        result = group_when_starts_with_uppercase(result)
-        result = group_when_ends_without_dot(result)
-        result = group_by_duration(result)
-        result = [TextSegment(**values) for values in result]
-        return result
+def parse_vtt( archivo_vtt):
+    result = parse_raw_vtt(archivo_vtt)
+    result = group_when_starts_with_uppercase(result)
+    result = group_when_ends_without_dot(result)
+    result = group_by_duration(result)
+    result = [TextSegment(**values) for values in result]
+    return result
 
 
 class TranscriptionParser:
