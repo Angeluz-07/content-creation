@@ -57,7 +57,7 @@ class MongoRepository(IRepository):
         if "id" in query:
             query["_id"] = query.pop("id")
             
-        documents = self._collection.find(query).sort("created_at", -1)
+        documents = self._collection.find(query).sort("created_at", -1).limit(25)
         return [self._map_to_object(doc) for doc in documents]
 
     def add(self, entity: Any) -> None:

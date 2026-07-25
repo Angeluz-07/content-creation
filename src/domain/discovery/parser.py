@@ -1,6 +1,7 @@
 import webvtt
 import re
 from src.domain.common import read_json
+from datetime import datetime, timedelta
 
 
 def parse_raw_vtt(file_path):
@@ -200,13 +201,24 @@ def parse_vtt(archivo_vtt):
     return result
 
 
+def round_time(s: str, mode: str = "floor") -> str:
+    """
+    print(round_time("00:01:56.200", "floor"))  # "00:01:56"
+    print(round_time("00:01:56.200", "ceil"))   # "00:01:57"
+    """
+    t = datetime.strptime(s, "%H:%M:%S.%f")
+    if mode == "ceil" and t.microsecond > 0:
+        t += timedelta(seconds=1)
+    return t.strftime("%H:%M:%S")
+
+
 def parse_discovery_results(result, prefix, url):
     mapped_data = []
     for idx, item in enumerate(result):
         mapped_data.append(
             {
-                "start_segment": item["start"],
-                "end_segment": item["end"],
+                "start_segment": round_time(item["start"], "floor"),
+                "end_segment": round_time(item["end"], "ceil"),
                 "text": item["text"],
                 "output_filename": f"{prefix}_{idx:02d}",
                 "force_download": False,
