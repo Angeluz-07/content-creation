@@ -11,15 +11,11 @@ from src.services.discovery.detection import DetectorV2
 from src.context.common import assets
 
 qdrant_client = get_client(QDRANTDB_URI)
-collection_name = "moments"  # change to 'moments'
-
 embedder = Embedder(EMBEDDER_URI)
-#embedder.wait_until_ready()
 
-#vector_size = embedder.get_dimension()
-
+collection_name = "moments"  # change to 'moments'
 qvs = QdrantVectorStore(qdrant_client, embedder, collection_name)
-#qvs.ensure_collection_exists()
+qvs.create_collection()
 
 metal_detector = DetectorV2(assets, qvs)
 

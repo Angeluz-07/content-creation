@@ -36,20 +36,21 @@ class QdrantVectorStore(IVectorStore):
         self.embedder = embedder
         self.collection_name = collection_name
 
-    def ensure_collection_exists(self):
+    def create_collection(self):
+        vector_size = self.embedder.vector_size
         if not self.client.collection_exists(collection_name=self.collection_name):
             self.client.create_collection(
                 collection_name=self.collection_name,
                 vectors_config=VectorParams(
-                    size=self.vector_size, distance=Distance.COSINE
+                    size=vector_size, distance=Distance.COSINE
                 ),
             )
             print(
-                f"Colección '{self.collection_name}' creada con dimensión {self.vector_size}"
+                f"Colección '{self.collection_name}' creada con dimensión {vector_size}"
             )
         else:
             print(
-                f"Collection '{self.collection_name}' exists with dimension {self.vector_size}"
+                f"Collection '{self.collection_name}' exists with dimension {vector_size}"
             )
 
     def add(self, id: str, text: str, metadata: Dict) -> None:

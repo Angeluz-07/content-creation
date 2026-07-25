@@ -1,13 +1,16 @@
 import requests
 import time
 
-VECTOR_SIZE = 384
 
 
 class Embedder:
 
     def __init__(self, embedder_uri):
         self.url = embedder_uri
+
+    @property
+    def vector_size(self):
+        return self.get_dimension()
 
     def get_vector(self, text):
         # better use batch to process list of texts to avoid network overhead
