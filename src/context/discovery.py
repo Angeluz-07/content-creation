@@ -14,13 +14,14 @@ qdrant_client = get_client(QDRANTDB_URI)
 collection_name = "moments"  # change to 'moments'
 
 embedder = Embedder(EMBEDDER_URI)
-embedder.wait_until_ready()
-vector_size = embedder.get_dimension()
+#embedder.wait_until_ready()
 
-qvs = QdrantVectorStore(qdrant_client, collection_name, vector_size)
-qvs.ensure_collection_exists()
+#vector_size = embedder.get_dimension()
 
-metal_detector = DetectorV2(assets, embedder, qvs)
+qvs = QdrantVectorStore(qdrant_client, embedder, collection_name)
+#qvs.ensure_collection_exists()
+
+metal_detector = DetectorV2(assets, qvs)
 
 transcriber = GroqAudioTranscriber(GROQ_API_KEY)
 ingester = Ingester(vector_store=qvs, embedder=embedder, transcriber=transcriber, ingestion_dir=INGESTION_DIR)

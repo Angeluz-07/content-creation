@@ -1,6 +1,9 @@
 import requests
 import time
 
+VECTOR_SIZE = 384
+
+
 class Embedder:
 
     def __init__(self, embedder_uri):
@@ -26,7 +29,7 @@ class Embedder:
         """
         start_time = time.time()
         print(f"Waiting for embedder service en {self.url}...")
-        
+
         while time.time() - start_time < timeout_seconds:
             try:
                 # Intentamos llamar al endpoint más ligero para verificar la salud del servicio
@@ -37,9 +40,9 @@ class Embedder:
             except requests.RequestException:
                 # Si da error de conexión o timeout, ignoramos y seguimos esperando
                 pass
-            
+
             time.sleep(interval)
-            
+
         # Si se agota el tiempo, lanzamos un error claro
         raise TimeoutError(
             f"❌ El servicio de embeddings no estuvo listo tras {timeout_seconds} segundos."

@@ -31,10 +31,10 @@ class IVectorStore(ABC):
 
 
 class QdrantVectorStore(IVectorStore):
-    def __init__(self, client, collection_name, vector_size):
+    def __init__(self, client, embedder, collection_name):
         self.client = client
+        self.embedder = embedder
         self.collection_name = collection_name
-        self.vector_size = vector_size
 
     def ensure_collection_exists(self):
         if not self.client.collection_exists(collection_name=self.collection_name):
@@ -52,19 +52,22 @@ class QdrantVectorStore(IVectorStore):
                 f"Collection '{self.collection_name}' exists with dimension {self.vector_size}"
             )
 
-    def add(self, id: str, vector: List[float], metadata: Dict) -> None:
+    def add(self, id: str, text: str, metadata: Dict) -> None:
+        vector = self.embedder.get_vector(text)
         self.client.upsert(
             collection_name=self.collection_name,
             points=[{"id": id, "vector": vector, "payload": metadata}],
         )
 
-    def search(self, query_vector: List[float], top_k: int = 5) -> List:
+    def search(self, text: str, top_k: int = 5) -> List:
+        query_vector: List[float] = self.embedder.get_vector(text)
         results = self.client.query_points(
             collection_name=self.collection_name, query=query_vector, limit=top_k
         )
         return results
 
-    def search_batch(self, query_vectors: List[List[float]]) -> List:
+    def search_batch(self, texts: List[str]) -> List:
+        query_vectors: List[List[float]] = self.embedder.get_vectors(texts)
         requests = [
             QueryRequest(query=vec, limit=1, with_payload=True) for vec in query_vectors
         ]

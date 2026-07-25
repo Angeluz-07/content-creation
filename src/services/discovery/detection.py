@@ -13,13 +13,11 @@ from typing import List
 
 def find_metals(
     text_segments: List[TextSegment],
-    embedder: Embedder,
     vector_store: IVectorStore,
     sensitivity: float = 0.7,
 ):
     texts = [ts.text for ts in text_segments]
-    vectors = embedder.get_vectors(texts)
-    most_similar_vectors = vector_store.search_batch(vectors)
+    most_similar_vectors = vector_store.search_batch(texts)
     result = []
     for i, ts in enumerate(text_segments):
         score = most_similar_vectors[i].points[0].score
@@ -38,7 +36,6 @@ def find_metals(
 @dataclass
 class BaseDetector(ABC):
     assets: AssetProvider
-    embedder: Embedder
     vector_store: IVectorStore
 
     @abstractmethod
@@ -56,7 +53,7 @@ class DetectorV2(BaseDetector):
         output_path = self.assets.get_path("metals", output_filename)
         result = parse_vtt(vtt_path)
         result = find_metals(
-            result, self.embedder, self.vector_store, data.get("sensitivity")
+            result, self.vector_store, data.get("sensitivity")
         )
         result = parse_discovery_results(result, output_filename, url)
         save_json(result, output_path)
