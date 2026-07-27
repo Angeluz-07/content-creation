@@ -1,6 +1,6 @@
 import traceback
 from prefect import flow, tags
-from src.context.discovery import metal_detector
+from src.infra.context.discovery import metal_detector
 from src.config import WEBHOOK_URI
 import httpx
 

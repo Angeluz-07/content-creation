@@ -1,5 +1,5 @@
-from src.dbs.qdrant import get_client
-from src.dbs.qdrant import QdrantVectorStore
+from src.infra.dbs.qdrant import get_client
+from src.infra.dbs.qdrant import QdrantVectorStore
 from src.config import  QDRANTDB_URI
 from src.config import EMBEDDER_URI
 from src.config import GROQ_API_KEY
@@ -8,7 +8,7 @@ from src.services.discovery.embedding import Embedder
 from src.services.discovery.ingestion import Ingester
 from src.services.discovery.transcription import GroqAudioTranscriber
 from src.services.discovery.detection import DetectorV2
-from src.context.common import assets
+from src.infra.context.common import assets
 
 qdrant_client = get_client(QDRANTDB_URI)
 embedder = Embedder(EMBEDDER_URI)

@@ -3,7 +3,7 @@ import glob
 from pathlib import Path
 from uuid import uuid5, NAMESPACE_DNS
 
-from src.dbs.qdrant import IVectorStore #todo:improve
+from src.infra.dbs.qdrant import IVectorStore #todo:improve
 
 
 class Ingester:

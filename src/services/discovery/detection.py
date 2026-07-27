@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from dataclasses import field
 from abc import ABC, abstractmethod
 from src.domain.discovery.parser import parse_vtt, parse_discovery_results
-from src.dbs.qdrant import IVectorStore
+from src.infra.dbs.qdrant import IVectorStore
 from src.services.common.asset import AssetProvider
 from src.domain.common import save_json
 from src.services.discovery.embedding import Embedder

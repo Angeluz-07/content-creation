@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 from .models import ProductionInput, DownloadInput, DiscoveryInput
-from src.context.common import assets
+from src.infra.context.common import assets
 from src.services.common.utils import read_json
 
-from src.context.production import prefect_service
-from src.context.production import (
+from src.infra.context.production import prefect_service
+from src.infra.context.production import (
     short_producer,
     download_service,
     task_service,

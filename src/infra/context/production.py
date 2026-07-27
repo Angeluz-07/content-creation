@@ -2,8 +2,8 @@ from src.services.production.production_service import ProductionService
 from src.services.production.download_service import DownloadService
 from src.services.production.task_service import TaskService
 from src.services.production.prefect_service import PrefectService
-from src.dbs.mongo import MongoRepository
-from src.dbs.mongo import get_mongo_client
+from src.infra.dbs.mongo import MongoRepository
+from src.infra.dbs.mongo import get_mongo_client
 from src.domain.download.models import Download
 from src.domain.production.models import Production
 from src.domain.production.models import Task

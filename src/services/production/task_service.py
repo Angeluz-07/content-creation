@@ -1,4 +1,4 @@
-from src.dbs.interfaces import IRepository
+from src.infra.dbs.interfaces import IRepository
 from src.domain.production.models import Task, TaskStatus
 from uuid import uuid4
 from typing import List, Dict

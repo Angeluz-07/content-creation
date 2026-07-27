@@ -1,6 +1,6 @@
 import traceback
 from prefect import flow, tags
-from src.context.discovery import ingester
+from src.infra.context.discovery import ingester
 from src.config import WEBHOOK_URI
 import httpx
 
