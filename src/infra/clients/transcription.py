@@ -8,7 +8,6 @@ import tempfile
 from pathlib import Path
 from groq import Groq
 
-
 class ITranscriber(ABC):
     @abstractmethod
     def transcribe(self, video_path: str) -> str:

@@ -6,7 +6,7 @@ from src.config import GROQ_API_KEY
 from src.config import INGESTION_DIR
 from src.services.discovery.embedding import Embedder
 from src.services.discovery.ingestion import Ingester
-from src.services.discovery.transcription import GroqAudioTranscriber
+from src.infra.clients.transcription import GroqAudioTranscriber
 from src.services.discovery.detection import DetectorV2
 from src.infra.context.common import assets
 
