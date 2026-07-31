@@ -5,8 +5,6 @@ from src.domain.discovery.parser import parse_vtt, parse_discovery_results
 from src.infra.dbs.qdrant import IVectorStore
 from src.services.common.asset import AssetProvider
 from src.domain.common import save_json
-from src.services.discovery.embedding import Embedder
-
 from src.domain.discovery.models import TextSegment
 from typing import List
 

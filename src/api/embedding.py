@@ -10,14 +10,15 @@ DATA_DIR = Path(__file__).resolve().parent.parent.parent / ".data"
 CACHE_DIR = str(DATA_DIR / "fastembed_cache")
 
 # El modelo nativo equivalente y optimizado en fastembed
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 # Flujo simple: fastembed busca en el cache_dir de forma automática.
 # Si el Dockerfile empaquetó los pesos ahí, los levanta en milisegundos con ONNX Runtime.
 # Si no existiera la carpeta (ej. local nuevo), descarga el .onnx plano de internet de inmediato.
 print(f"🔍 Inicializando TextEmbedding usando el caché en: {CACHE_DIR}")
 try:
-    model = TextEmbedding(model_name=MODEL_NAME, cache_dir=CACHE_DIR)
+    model = TextEmbedding(model_name=MODEL_NAME, cache_dir=CACHE_DIR)    
+    print(f"Model loaded successfully: {MODEL_NAME}")
 except Exception as e:
     print(f"❌ Error crítico cargando el modelo: {e}")
     raise e
