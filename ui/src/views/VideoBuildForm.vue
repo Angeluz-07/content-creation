@@ -14,7 +14,7 @@ const form = reactive<VideoBuildInput>({
   debugVideoFrame: true,
   hookText: 'test',
   frameTs: '00:00:03',
-  templateName: 'fp.png',
+  templateName: 'bM2.png',
   outputFileName: '',
 })
 
@@ -26,8 +26,10 @@ watch(
   },
 )
 const templateList = ref([
+  'bM2.png',
   'fp.png',
   'bM.png',
+  'to.png',
 ])
 
 

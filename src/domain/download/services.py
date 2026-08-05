@@ -1,90 +1,53 @@
-from pathlib import Path
-import time
 import asyncio
-from typing import Dict
-import subprocess
-import sys
+from pathlib import Path
+from typing import Any, Dict, Protocol
+from src.domain.common import run_subprocess, run_async_subprocess
+import time
+
+# --- MOCK DE TUS FUNCIONES EXISTENTES ---
+# async def run_async_subprocess(command: list): ...
+# def run_subprocess(command: list): ...
 
 
-def remove_middle_extension(file_path: str):
-    path = Path(file_path)
-    if len(path.suffixes) >= 2:
-        print("Renaming file with multiple extensions..")
-        new_path = path.with_name(f"{path.name.split('.')[0]}{path.suffix}")
-        path.rename(new_path)
+def remove_middle_extension(file_path: Path) -> Path:
+    """Limpia extensiones intermedias como '.es.vtt' -> '.vtt'"""
+    if len(file_path.suffixes) >= 2:
+        new_path = file_path.with_name(
+            f"{file_path.stem.split('.')[0]}{file_path.suffix}"
+        )
+        if file_path.exists():
+            file_path.rename(new_path)
         return new_path
-    return path
+    return file_path
 
 
-class YTDownloader:
-    def __init__(self, output_path: str, cookies_path: str):
-        self.output_path = output_path
+# --- INTERFAZ (PROTOCOL) ---
+class MediaDownloader(Protocol):
+    def run(self, params: Dict[str, Any]) -> Path: ...
+
+    async def run_async(self, params: Dict[str, Any]) -> Path: ...
+
+
+# --- IMPLEMENTACIONES INDIVIDUALES ---
+
+
+class VideoDownloader:
+    def __init__(self, output_dir: Path, cookies_path: str):
+        self.output_dir = output_dir / "video"
+        self.output_dir.mkdir(parents=True, exist_ok=True)
         self.cookies_path = cookies_path
 
-    async def run(self, params: Dict):
-        url = params["url"]
-        start_ts = params["start_segment"]
-        end_ts = params["end_segment"]
-        force_download = params["force_download"]
-        output_filename = params["output_filename"]
-
-        file_type = params["file_type"]
-        if file_type == "vtt":
-            result_filepath = await self.get_vtt(
-                url=url,
-                force_download=force_download,
-                output_filename=output_filename,
-            )
-            result_filepath = remove_middle_extension(f"{result_filepath}.es.vtt")
-            print("File saved in ", result_filepath)
-        elif file_type == "video":
-            result_filepath = await self.get_video_segment(
-                url, start_ts, end_ts, force_download, output_filename
-            )
-            print("File saved in ", result_filepath)
-
-        elif file_type == "audio":
-            result_filepath = await self.get_audio(
-                url, force_download, output_filename, start_ts, end_ts
-            )
-            print("File saved in ", result_filepath)
-        else:
-            print("Error from download service, unknown file_type")
-
-    async def get_video_segment(
-        self,
-        url: str,
-        start_ts: str,
-        end_ts: str,
-        force_download: bool,
-        output_filename: str,
-    ) -> str:
-        raw_filepath = str(Path(self.output_path) / "video" / f"{output_filename}.mp4")
-        file_doesnt_exist = not Path(raw_filepath).is_file()
-
-        if file_doesnt_exist or force_download:
-            print(
-                f"File doesnt exist or force_download={force_download}, downloading..."
-            )
-            await self._download_segment_from_yt(start_ts, end_ts, url, raw_filepath)
-        else:
-            print(f"File exists, force_download={force_download}, skipping download...")
-        return raw_filepath
-
-    async def _download_segment_from_yt(
-        self, start_ts: str, end_ts: str, url: str, output_path: str
-    ):
-        print(
-            f"Starting download raw segment (via Async Subprocess): {start_ts} - {end_ts}"
-        )
-        filter_1080 = "bestvideo[height=1080]+bestaudio/bestvideo[height=720]+bestaudio/best[height=1080]/best[height=720]"
+    def _build_command(
+        self, url: str, start_ts: str, end_ts: str, output_path: Path
+    ) -> list:
         filter_720 = "bestvideo[height=720]+bestaudio/best[height=720]"
         # fmt: off
-        command = [
+        return [
             "yt-dlp", url,
-            "--external-downloader-args", "ffmpeg:-loglevel error", # hides extra logs
-            "--postprocessor-args", "ffmpeg:-loglevel error",  # hides extra logs
+            "--external-downloader-args", "ffmpeg:-loglevel error",
+            "--postprocessor-args", "ffmpeg:-loglevel error",
             "--force-overwrites",
+
             #"--list-formats", # for debug only
             "--no-playlist",
             "--cookies", self.cookies_path,
@@ -93,71 +56,50 @@ class YTDownloader:
             "-f", filter_720,
             "--download-sections", f"*{start_ts}-{end_ts}",
             "--force-keyframes-at-cuts",
-            "-o", output_path,
+            "-o",
+            str(output_path),
             "--merge-output-format", "mp4",
             "--extractor-args", "youtube:player_client=default",
-            #"--verbose",  # for debug only
         ]
         # fmt: on
-        try:
-            start_time = time.perf_counter()
 
-            process = await asyncio.create_subprocess_exec(
-                command[0],
-                *command[1:],
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+    def run(self, params: Dict[str, Any]) -> Path:
+        output_path = self.output_dir / f"{params['output_filename']}.mp4"
+        if not output_path.is_file() or params.get("force_download", False):
+            cmd = self._build_command(
+                params["url"],
+                params["start_segment"],
+                params["end_segment"],
+                output_path,
             )
+            run_subprocess(cmd)
+        return output_path
 
-            # Esperamos a que el proceso muera físicamente en el Kernel
-            stdout, stderr = await process.communicate()
-
-            stdout_text = stdout.decode("utf-8", errors="ignore")
-            if stdout_text:
-                sys.stdout.write(stdout_text)
-                sys.stdout.flush()
-
-            if process.returncode != 0:
-                raise subprocess.CalledProcessError(
-                    returncode=process.returncode,
-                    cmd=command,  # O la variable donde guardes el comando ejecutado
-                    stderr=stderr.decode().strip(),
-                )
-
-            end_time = time.perf_counter()
-            print(f"Elapsed time: {end_time - start_time:.4f} seconds")
-            print("Raw segment downloaded successfully via Async Subprocess")
-
-        except Exception as e:
-            print(f"General error or process failure: {e}")
-            raise e
-
-    async def get_vtt(
-        self,
-        url: str,
-        force_download: bool,
-        output_filename: str,
-    ) -> str:
-        raw_filepath = str(Path(self.output_path) / "vtt" / f"{output_filename}")
-        file_doesnt_exist = not Path(raw_filepath).is_file()
-
-        if file_doesnt_exist or force_download:
-            print(
-                f"File doesnt exist or force_download={force_download}, downloading..."
+    async def run_async(self, params: Dict[str, Any]) -> Path:
+        output_path = self.output_dir / f"{params['output_filename']}.mp4"
+        if not output_path.is_file() or params.get("force_download", False):
+            cmd = self._build_command(
+                params["url"],
+                params["start_segment"],
+                params["end_segment"],
+                output_path,
             )
-            await self._download_vtt(url, raw_filepath)
-        else:
-            print(f"File exists, force_download={force_download}, skipping download...")
-        return raw_filepath
+            await run_async_subprocess(cmd)
+        return output_path
 
-    async def _download_vtt(self, url: str, output_path: str):
-        print(f"Starting download vtt (via Async Subprocess): {url}")
 
+class VTTDownloader:
+    def __init__(self, output_dir: Path, cookies_path: str):
+        self.output_dir = output_dir / "vtt"
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.cookies_path = cookies_path
+
+    def _build_command(self, url: str, output_path: Path) -> list:
         # fmt: off
-        command = [
+        return [
             "yt-dlp", url,
-            "--external-downloader-args", "ffmpeg:-loglevel error", # hides extra logs
-            "--postprocessor-args", "ffmpeg:-loglevel error",  # hides extra logs
+            "--external-downloader-args", "ffmpeg:-loglevel error",
+            "--postprocessor-args", "ffmpeg:-loglevel error",
             "--force-overwrites",
             "--no-playlist",
             "--cookies", self.cookies_path,
@@ -168,151 +110,130 @@ class YTDownloader:
             "--sub-lang", "es",
             "--skip-download",
             "--convert-subs", "vtt",
-            "-o", output_path,
-            #"--verbose",  # for debug only
+            "-o",
+            str(output_path),
         ]
-        # fmt: on
 
-        try:
-            start_time = time.perf_counter()
+    def run(self, params: Dict[str, Any]) -> Path:
+        output_path = self.output_dir / f"{params['output_filename']}"
+        if not output_path.is_file() or params.get("force_download", False):
+            cmd = self._build_command(params["url"], output_path)
+            run_subprocess(cmd)
+        raw_vtt = Path(f"{output_path}.es.vtt")
+        return remove_middle_extension(raw_vtt)
 
-            process = await asyncio.create_subprocess_exec(
-                command[0],
-                *command[1:],
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
+    async def run_async(self, params: Dict[str, Any]) -> Path:
+        output_path = self.output_dir / f"{params['output_filename']}"
+        if not output_path.is_file() or params.get("force_download", False):
+            cmd = self._build_command(params["url"], output_path)
+            await run_async_subprocess(cmd)
+        raw_vtt = Path(f"{output_path}.es.vtt")
+        return remove_middle_extension(raw_vtt)
 
-            stdout, stderr = await process.communicate()
 
-            if process.returncode != 0:
-                print("\n" + "="*50)
-                print("DETAILED ERROR OUTPUT:")
-                print("="*50)
-                print(stderr.decode().strip())
-                print("="*50 + "\n")
-                raise subprocess.CalledProcessError(
-                    returncode=process.returncode,
-                    cmd=command,  # O la variable donde guardes el comando ejecutado
-                    stderr=stderr.decode().strip(),
-                )
+class AudioDownloader:
+    def __init__(self, output_dir: Path, cookies_path: str):
+        self.output_dir = output_dir / "audio"
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.cookies_path = cookies_path
 
-            end_time = time.perf_counter()
-            print(f"Elapsed time: {end_time - start_time:.4f} seconds")
-            print("VTT downloaded successfully via Async Subprocess")
-
-        except Exception as e:
-            print(f"General error or process failure: {e}")
-            raise e
-
-    async def get_audio(
-        self,
-        url: str,
-        force: bool,
-        output: str,
-        start_ts: str,
-        end_ts: str,
-    ) -> str:
-        output_path = str(Path(self.output_path) / "audio" / f"{output}")
-        file_doesnt_exist = not Path(output_path).is_file()
-
-        if file_doesnt_exist or force:
-            print(f"Downloading audio...")
-            await self._download_audio(url, output_path, start_ts, end_ts)
-        else:
-            print(f"File exists, skipping audio download...")
-        return output_path
-
-    async def _download_audio(
-        self,
-        url: str,
-        output_path: str,
-        start_ts: str,
-        end_ts: str,
-    ):
-        print(f"Starting download audio (via Async Subprocess): {url}")
-
+    def _build_ytdlp_command(self, url: str, output_path: Path) -> list:
         # fmt: off
-        command = [
+        return [
             "yt-dlp", url,
             "--extract-audio",
             "--audio-format", "m4a",
             "-f", "wa[ext=m4a]",
-            "--external-downloader-args", "ffmpeg:-loglevel error", # hides extra logs
+            "--external-downloader-args", "ffmpeg:-loglevel error",
             "--postprocessor-args", "ExtractAudio:-c:a aac -ac 1 -b:a 48k -af aresample=async=1",
             "--force-overwrites",
             "--no-playlist",
             "--cookies", self.cookies_path,
             "--js-runtimes", "node",
             "--remote-components", "ejs:github",
-            "-o", output_path,
-            #"--verbose",  # for debug only
+            "-o", str(output_path),
         ]
-        # fmt: on
 
-        try:
-            start_time = time.perf_counter()
+    def _build_ffmpeg_command(
+        self, input_audio: Path, output_segment: Path, start_ts: str, end_ts: str
+    ) -> list:
+        return [
+            "ffmpeg",
+            "-y",
+            "-ss",
+            start_ts,
+            "-to",
+            end_ts,
+            "-i",
+            str(input_audio),
+            "-c:a",
+            "copy",
+            str(output_segment),
+        ]
 
-            process = await asyncio.create_subprocess_exec(
-                command[0],
-                *command[1:],
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
-            )
+    def run(self, params: Dict[str, Any]) -> Path:
+        output_path = self.output_dir / params["output_filename"]
+        if not output_path.is_file() or params.get("force_download", False):
+            cmd_ytdlp = self._build_ytdlp_command(params["url"], output_path)
+            run_subprocess(cmd_ytdlp)
 
-            stdout, stderr = await process.communicate()
-
-            stdout_text = stdout.decode("utf-8", errors="ignore")
-            if stdout_text:
-                sys.stdout.write(stdout_text)
-                sys.stdout.flush()
-
-            if process.returncode != 0:
-                raise subprocess.CalledProcessError(
-                    returncode=process.returncode,
-                    cmd=command,  # O la variable donde guardes el comando ejecutado
-                    stderr=stderr.decode().strip(),
-                )
-
-            ### extra step
-            input_audio = f"{output_path}.m4a"
-            output_segment = str(
-                Path(input_audio).parent / f"{str(Path(input_audio).stem)}_segment.m4a"
-            )
-            ffmpeg_command = [
-                "ffmpeg",
-                "-y",  # Sobrescribe el archivo de salida si ya existe
-                "-ss",
-                start_ts,  # Tiempo de inicio (Ponerlo ANTES del -i activa el buscador rápido por keyframes)
-                "-to",
-                end_ts,  # Tiempo de finalización
-                "-i",
-                input_audio,  # Tu archivo de 52MB calibrado
-                "-c:a",
-                "copy",  # Extracción instantánea sin re-decodificar (0% CPU)
+            input_audio = Path(f"{output_path}.m4a")
+            output_segment = input_audio.parent / f"{input_audio.stem}_segment.m4a"
+            cmd_ffmpeg = self._build_ffmpeg_command(
+                input_audio,
                 output_segment,
-            ]
-
-            print("calling command", ffmpeg_command)
-            process = await asyncio.create_subprocess_exec(
-                ffmpeg_command[0],
-                *ffmpeg_command[1:],
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE,
+                params["start_segment"],
+                params["end_segment"],
             )
+            run_subprocess(cmd_ffmpeg)
+        return output_path
 
-            stdout, stderr = await process.communicate()
-            if process.returncode != 0:
-                raise subprocess.CalledProcessError(
-                    returncode=process.returncode,
-                    cmd=command,  # O la variable donde guardes el comando ejecutado
-                    stderr=stderr.decode().strip(),
-                )
+    async def run_async(self, params: Dict[str, Any]) -> Path:
+        output_path = self.output_dir / params["output_filename"]
+        if not output_path.is_file() or params.get("force_download", False):
+            cmd_ytdlp = self._build_ytdlp_command(params["url"], output_path)
+            await run_async_subprocess(cmd_ytdlp)
 
-            end_time = time.perf_counter()
-            print(f"Elapsed time: {end_time - start_time:.4f} seconds")
-            print("VTT downloaded successfully via Async Subprocess")
+            input_audio = Path(f"{output_path}.m4a")
+            output_segment = input_audio.parent / f"{input_audio.stem}_segment.m4a"
+            cmd_ffmpeg = self._build_ffmpeg_command(
+                input_audio,
+                output_segment,
+                params["start_segment"],
+                params["end_segment"],
+            )
+            await run_async_subprocess(cmd_ffmpeg)
+        return output_path
 
-        except Exception as e:
-            print(f"General error or process failure: {e}")
-            raise e
+
+# --- ORQUESTRADOR ---
+
+
+class YTDownloader:
+    def __init__(self, output_path: str, cookies_path: str):
+        base_dir = Path(output_path)
+        self.downloaders: Dict[str, MediaDownloader] = {
+            "video": VideoDownloader(base_dir, cookies_path),
+            "vtt": VTTDownloader(base_dir, cookies_path),
+            "audio": AudioDownloader(base_dir, cookies_path),
+        }
+
+    def run(self, params: Dict[str, Any]) -> Path:
+        file_type = params.get("file_type")
+        downloader = self.downloaders.get(file_type)
+        if not downloader:
+            raise ValueError(f"Unknown file_type: {file_type}")
+
+        result_filepath = downloader.run(params)
+        print(f"File saved in {result_filepath}")
+        return result_filepath
+
+    async def run_async(self, params: Dict[str, Any]) -> Path:
+        file_type = params.get("file_type")
+        downloader = self.downloaders.get(file_type)
+        if not downloader:
+            raise ValueError(f"Unknown file_type: {file_type}")
+
+        result_filepath = await downloader.run_async(params)
+        print(f"File saved in {result_filepath}")
+        return result_filepath

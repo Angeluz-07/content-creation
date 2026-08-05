@@ -11,7 +11,7 @@ const discoveryStore = useDiscoveryStore()
 const form = reactive<DiscoveryInput>({
   inputFileName: '',
   outputFileName: 'test',
-  sensitivity: 0.71,
+  sensitivity: 0.88,
   url: 'https://www.youtube.com/watch',
 })
 
@@ -61,8 +61,8 @@ const handleSubmit = async () => {
 
   // Disparar efectos colaterales de UI basados en el éxito de la acción
   if (success) {
-    toast.success('Descarga iniciada', {
-      description: 'Se ha enviado a descargar el archivo',
+    toast.success('Tarea iniciada', {
+      description: 'Se enviad el trabajo de discovery',
     })
     discoveryStore.taskSent()
   }
