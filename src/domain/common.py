@@ -1,38 +1,52 @@
 import asyncio
 import subprocess
 import json
+import sys
+from typing import List
 
-
-def run_subprocess(command: list):
-    print("Starting command call (via Synchronous Subprocess):")
-
-    # Ejecución síncrona capturando strings directamente (text=True)
-    result = subprocess.run(
+def run_subprocess(command: List[str], show_live_output: bool = True) -> str:
+    print(f"Starting command call (via Sync Subprocess): ")
+    print(command)
+    # Popen starts the process asynchronously so we can stream its output
+    process = subprocess.Popen(
         command,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,  # Esto evita tener que usar .decode()
+        stderr=subprocess.STDOUT,  # Merge stderr into stdout to preserve chronological order
+        text=True,
+        bufsize=1,  # Line-buffered output
         errors="ignore",
     )
 
-    if result.returncode != 0:
-        # 1. Imprimimos el error real de FFmpeg directamente en la consola antes de morir
+    captured_output = []
+
+    # Stream output line-by-line in real time
+    if process.stdout:
+        for line in process.stdout:
+            captured_output.append(line)
+            if show_live_output:
+                # Use sys.stdout.write to preserve exact CLI formatting (handles \r progress bars)
+                sys.stdout.write(line)
+                sys.stdout.flush()
+
+    process.wait()
+    full_output = "".join(captured_output)
+
+    if process.returncode != 0:
         print("\n" + "=" * 50)
         print("DETAILED ERROR OUTPUT:")
         print("=" * 50)
-        print(result.stderr.strip())
+        print(full_output.strip())
         print("=" * 50 + "\n")
 
-        # 2. Lanzamos la excepción con los detalles incluidos
         raise subprocess.CalledProcessError(
-            returncode=result.returncode,
+            returncode=process.returncode,
             cmd=command,
-            output=result.stdout,
-            stderr=result.stderr,
+            output=full_output,
+            stderr="",
         )
 
-    print("Success command call via Synchronous Subprocess")
-    return result.stdout
+    print("\nSuccess command call via Synchronous Subprocess")
+    return full_output
 
 
 async def run_async_subprocess(command: str):

@@ -6,6 +6,7 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 
 DATA_DIR = PROJECT_DIR / ".data"
 
+GOLD_SAMPLES_DIR =  str(DATA_DIR / "gold_samples")
 DOWNLOAD_DIR = str(DATA_DIR / "downloads")
 DOWNLOAD_DIR_VIDEO = str(DATA_DIR / "downloads" / "video")
 DOWNLOAD_DIR_AUDIO = str(DATA_DIR / "downloads" / "audio")

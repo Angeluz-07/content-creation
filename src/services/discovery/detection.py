@@ -4,16 +4,17 @@ from abc import ABC, abstractmethod
 from src.domain.discovery.parser import parse_vtt, parse_discovery_results
 from src.infra.dbs.qdrant import IVectorStore
 from src.services.common.asset import AssetProvider
-from src.domain.common import save_json
+from src.domain.common import save_json, read_json
 from src.domain.discovery.models import TextSegment
 from typing import List
-
+from pathlib import Path
 
 def find_metals(
     text_segments: List[TextSegment],
     vector_store: IVectorStore,
     sensitivity: float = 0.7,
 ):
+    print("Looking for metals...")
     texts = [ts.text for ts in text_segments]
     most_similar_vectors = vector_store.search_batch(texts)
     result = []
@@ -49,6 +50,10 @@ class DetectorV2(BaseDetector):
         url = data.get("url")
         vtt_path = self.assets.get_path("vtt", input_filename)
         output_path = self.assets.get_path("metals", output_filename)
+
+        if Path(output_path).is_file() and not data.get("force", False):
+            return read_json(output_path)
+
         result = parse_vtt(vtt_path)
         result = find_metals(
             result, self.vector_store, data.get("sensitivity")

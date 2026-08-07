@@ -4,10 +4,6 @@ from typing import Any, Dict, Protocol
 from src.domain.common import run_subprocess, run_async_subprocess
 import time
 
-# --- MOCK DE TUS FUNCIONES EXISTENTES ---
-# async def run_async_subprocess(command: list): ...
-# def run_subprocess(command: list): ...
-
 
 def remove_middle_extension(file_path: Path) -> Path:
     """Limpia extensiones intermedias como '.es.vtt' -> '.vtt'"""
@@ -23,9 +19,11 @@ def remove_middle_extension(file_path: Path) -> Path:
 
 # --- INTERFAZ (PROTOCOL) ---
 class MediaDownloader(Protocol):
-    def run(self, params: Dict[str, Any]) -> Path: ...
+    def run(self, params: Dict[str, Any]) -> Path:
+        pass
 
-    async def run_async(self, params: Dict[str, Any]) -> Path: ...
+    async def run_async(self, params: Dict[str, Any]) -> Path:
+        pass
 
 
 # --- IMPLEMENTACIONES INDIVIDUALES ---
@@ -115,7 +113,7 @@ class VTTDownloader:
         ]
 
     def run(self, params: Dict[str, Any]) -> Path:
-        output_path = self.output_dir / f"{params['output_filename']}"
+        output_path = self.output_dir / f"{params['output_filename']}.vtt"
         if not output_path.is_file() or params.get("force_download", False):
             cmd = self._build_command(params["url"], output_path)
             run_subprocess(cmd)
@@ -177,15 +175,15 @@ class AudioDownloader:
             cmd_ytdlp = self._build_ytdlp_command(params["url"], output_path)
             run_subprocess(cmd_ytdlp)
 
-            input_audio = Path(f"{output_path}.m4a")
-            output_segment = input_audio.parent / f"{input_audio.stem}_segment.m4a"
-            cmd_ffmpeg = self._build_ffmpeg_command(
-                input_audio,
-                output_segment,
-                params["start_segment"],
-                params["end_segment"],
-            )
-            run_subprocess(cmd_ffmpeg)
+            # input_audio = Path(f"{output_path}.m4a")
+            # output_segment = input_audio.parent / f"{input_audio.stem}_segment.m4a"
+            # cmd_ffmpeg = self._build_ffmpeg_command(
+            #     input_audio,
+            #     output_segment,
+            #     params["start_segment"],
+            #     params["end_segment"],
+            # )
+            # run_subprocess(cmd_ffmpeg)
         return output_path
 
     async def run_async(self, params: Dict[str, Any]) -> Path:
@@ -194,15 +192,15 @@ class AudioDownloader:
             cmd_ytdlp = self._build_ytdlp_command(params["url"], output_path)
             await run_async_subprocess(cmd_ytdlp)
 
-            input_audio = Path(f"{output_path}.m4a")
-            output_segment = input_audio.parent / f"{input_audio.stem}_segment.m4a"
-            cmd_ffmpeg = self._build_ffmpeg_command(
-                input_audio,
-                output_segment,
-                params["start_segment"],
-                params["end_segment"],
-            )
-            await run_async_subprocess(cmd_ffmpeg)
+            # input_audio = Path(f"{output_path}.m4a")
+            # output_segment = input_audio.parent / f"{input_audio.stem}_segment.m4a"
+            # cmd_ffmpeg = self._build_ffmpeg_command(
+            #     input_audio,
+            #     output_segment,
+            #     params["start_segment"],
+            #     params["end_segment"],
+            # )
+            # await run_async_subprocess(cmd_ffmpeg)
         return output_path
 
 
@@ -211,11 +209,11 @@ class AudioDownloader:
 
 class YTDownloader:
     def __init__(self, output_path: str, cookies_path: str):
-        base_dir = Path(output_path)
+        self.base_dir = Path(output_path)
         self.downloaders: Dict[str, MediaDownloader] = {
-            "video": VideoDownloader(base_dir, cookies_path),
-            "vtt": VTTDownloader(base_dir, cookies_path),
-            "audio": AudioDownloader(base_dir, cookies_path),
+            "video": VideoDownloader(self.base_dir, cookies_path),
+            "vtt": VTTDownloader(self.base_dir, cookies_path),
+            "audio": AudioDownloader(self.base_dir, cookies_path),
         }
 
     def run(self, params: Dict[str, Any]) -> Path:
@@ -237,3 +235,23 @@ class YTDownloader:
         result_filepath = await downloader.run_async(params)
         print(f"File saved in {result_filepath}")
         return result_filepath
+
+    def check_asset_exists(self, filename: str) -> bool:
+        stem = Path(filename).stem
+
+        vtt_path = self.base_dir / "vtt" / f"{stem}.vtt"
+        audio_path = self.base_dir / "audio" / f"{stem}.m4a"
+
+        return vtt_path.is_file() or audio_path.is_file()
+
+    def check_asset_type(self, filename: str) -> bool:
+        stem = Path(filename).stem
+
+        vtt_path = self.base_dir / "vtt" / f"{stem}.vtt"
+        audio_path = self.base_dir / "audio" / f"{stem}.m4a"
+        if vtt_path.is_file():
+            return "vtt"
+        elif audio_path.is_file():
+            return "audio"
+        else:
+            raise ValueError("file doesnt exists")

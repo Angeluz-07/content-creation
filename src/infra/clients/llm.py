@@ -115,6 +115,7 @@ from google import genai
 from google.genai import types
 from google.genai.errors import APIError
 
+
 # Aseguramos que la interfaz abstracta esté importada
 # (Asumiendo que heredas de la que definiste)
 class BaseLLMClient(ABC):
@@ -145,12 +146,11 @@ class GeminiClient(BaseLLMClient):
                 "No se encontró la API Key de Gemini. "
                 "Configura la variable de entorno 'GEMINI_API_KEY'"
             )
-        
+
         # Inicializamos el cliente oficial de Google GenAI
         self.client = genai.Client(api_key=api_key)
         self.model = model
         self.safe_pause = 5.0
-
 
     def generate(
         self,
@@ -162,7 +162,7 @@ class GeminiClient(BaseLLMClient):
         """
         Ejecuta la llamada a Gemini y devuelve texto plano o una instancia del modelo Pydantic.
         """
-        
+
         # 1. Configuración base del request
         config_params = {
             "system_instruction": system_prompt,
@@ -183,11 +183,9 @@ class GeminiClient(BaseLLMClient):
                 contents=user_content,
                 config=config,
             )
-            
+
             if self.safe_pause > 0:
-                print(
-                    f"⏱️ Pausa de seguridad de {self.safe_pause}s..."
-                )
+                print(f"⏱️ Pausa de seguridad de {self.safe_pause}s...")
                 time.sleep(self.safe_pause)
 
             # 4. Procesar la respuesta
@@ -195,8 +193,6 @@ class GeminiClient(BaseLLMClient):
                 # El SDK de Google ya garantiza que el string cumple con el esquema.
                 # Lo parseamos de vuelta a la instancia de Pydantic para devolver un objeto tipado.
                 return response_model.model_validate_json(response.text)
-            
-          
 
             return response.text
 
@@ -206,25 +202,30 @@ class GeminiClient(BaseLLMClient):
         except Exception as e:
             print(f"❌ Error inesperado procesando la llamada al LLM: {e}")
             raise e
-        
-import ollama 
+
+
+import json
+from typing import Any, Dict, Optional, Type, Union
+from pydantic import BaseModel, ValidationError
+import ollama
+
+
 class OllamaLocalClient(BaseLLMClient):
     """
-    Cliente local para Ollama optimizado para ejecuciones en CPU.
+    Cliente local genérico para Ollama optimizado para salidas de texto
+    o estructuradas (Pydantic).
     """
 
-    def __init__(self, model: str = "llama3.2:3b"):
-        """
-        :param model: Recomendamos modelos ligeros como 'llama3.2:3b' o 'gemma2:2b' para CPU.
-        """
+    def __init__(self, model: str = "llama3.2:3b", host: Optional[str] = None):
         self.model = model
-        # Verificamos conexión básica al inicializar
+        self.client = ollama.Client(host=host) if host else ollama
+
         try:
-            ollama.ps()
-        except Exception:
+            self.client.ps()
+        except Exception as e:
             raise ConnectionError(
-                "No se pudo conectar a Ollama. ¿Está corriendo la aplicación de Ollama en tu máquina?"
-            )
+                f"No se pudo conectar a Ollama. ¿Está corriendo el servicio?"
+            ) from e
 
     def generate(
         self,
@@ -232,61 +233,208 @@ class OllamaLocalClient(BaseLLMClient):
         user_content: str,
         response_model: Optional[Type[BaseModel]] = None,
         temperature: float = 0.1,
+        num_predict: int = 300,
+        num_ctx: int = 17000,
     ) -> Union[BaseModel, str]:
-        
-        # 1. Configurar los parámetros de Ollama
-        options = {
+        """
+        Genera una respuesta. Si se pasa `response_model`, fuerza salida JSON
+        basada en su esquema y retorna la instancia de Pydantic parseada.
+        """
+        # 1. Extraer el esquema JSON del modelo Pydantic (V1 y V2 compatible)
+        format_param = None
+        if response_model is not None:
+            if hasattr(response_model, "model_json_schema"):
+                format_param = response_model.model_json_schema()  # Pydantic V2
+            else:
+                format_param = response_model.schema()  # Pydantic V1
+
+        # 2. Configuración de parámetros
+        options: Dict[str, Any] = {
             "temperature": temperature,
-            "num_predict": 300,  # Limitamos físicamente la salida para no estresar la CPU
+            "num_predict": num_predict,
+            "num_ctx": num_ctx,
         }
 
-        # 2. Si se requiere JSON estructurado nativo
-        format_option = ""
-        if response_model is not None:
-            # Ollama soporta forzar JSON nativo pasándole "json" al formato
-            format_option = "json"
-        
-        esquema_salida = {
-            "type": "object",
-            "properties": {
-                "cortes": {
-                    "type": "array",
-                    "items": {
-                        "type": "array",
-                        "prefixItems": [
-                            {"type": "integer"},  # start_id
-                            {"type": "integer"}   # end_id
-                        ],
-                        "minItems": 2,
-                        "maxItems": 2
-                    }
-                }
-            },
-            "required": ["cortes"]
-        }
         try:
-            print(f"🚀 [Ollama] Sending reques to model: {self.model}...")
-            # Llamada directa a Ollama
-            response = ollama.generate(
+            print(f"🚀 [Ollama] Enviando petición a {self.model}...")
+
+            response = self.client.generate(
                 model=self.model,
                 system=system_prompt,
                 prompt=user_content,
-                format=esquema_salida,  # <--- AQUÍ OCURRE LA MAGIA EN CPU
-                options={
-                    "temperature": 0.0,    # Cero creatividad para máxima velocidad matemática
-                    "num_predict": 150,     # Limitamos la salida física para que responda en segundos
-                }
+                format=format_param,  # Acepta el Dict del schema directamente
+                options=options,
             )
 
             raw_text = response.get("response", "").strip()
-            import json
-            # Parseamos el JSON real (no carácter por carácter)
-            data = json.loads(raw_text)
-            return data.get("cortes", [])
 
-        except json.JSONDecodeError:
-            print(f"⚠️ Error al decodificar el JSON de Ollama. Output crudo: {raw_text}")
-            return []
+            # 3. Mapeo a Pydantic o retorno de string
+            if response_model is not None:
+                if hasattr(response_model, "model_validate_json"):
+                    return response_model.model_validate_json(raw_text)  # Pydantic V2
+                return response_model.parse_raw(raw_text)  # Pydantic V1
+
+            return raw_text
+
+        except (ValidationError, json.JSONDecodeError) as e:
+            print(f"⚠️ Error estructurando respuesta de Ollama: {e}\nRaw: {raw_text}")
+            raise e
         except Exception as e:
-            print(f"❌ Error en la ejecución: {e}")
-            return []
+            print(f"❌ Error en ejecución de Ollama: {e}")
+            raise e
+
+
+import time
+from typing import Optional, Type, Union
+from pydantic import BaseModel
+from openai import OpenAI
+
+
+class CerebrasClient(BaseLLMClient):
+    def __init__(self, api_key: str, model: str = "llama3.1-8b"):
+        """
+        Inicializa el cliente de Cerebras Cloud.
+
+        Modelos recomendados:
+        - 'llama3.1-8b' (Velocidad extrema ~1800 tokens/seg, ideal para filtrado rápido)
+        - 'llama3.1-70b' / 'llama-3.3-70b' (Mayor razonamiento manteniendo alta velocidad)
+        """
+        # Cerebras expone una API 100% compatible con OpenAI
+        self.client = OpenAI(api_key=api_key, base_url="https://api.cerebras.ai/v1")
+        self.model = model
+        # Dado que Cerebras tolera alto rendimiento (30 RPM en Free Tier),
+        # la pausa de seguridad puede ser de solo 1 segundo o 0.
+        self.SAFE_PAUSE = 1.0
+
+    def generate(
+        self,
+        system_prompt: str,
+        user_content: str,
+        response_model: Optional[Type[BaseModel]] = None,
+        temperature: float = 0.2,
+    ) -> Union[BaseModel, str]:
+
+        print(f"🚀 [Cerebras] Enviando petición usando el modelo: {self.model}...")
+
+        # 1. Configuración base de argumentos para el ChatCompletion
+        kwargs = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            "temperature": temperature,
+            "max_tokens": 4000,
+        }
+
+        # 2. Inyección dinámica del contrato JSON si se requiere
+        if response_model is not None:
+            kwargs["response_format"] = {"type": "json_object"}
+            system_prompt += f"""
+            \nDebes responder ESTRICTAMENTE con un objeto JSON válido que cumpla con 
+            este esquema de Pydantic: {response_model.model_json_schema()}
+            """
+            kwargs["messages"][0]["content"] = system_prompt
+
+        try:
+            completion = self.client.chat.completions.create(**kwargs)
+            raw_response = completion.choices[0].message.content.strip()
+
+            # 3. Pausa de seguridad para el control de cuotas
+            if self.SAFE_PAUSE > 0:
+                print(
+                    f"⏱️ Respetando cuotas de Cerebras. Pausa de seguridad de {self.SAFE_PAUSE}s..."
+                )
+                time.sleep(self.SAFE_PAUSE)
+
+            # 4. Retorno adaptativo basado en la presencia del modelo
+            if response_model is not None:
+                return response_model.model_validate_json(raw_response)
+
+            return raw_response
+
+        except Exception as e:
+            print(f"❌ Error crítico en la ejecución del LLM (Cerebras): {e}")
+            if response_model is not None:
+                raise e  # Falla rápido para que Prefect capture la excepción y reintente
+            return "¡ERROR DE EJECUCIÓN EN EL BACKEND! 😱"
+
+import time
+from typing import Optional, Type, Union
+from pydantic import BaseModel
+from openai import OpenAI
+
+
+class SambaNovaClient(BaseLLMClient):
+    """
+    Cliente para SambaNova Cloud.
+    Ofrece velocidad extrema (~1,000 tokens/seg) en su capa gratuita sin requerir tarjeta.
+    """
+
+    def __init__(
+        self, 
+        api_key: str, 
+        model: str = "Meta-Llama-3.3-70B-Instruct"
+    ):
+        """
+        Modelos recomendados activos en SambaNova Free Tier:
+        - 'Meta-Llama-3.1-70B-Instruct' (Razonamiento alto / Recomendado para validaciones)
+        - 'Meta-Llama-3.1-8B-Instruct' (Velocidad pura en sub-segundos)
+        - 'Meta-Llama-3.3-70B-Instruct' (En despliegue progresivo)
+        """
+        self.client = OpenAI(
+            api_key=api_key,
+            base_url="https://api.sambanova.ai/v1"
+        )
+        self.model = model
+        self.SAFE_PAUSE = 1.0  # Pausa breve para respetar las cuotas gratuitas de RPM
+
+    def generate(
+        self,
+        system_prompt: str,
+        user_content: str,
+        response_model: Optional[Type[BaseModel]] = None,
+        temperature: float = 0.2,
+    ) -> Union[BaseModel, str]:
+
+        print(f"🚀 [SambaNova] Enviando petición usando el modelo: {self.model}...")
+
+        # 1. Configuración base para la llamada a la API
+        kwargs = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_content},
+            ],
+            "temperature": temperature,
+            "max_tokens": 4000,
+        }
+
+        # 2. Inyección del contrato Pydantic para salidas JSON estructuradas
+        if response_model is not None:
+            kwargs["response_format"] = {"type": "json_object"}
+            system_prompt += f"""
+            \nDebes responder ESTRICTAMENTE con un objeto JSON válido que cumpla con 
+            este esquema de Pydantic: {response_model.model_json_schema()}
+            """
+            kwargs["messages"][0]["content"] = system_prompt
+
+        try:
+            completion = self.client.chat.completions.create(**kwargs)
+            raw_response = completion.choices[0].message.content.strip()
+
+            # 3. Control de tasa de solicitudes (RPM)
+            if self.SAFE_PAUSE > 0:
+                time.sleep(self.SAFE_PAUSE)
+
+            # 4. Parseo automático a Pydantic o retorno de string crudo
+            if response_model is not None:
+                return response_model.model_validate_json(raw_response)
+
+            return raw_response
+
+        except Exception as e:
+            print(f"❌ Error crítico en la ejecución de SambaNova: {e}")
+            if response_model is not None:
+                raise e  # Eleva el error para que Prefect capture el fallo y active retries
+            return "¡ERROR DE EJECUCIÓN EN EL BACKEND!"

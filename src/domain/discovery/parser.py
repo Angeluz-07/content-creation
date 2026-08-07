@@ -170,7 +170,7 @@ def format_to_text_block(text_segments):
     lines = []
     for i, ts in enumerate(text_segments):
         duration = compute_duration(ts["start"], ts["end"])
-        line = f"[{duration:05.2f}s]{ts["text"]}"
+        line = f"[id:{i}]{ts["text"]}"
         lines.append(line)
     return "\n".join(lines)
 
@@ -217,14 +217,18 @@ def parse_discovery_results(result, prefix, url):
     for idx, item in enumerate(result):
         mapped_data.append(
             {
+                "id": idx,
                 "start_segment": round_time(item["start"], "floor"),
                 "end_segment": round_time(item["end"], "ceil"),
+                "start": item["start"],
+                "end": item["end"],
                 "text": item["text"],
                 "output_filename": f"{prefix}_{idx:02d}",
                 "force_download": False,
                 "url": url,
                 "file_type": "video",
                 "duration": compute_duration(item["start"], item["end"]),
+                "score": item["score"],
             }
         )
 
