@@ -1,13 +1,20 @@
 from dataclasses import dataclass
 from dataclasses import field
 from abc import ABC, abstractmethod
-from src.domain.discovery.parser import parse_vtt, parse_discovery_results
+from src.domain.discovery.parser import (
+    parse_vtt,
+    parse_discovery_results,
+    parse_transcription,
+    parse_vtt_,
+    parse_transcription_,
+)
 from src.infra.dbs.qdrant import IVectorStore
 from src.services.common.asset import AssetProvider
 from src.domain.common import save_json, read_json
 from src.domain.discovery.models import TextSegment
 from typing import List
 from pathlib import Path
+
 
 def find_metals(
     text_segments: List[TextSegment],
@@ -48,20 +55,48 @@ class DetectorV2(BaseDetector):
         input_filename = data.get("input_filename")
         output_filename = data.get("output_filename")
         url = data.get("url")
-        vtt_path = self.assets.get_path("vtt", input_filename)
+        source = data.get("source")
         output_path = self.assets.get_path("metals", output_filename)
 
         if Path(output_path).is_file() and not data.get("force", False):
             return read_json(output_path)
 
-        result = parse_vtt(vtt_path)
-        result = find_metals(
-            result, self.vector_store, data.get("sensitivity")
-        )
+        print(f"Getting source {source} for metal detector..")
+        if source == "vtt":
+            vtt_path = self.assets.get_path("vtt", input_filename)
+            result = parse_vtt(vtt_path)
+        elif source == "audio":
+            trascription_path = self.assets.get_path("transcriptions", input_filename)
+            result = parse_transcription(trascription_path)
+        else:
+            raise ValueError("Source not valid")
+
+        result = find_metals(result, self.vector_store, data.get("sensitivity"))
         result = parse_discovery_results(result, output_filename, url)
         save_json(result, output_path)
         return result
 
+    def get_text(self, data):
+        input_filename = data.get("input_filename")
+        output_filename = data.get("output_filename")
+        url = data.get("url")
+        source = data.get("source")
+        output_path = self.assets.get_path("metals", output_filename)
+
+        if Path(output_path).is_file() and not data.get("force", False):
+            return read_json(output_path)
+
+        print(f"Getting source {source} for metal detector..")
+        if source == "vtt":
+            vtt_path = self.assets.get_path("vtt", input_filename)
+            result = parse_vtt_(vtt_path)
+        elif source == "audio":
+            trascription_path = self.assets.get_path("transcriptions", input_filename)
+            result = parse_transcription_(trascription_path)
+        else:
+            raise ValueError("Source not valid")
+
+        return result
 
 class DetectorV3(BaseDetector):
 

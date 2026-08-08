@@ -36,7 +36,7 @@ def format_seconds(secs: float) -> str:
     return f"{int(h):02}:{int(m):02}:{s:06.3f}"
 
 
-def parse_transcription(file_path):
+def parse_raw_transcription(file_path):
     result = read_json(file_path)
     result = result["segments"]
     _result = []
@@ -170,7 +170,7 @@ def format_to_text_block(text_segments):
     lines = []
     for i, ts in enumerate(text_segments):
         duration = compute_duration(ts["start"], ts["end"])
-        line = f"[id:{i}]{ts["text"]}"
+        line = f"[{i}]{ts["text"]}"
         lines.append(line)
     return "\n".join(lines)
 
@@ -200,6 +200,27 @@ def parse_vtt(archivo_vtt):
     result = [TextSegment(**values) for values in result]
     return result
 
+def parse_vtt_(archivo_vtt):
+    result = parse_raw_vtt(archivo_vtt)
+    result = group_when_starts_with_uppercase(result)
+    result = group_when_ends_without_dot(result)
+    return result
+
+
+def parse_transcription(filepath: str):
+    result = parse_raw_transcription(filepath)
+    result = group_when_starts_with_uppercase(result)
+    result = group_when_ends_without_dot(result)
+    result = group_by_duration(result)
+    result = [TextSegment(**values) for values in result]
+    return result
+
+
+def parse_transcription_(filepath: str):
+    result = parse_raw_transcription(filepath)
+    result = group_when_starts_with_uppercase(result)
+    result = group_when_ends_without_dot(result)
+    return result
 
 def round_time(s: str, mode: str = "floor") -> str:
     """
@@ -233,15 +254,3 @@ def parse_discovery_results(result, prefix, url):
         )
 
     return mapped_data
-
-
-class TranscriptionParser:
-
-    def run(self, filepath: str):
-        result = parse_transcription(filepath)
-        result = group_when_starts_with_uppercase(result)
-        result = group_when_ends_without_dot(result)
-        result = group_when_starts_with_connector(result)
-        # result = filter_by_duration(result)
-        result = [TextSegment(**values) for values in result]
-        return result

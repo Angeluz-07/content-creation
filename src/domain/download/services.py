@@ -184,7 +184,7 @@ class AudioDownloader:
             #     params["end_segment"],
             # )
             # run_subprocess(cmd_ffmpeg)
-        return output_path
+        return Path(f"{output_path}.m4a")
 
     async def run_async(self, params: Dict[str, Any]) -> Path:
         output_path = self.output_dir / params["output_filename"]
@@ -236,7 +236,7 @@ class YTDownloader:
         print(f"File saved in {result_filepath}")
         return result_filepath
 
-    def check_asset_exists(self, filename: str) -> bool:
+    def asset_exists(self, filename: str) -> bool:
         stem = Path(filename).stem
 
         vtt_path = self.base_dir / "vtt" / f"{stem}.vtt"
@@ -244,14 +244,14 @@ class YTDownloader:
 
         return vtt_path.is_file() or audio_path.is_file()
 
-    def check_asset_type(self, filename: str) -> bool:
+    def get_asset_info(self, filename: str) -> bool:
         stem = Path(filename).stem
 
         vtt_path = self.base_dir / "vtt" / f"{stem}.vtt"
         audio_path = self.base_dir / "audio" / f"{stem}.m4a"
         if vtt_path.is_file():
-            return "vtt"
+            return "vtt", vtt_path
         elif audio_path.is_file():
-            return "audio"
+            return "audio", audio_path
         else:
             raise ValueError("file doesnt exists")
