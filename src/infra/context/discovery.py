@@ -3,13 +3,16 @@ from src.infra.dbs.qdrant import QdrantVectorStore
 from src.config import  QDRANTDB_URI
 from src.config import EMBEDDER_URI
 from src.config import GROQ_API_KEY, DEEPGRAM_API_KEY
-from src.config import INGESTION_DIR
+from src.config import INGESTION_DIR, PROMPTS_DIR
 from src.infra.clients.embedding import Embedder
 from src.services.discovery.ingestion import Ingester
 from src.infra.clients.transcription import GroqAudioTranscriber, DeepgramAudioTranscriber
 from src.services.discovery.detection import DetectorV2, DetectorV3
 from src.infra.context.common import assets
 from src.infra.context.download import downloader
+from src.infra.dbs.md import PromptRepository
+
+prompts_repo = PromptRepository(PROMPTS_DIR)
 
 qdrant_client = get_client(QDRANTDB_URI)
 embedder = Embedder(EMBEDDER_URI)
