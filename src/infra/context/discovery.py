@@ -5,7 +5,6 @@ from src.config import EMBEDDER_URI
 from src.config import GROQ_API_KEY, DEEPGRAM_API_KEY
 from src.config import INGESTION_DIR, PROMPTS_DIR
 from src.infra.clients.embedding import Embedder
-from src.services.discovery.ingestion import Ingester
 from src.infra.clients.transcription import GroqAudioTranscriber, DeepgramAudioTranscriber
 from src.services.discovery.detection import DetectorV2, DetectorV3
 from src.infra.context.common import assets
@@ -26,5 +25,4 @@ transcriber = GroqAudioTranscriber(GROQ_API_KEY)
 deepgram_transcriber = DeepgramAudioTranscriber(DEEPGRAM_API_KEY)
 metal_detector3 = DetectorV3(assets, downloader, deepgram_transcriber)
 
-ingester = Ingester(vector_store=qvs,transcriber=transcriber, ingestion_dir=INGESTION_DIR)
 
