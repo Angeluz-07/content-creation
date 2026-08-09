@@ -236,22 +236,3 @@ class YTDownloader:
         print(f"File saved in {result_filepath}")
         return result_filepath
 
-    def asset_exists(self, filename: str) -> bool:
-        stem = Path(filename).stem
-
-        vtt_path = self.base_dir / "vtt" / f"{stem}.vtt"
-        audio_path = self.base_dir / "audio" / f"{stem}.m4a"
-
-        return vtt_path.is_file() or audio_path.is_file()
-
-    def get_asset_info(self, filename: str) -> bool:
-        stem = Path(filename).stem
-
-        vtt_path = self.base_dir / "vtt" / f"{stem}.vtt"
-        audio_path = self.base_dir / "audio" / f"{stem}.m4a"
-        if vtt_path.is_file():
-            return "vtt", vtt_path
-        elif audio_path.is_file():
-            return "audio", audio_path
-        else:
-            raise ValueError("file doesnt exists")

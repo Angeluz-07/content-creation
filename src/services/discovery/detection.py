@@ -14,7 +14,7 @@ from src.domain.common import save_json, read_json
 from src.domain.discovery.models import TextSegment
 from typing import List
 from pathlib import Path
-
+from src.domain.discovery.parser import format_to_text_block
 
 def find_metals(
     text_segments: List[TextSegment],
@@ -98,19 +98,53 @@ class DetectorV2(BaseDetector):
 
         return result
 
-class DetectorV3(BaseDetector):
 
-    def run(self, data, transcription_parser):
-        input_filename = data.get("input_filename")
-        output_filename = data.get("output_filename")
-        url = data.get("url")
+class DetectorV3:
 
-        transcription_path = self.assets.get_path("transcriptions", input_filename)
-        output_path = self.assets.get_path("metals", output_filename)
+    def __init__(self, assets, downloader, transcriber):
+        self.assets = assets
+        self.downloader = downloader
+        self.transcriber = transcriber
 
-        result = transcription_parser.run(transcription_path, data.get("min_words"))
-        print("debug v3", result[0])
-        result = self.scanner.run(result, data.get("sensitivity"))
-        result = self.discovery_parser.run(result, output_filename, url)
-        save_json(result, output_path)
+    def run(self, data):
+        text_segments = self.get_text_segments(data)
+        text_for_llm = format_to_text_block(text_segments)
+        return text_for_llm
+    
+    def get_text_segments(self, data):
+        print("Looking for assets in detector...")
+        output_filename = data["output_filename"]
+        vtt_path = self.assets.get_path("vtt", output_filename)
+        if Path(vtt_path).is_file(): # vtt exists
+            print(f"Vtt exists {output_filename}")
+            result = parse_vtt_(vtt_path)
+            return result
+    
+        force_transcription = False
+        transcription_path = self.assets.get_path("transcriptions", output_filename)
+        if Path(transcription_path).is_file() and not force_transcription:
+            print(f"Transcription exists {output_filename}")
+            result = parse_transcription_(transcription_path)
+            return result
+
+        # if files dont exists...
+        try:
+            print("Vtt doesnt exists, downloading...")
+            vtt_path = self.downloader.run({**data, "file_type": "vtt"})
+            has_vtt = True
+        except Exception as e:
+            print("No vtt available.")
+            has_vtt = False
+    
+        if has_vtt:
+            result = parse_vtt_(vtt_path)
+            return result
+    
+        print("VTT not available. Downloading audio...")
+        audio_path = self.downloader.run({**data, "file_type": "audio"})
+        print(f"Generating transcription for {audio_path}...")
+        transcription = self.transcriber.transcribe(audio_path)
+        save_json(transcription, transcription_path)
+        print(f"Transcription saved at {transcription_path}")
+        result = parse_transcription_(transcription_path)
         return result
