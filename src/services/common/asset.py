@@ -79,3 +79,14 @@ class AssetProvider:
         files = list(files)
         files.reverse()
         return files
+
+    def get_source_path(self, category: str) -> Path:
+        """
+        Returns the base directory Path registered for the given category.
+        """
+        category_key = category.lower()
+
+        if category_key not in self._sources:
+            raise KeyError(f"Category '{category}' has not been registered.")
+
+        return self._sources[category_key]["path"]

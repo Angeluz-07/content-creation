@@ -27,7 +27,8 @@ watch(
 )
 const templateList = ref([
   'bM2.png',
-  'fp.png',
+  'fp.png',  
+  'fp2.png',
   'bM.png',
   'to.png',
 ])

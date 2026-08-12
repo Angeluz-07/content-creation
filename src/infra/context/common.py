@@ -5,14 +5,11 @@ from src.config import (
     ASSETS_DIR,
     OUTPUT_DIR,
     TEMP_DIR,
-    EMOJI_DIR,
-    LAYOUT_DIR,
     VTT_DIR,
     METALS_DIR,
     TRANSCRIPTION_DIR,
-    INPUT_IMGS,
+    IMGS_DIR,
     TEMPLATES_DIR,
-    OUTPUT_IMGS_DIR
 )
 
 assets = (
@@ -20,12 +17,9 @@ assets = (
     .add_source("temp", TEMP_DIR)
     .add_source("output_videos", OUTPUT_DIR, extension=".mp4")
     .add_source("input", DOWNLOAD_DIR_VIDEO, extension=".mp4")
-    .add_source("input_imgs", INPUT_IMGS, extension=".png")
+    .add_source("imgs", IMGS_DIR)
     .add_source("templates", TEMPLATES_DIR, extension=".png")
-    .add_source("output_imgs",OUTPUT_IMGS_DIR, extension=".png" )
     .add_source("font", ASSETS_DIR, extension=".ttf")
-    .add_source("emoji", EMOJI_DIR, extension=".png")
-    .add_source("layout", LAYOUT_DIR, extension=".png")
     .add_source("vtt", VTT_DIR, extension=".vtt")
     .add_source("metals", METALS_DIR, extension=".json")
     .add_source("audio", DOWNLOAD_DIR_AUDIO, extension=".m4a")    
