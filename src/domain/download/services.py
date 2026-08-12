@@ -39,13 +39,13 @@ class VideoDownloader:
         self, url: str, start_ts: str, end_ts: str, output_path: Path
     ) -> list:
         filter_720 = "bestvideo[height=720]+bestaudio/best[height=720]"
+        #filter = "bestvideo+bestaudio"
         # fmt: off
         return [
             "yt-dlp", url,
             "--external-downloader-args", "ffmpeg:-loglevel error",
             "--postprocessor-args", "ffmpeg:-loglevel error",
             "--force-overwrites",
-
             #"--list-formats", # for debug only
             "--no-playlist",
             "--cookies", self.cookies_path,
