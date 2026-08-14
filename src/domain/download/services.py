@@ -1,242 +1,179 @@
-import asyncio
 from pathlib import Path
-from typing import Any, Dict, Protocol
-from src.domain.common import run_subprocess, run_async_subprocess
-import time
+from typing import Literal
+from src.domain.common import run_async_subprocess
+
+FileType = Literal["video", "vtt", "audio"]
 
 
+# --- PURE HELPERS & COMMAND BUILDERS ---
 def remove_middle_extension(file_path: Path) -> Path:
-    """Limpia extensiones intermedias como '.es.vtt' -> '.vtt'"""
+    """Cleans intermediate language/type extensions like '.es.vtt' -> '.vtt'"""
     if len(file_path.suffixes) >= 2:
-        new_path = file_path.with_name(
-            f"{file_path.stem.split('.')[0]}{file_path.suffix}"
-        )
+        clean_name = f"{file_path.stem.split('.')[0]}{file_path.suffix}"
+        new_path = file_path.with_name(clean_name)
         if file_path.exists():
             file_path.rename(new_path)
         return new_path
     return file_path
 
 
-# --- INTERFAZ (PROTOCOL) ---
-class MediaDownloader(Protocol):
-    def run(self, params: Dict[str, Any]) -> Path:
-        pass
-
-    async def run_async(self, params: Dict[str, Any]) -> Path:
-        pass
-
-
-# --- IMPLEMENTACIONES INDIVIDUALES ---
-
-
-class VideoDownloader:
-    def __init__(self, output_dir: Path, cookies_path: str):
-        self.output_dir = output_dir / "video"
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.cookies_path = cookies_path
-
-    def _build_command(
-        self, url: str, start_ts: str, end_ts: str, output_path: Path
-    ) -> list:
-        filter_720 = "bestvideo[height=720]+bestaudio/best[height=720]"
-        # filter = "bestvideo+bestaudio"
-        # fmt: off
-        return [
-            "yt-dlp", url,
-            "--external-downloader-args", "ffmpeg:-loglevel error",
-            "--postprocessor-args", "ffmpeg:-loglevel error",
-            "--force-overwrites",
-            #"--list-formats", # for debug only
-            "--no-playlist",
-            "--cookies", self.cookies_path,
-            "--js-runtimes", "node",
-            "--remote-components", "ejs:github",
-            "-f", filter_720,
-            "--download-sections", f"*{start_ts}-{end_ts}",
-            "--force-keyframes-at-cuts",
-            "-o",
-            str(output_path),
-            "--merge-output-format", "mp4",
-            "--extractor-args", "youtube:player_client=default",
-        ]
-        # fmt: on
-
-    def run(self, params: Dict[str, Any]) -> Path:
-        output_path = self.output_dir / f"{params['output_filename']}.mp4"
-        if not output_path.is_file() or params.get("force_download", False):
-            cmd = self._build_command(
-                params["url"],
-                params["start_segment"],
-                params["end_segment"],
-                output_path,
-            )
-            run_subprocess(cmd)
-        return output_path
-
-    async def run_async(self, params: Dict[str, Any]) -> Path:
-        output_path = self.output_dir / f"{params['output_filename']}.mp4"
-        if not output_path.is_file() or params.get("force_download", False):
-            cmd = self._build_command(
-                params["url"],
-                params["start_segment"],
-                params["end_segment"],
-                output_path,
-            )
-            await run_async_subprocess(cmd)
-        return output_path
+def _base_ytdlp_cmd(cookies_path: Path | str) -> list[str]:
+    """Base yt-dlp arguments shared across all media download types."""
+    return [
+        "yt-dlp",
+        "--external-downloader-args", "ffmpeg:-loglevel error",
+        "--postprocessor-args", "ffmpeg:-loglevel error",
+        "--force-overwrites",
+        "--no-playlist",
+        "--cookies", str(cookies_path),
+        "--js-runtimes", "node",
+        "--remote-components", "ejs:github",
+    ]
 
 
-class VTTDownloader:
-    def __init__(self, output_dir: Path, cookies_path: str):
-        self.output_dir = output_dir / "vtt"
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.cookies_path = cookies_path
-
-    def _build_command(self, url: str, output_path: Path) -> list:
-        # fmt: off
-        return [
-            "yt-dlp", url,
-            "--external-downloader-args", "ffmpeg:-loglevel error",
-            "--postprocessor-args", "ffmpeg:-loglevel error",
-            "--force-overwrites",
-            "--no-playlist",
-            "--cookies", self.cookies_path,
-            "--js-runtimes", "node",
-            "--remote-components", "ejs:github",
-            "--write-subs",
-            "--write-auto-sub",
-            "--sub-lang", "es",
-            "--skip-download",
-            "--convert-subs", "vtt",
-            "-o",
-            str(output_path),
-        ]
-
-    def run(self, params: Dict[str, Any]) -> Path:
-        output_path = self.output_dir / f"{params['output_filename']}.vtt"
-        if not output_path.is_file() or params.get("force_download", False):
-            cmd = self._build_command(params["url"], output_path)
-            run_subprocess(cmd)
-        raw_vtt = Path(f"{output_path}.es.vtt")
-        if not raw_vtt.is_file():
-            raise ValueError("Not .es.vtt available")
-        return remove_middle_extension(raw_vtt)
-
-    async def run_async(self, params: Dict[str, Any]) -> Path:
-        output_path = self.output_dir / f"{params['output_filename']}"
-        if not output_path.is_file() or params.get("force_download", False):
-            cmd = self._build_command(params["url"], output_path)
-            await run_async_subprocess(cmd)
-
-        if not raw_vtt.is_file():
-            raise ValueError("Not .es.vtt available")
-        raw_vtt = Path(f"{output_path}.es.vtt")
-        return remove_middle_extension(raw_vtt)
+def build_video_cmd(url: str, start: str, end: str, output_path: Path, cookies: Path | str) -> list[str]:
+    return [
+        *_base_ytdlp_cmd(cookies),
+        url,
+        "-f", "bestvideo[height=720]+bestaudio/best[height=720]",
+        "--download-sections", f"*{start}-{end}",
+        "--force-keyframes-at-cuts",
+        "--merge-output-format", "mp4",
+        "--extractor-args", "youtube:player_client=default",
+        "-o", str(output_path),
+    ]
 
 
-class AudioDownloader:
-    def __init__(self, output_dir: Path, cookies_path: str):
-        self.output_dir = output_dir / "audio"
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-        self.cookies_path = cookies_path
-
-    def _build_ytdlp_command(self, url: str, output_path: Path) -> list:
-        # fmt: off
-        return [
-            "yt-dlp", url,
-            "--extract-audio",
-            "--audio-format", "m4a",
-            "-f", "wa[ext=m4a]",
-            "--external-downloader-args", "ffmpeg:-loglevel error",
-            "--postprocessor-args", "ExtractAudio:-c:a aac -ac 1 -b:a 48k -af aresample=async=1",
-            "--force-overwrites",
-            "--no-playlist",
-            "--cookies", self.cookies_path,
-            "--js-runtimes", "node",
-            "--remote-components", "ejs:github",
-            "-o", str(output_path),
-        ]
-
-    def _build_ffmpeg_command(
-        self, input_audio: Path, output_segment: Path, start_ts: str, end_ts: str
-    ) -> list:
-        return [
-            "ffmpeg",
-            "-y",
-            "-ss",
-            start_ts,
-            "-to",
-            end_ts,
-            "-i",
-            str(input_audio),
-            "-c:a",
-            "copy",
-            str(output_segment),
-        ]
-
-    def run(self, params: Dict[str, Any]) -> Path:
-        output_path = self.output_dir / params["output_filename"]
-        if not output_path.is_file() or params.get("force_download", False):
-            cmd_ytdlp = self._build_ytdlp_command(params["url"], output_path)
-            run_subprocess(cmd_ytdlp)
-
-            # input_audio = Path(f"{output_path}.m4a")
-            # output_segment = input_audio.parent / f"{input_audio.stem}_segment.m4a"
-            # cmd_ffmpeg = self._build_ffmpeg_command(
-            #     input_audio,
-            #     output_segment,
-            #     params["start_segment"],
-            #     params["end_segment"],
-            # )
-            # run_subprocess(cmd_ffmpeg)
-        return Path(f"{output_path}.m4a")
-
-    async def run_async(self, params: Dict[str, Any]) -> Path:
-        output_path = self.output_dir / params["output_filename"]
-        if not output_path.is_file() or params.get("force_download", False):
-            cmd_ytdlp = self._build_ytdlp_command(params["url"], output_path)
-            await run_async_subprocess(cmd_ytdlp)
-
-            # input_audio = Path(f"{output_path}.m4a")
-            # output_segment = input_audio.parent / f"{input_audio.stem}_segment.m4a"
-            # cmd_ffmpeg = self._build_ffmpeg_command(
-            #     input_audio,
-            #     output_segment,
-            #     params["start_segment"],
-            #     params["end_segment"],
-            # )
-            # await run_async_subprocess(cmd_ffmpeg)
-        return output_path
+def build_vtt_cmd(url: str, output_path: Path, cookies: Path | str) -> list[str]:
+    return [
+        *_base_ytdlp_cmd(cookies),
+        url,
+        "--write-subs",
+        "--write-auto-sub",
+        "--sub-lang", "es",
+        "--skip-download",
+        "--convert-subs", "vtt",
+        "-o", str(output_path),
+    ]
 
 
-# --- ORQUESTRADOR ---
+def build_audio_cmd(url: str, output_path: Path, cookies: Path | str) -> list[str]:
+    return [
+        *_base_ytdlp_cmd(cookies),
+        url,
+        "--extract-audio",
+        "--audio-format", "m4a",
+        "-f", "wa[ext=m4a]",
+        "--postprocessor-args", "ExtractAudio:-c:a aac -ac 1 -b:a 48k -af aresample=async=1",
+        "-o", str(output_path),
+    ]
 
+
+# --- AGNOSTIC WORKFLOWS ---
+async def download_video(
+    url: str,
+    output_path: Path | str,
+    cookies_path: Path | str,
+    start: str,
+    end: str,
+    force: bool = False,
+) -> Path:
+    out_p = Path(output_path)
+    out_p.parent.mkdir(parents=True, exist_ok=True)
+
+    if not out_p.is_file() or force:
+        cmd = build_video_cmd(url, start, end, out_p, cookies_path)
+        await run_async_subprocess(cmd)
+    return out_p
+
+
+async def download_vtt(
+    url: str,
+    output_path: Path | str,
+    cookies_path: Path | str,
+    force: bool = False,
+) -> Path:
+    out_p = Path(output_path)
+    out_p.parent.mkdir(parents=True, exist_ok=True)
+
+    base_output = out_p.with_suffix("")
+    target_vtt = out_p.with_suffix(".vtt")
+
+    if not target_vtt.is_file() or force:
+        cmd = build_vtt_cmd(url, base_output, cookies_path)
+        await run_async_subprocess(cmd)
+
+    raw_vtt = Path(f"{base_output}.es.vtt")
+    if not raw_vtt.is_file() and not target_vtt.is_file():
+        raise FileNotFoundError(f"Subtitle download failed: '{raw_vtt}' not generated.")
+
+    return remove_middle_extension(raw_vtt) if raw_vtt.is_file() else target_vtt
+
+
+async def download_audio(
+    url: str,
+    output_path: Path | str,
+    cookies_path: Path | str,
+    force: bool = False,
+) -> Path:
+    out_p = Path(output_path)
+    out_p.parent.mkdir(parents=True, exist_ok=True)
+
+    if not out_p.is_file() or force:
+        cmd = build_audio_cmd(url, out_p.with_suffix(""), cookies_path)
+        await run_async_subprocess(cmd)
+    return out_p.with_suffix(".m4a")
+
+
+# --- UNIFIED DISPATCHER ---
+async def download_media(params: dict) -> Path:
+    """
+    Expects params dict with 'file_type', 'url', 'output_path', and 'cookies_path'.
+    """
+    file_type: FileType = params["file_type"]
+    url: str = params["url"]
+    output_path: Path | str = params["output_path"]
+    cookies_path: Path | str = params["cookies_path"]
+    force: bool = params.get("force_download", False)
+
+    if file_type == "video":
+        path = await download_video(
+            url=url,
+            output_path=output_path,
+            cookies_path=cookies_path,
+            start=params["start_segment"],
+            end=params["end_segment"],
+            force=force,
+        )
+    elif file_type == "vtt":
+        path = await download_vtt(
+            url=url,
+            output_path=output_path,
+            cookies_path=cookies_path,
+            force=force,
+        )
+    elif file_type == "audio":
+        path = await download_audio(
+            url=url,
+            output_path=output_path,
+            cookies_path=cookies_path,
+            force=force,
+        )
+    else:
+        raise ValueError(f"Unknown file_type: {file_type}")
+
+    print(f"File saved in {path}")
+    return path
 
 class YTDownloader:
-    def __init__(self, output_path: str, cookies_path: str):
-        self.base_dir = Path(output_path)
-        self.downloaders: Dict[str, MediaDownloader] = {
-            "video": VideoDownloader(self.base_dir, cookies_path),
-            "vtt": VTTDownloader(self.base_dir, cookies_path),
-            "audio": AudioDownloader(self.base_dir, cookies_path),
-        }
 
-    def run(self, params: Dict[str, Any]) -> Path:
+    def __init__(self, base_dir, cookies_path):
+        self.cookies_path = cookies_path
+        self.base_dir = base_dir
+
+    async def run(self, params):
+        params = params.copy()
         file_type = params.get("file_type")
-        downloader = self.downloaders.get(file_type)
-        if not downloader:
-            raise ValueError(f"Unknown file_type: {file_type}")
-
-        result_filepath = downloader.run(params)
-        print(f"File saved in {result_filepath}")
-        return result_filepath
-
-    async def run_async(self, params: Dict[str, Any]) -> Path:
-        file_type = params.get("file_type")
-        downloader = self.downloaders.get(file_type)
-        if not downloader:
-            raise ValueError(f"Unknown file_type: {file_type}")
-
-        result_filepath = await downloader.run_async(params)
-        print(f"File saved in {result_filepath}")
-        return result_filepath
+        params["output_path"] = Path(self.base_dir) / file_type / params.pop("output_filename")
+        params["cookies_path"] = self.cookies_path
+        return await download_media(params)

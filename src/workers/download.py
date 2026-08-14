@@ -42,7 +42,7 @@ async def download(task_id: str, data: dict):
     print(f"--- [WORKER] Iniciando proceso de: {data.get("output_filename")}({file_type}) ---")
 
     try:
-        await downloader.run_async(params=data)
+        await downloader.run(params=data)
 
         print(f"--- [WORKER] Finalizado con éxito: {data.get("output_filename")}({file_type}) ---")
 
