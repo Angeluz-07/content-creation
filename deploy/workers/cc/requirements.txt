@@ -2,7 +2,7 @@
 prefect==3.7.5
 
 # download
-yt-dlp==2026.3.17
+yt-dlp==2026.07.04
 
 # video
 moviepy==2.2.1

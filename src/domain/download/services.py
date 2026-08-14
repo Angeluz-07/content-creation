@@ -39,7 +39,7 @@ class VideoDownloader:
         self, url: str, start_ts: str, end_ts: str, output_path: Path
     ) -> list:
         filter_720 = "bestvideo[height=720]+bestaudio/best[height=720]"
-        #filter = "bestvideo+bestaudio"
+        # filter = "bestvideo+bestaudio"
         # fmt: off
         return [
             "yt-dlp", url,
@@ -118,6 +118,8 @@ class VTTDownloader:
             cmd = self._build_command(params["url"], output_path)
             run_subprocess(cmd)
         raw_vtt = Path(f"{output_path}.es.vtt")
+        if not raw_vtt.is_file():
+            raise ValueError("Not .es.vtt available")
         return remove_middle_extension(raw_vtt)
 
     async def run_async(self, params: Dict[str, Any]) -> Path:
@@ -125,6 +127,9 @@ class VTTDownloader:
         if not output_path.is_file() or params.get("force_download", False):
             cmd = self._build_command(params["url"], output_path)
             await run_async_subprocess(cmd)
+
+        if not raw_vtt.is_file():
+            raise ValueError("Not .es.vtt available")
         raw_vtt = Path(f"{output_path}.es.vtt")
         return remove_middle_extension(raw_vtt)
 
@@ -235,4 +240,3 @@ class YTDownloader:
         result_filepath = await downloader.run_async(params)
         print(f"File saved in {result_filepath}")
         return result_filepath
-

@@ -18,8 +18,3 @@ deployments:
     entrypoint: src.workers.discovery:discovery
     work_pool:
       name: local-docker-pool
-
-  - name: main
-    entrypoint: src.workers.ingestion:ingestion
-    work_pool:
-      name: local-docker-pool
