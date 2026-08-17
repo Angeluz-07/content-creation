@@ -7,21 +7,25 @@ from src.config import (
     TEMP_DIR,
     VTT_DIR,
     METALS_DIR,
-    TRANSCRIPTION_DIR,
     IMGS_DIR,
     TEMPLATES_DIR,
 )
 
-assets = (
-    AssetProvider()
-    .add_source("temp", TEMP_DIR)
-    .add_source("output_videos", OUTPUT_DIR, extension=".mp4")
-    .add_source("input", DOWNLOAD_DIR_VIDEO, extension=".mp4")
-    .add_source("imgs", IMGS_DIR)
-    .add_source("templates", TEMPLATES_DIR, extension=".png")
-    .add_source("font", ASSETS_DIR, extension=".ttf")
-    .add_source("vtt", VTT_DIR, extension=".vtt")
-    .add_source("metals", METALS_DIR, extension=".json")
-    .add_source("audio", DOWNLOAD_DIR_AUDIO, extension=".m4a")    
-    .add_source("transcriptions", TRANSCRIPTION_DIR, extension=".json")
-)
+from src.domain.common_.path import DirMap, get_path as get_path_
+from functools import partial
+dir_map: DirMap = {"vtt": {"base_dir": VTT_DIR, "ext": ".vtt"}}
+
+get_path = partial(get_path_, registry=dir_map)
+# assets = (
+#     AssetProvider()
+#     .add_source("temp", TEMP_DIR)
+#     .add_source("output_videos", OUTPUT_DIR, extension=".mp4")
+#     .add_source("input", DOWNLOAD_DIR_VIDEO, extension=".mp4")
+#     .add_source("imgs", IMGS_DIR)
+#     .add_source("templates", TEMPLATES_DIR, extension=".png")
+#     .add_source("font", ASSETS_DIR, extension=".ttf")
+#     .add_source("vtt", VTT_DIR, extension=".vtt")
+#     .add_source("metals", METALS_DIR, extension=".json")
+#     .add_source("audio", DOWNLOAD_DIR_AUDIO, extension=".m4a")
+#     .add_source("transcriptions", TRANSCRIPTION_DIR, extension=".json")
+# )

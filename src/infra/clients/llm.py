@@ -136,7 +136,7 @@ class GeminiClient(BaseLLMClient):
     Soporta salidas estructuradas nativas utilizando esquemas de Pydantic.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gemini-3.5-flash-lite"):
         """
         Inicializa el cliente de Gemini.
         Busca 'GEMINI_API_KEY' en las variables de entorno si no se provee explícitamente.

@@ -19,6 +19,7 @@ def remove_middle_extension(file_path: Path) -> Path:
 
 def _base_ytdlp_cmd(cookies_path: Path | str) -> list[str]:
     """Base yt-dlp arguments shared across all media download types."""
+    # fmt: off
     return [
         "yt-dlp",
         "--external-downloader-args", "ffmpeg:-loglevel error",
@@ -29,9 +30,13 @@ def _base_ytdlp_cmd(cookies_path: Path | str) -> list[str]:
         "--js-runtimes", "node",
         "--remote-components", "ejs:github",
     ]
+    # fmt: on
 
 
-def build_video_cmd(url: str, start: str, end: str, output_path: Path, cookies: Path | str) -> list[str]:
+def build_video_cmd(
+    url: str, start: str, end: str, output_path: Path, cookies: Path | str
+) -> list[str]:
+    # fmt: off
     return [
         *_base_ytdlp_cmd(cookies),
         url,
@@ -42,9 +47,11 @@ def build_video_cmd(url: str, start: str, end: str, output_path: Path, cookies: 
         "--extractor-args", "youtube:player_client=default",
         "-o", str(output_path),
     ]
+    # fmt: on
 
 
 def build_vtt_cmd(url: str, output_path: Path, cookies: Path | str) -> list[str]:
+    # fmt: off
     return [
         *_base_ytdlp_cmd(cookies),
         url,
@@ -55,9 +62,11 @@ def build_vtt_cmd(url: str, output_path: Path, cookies: Path | str) -> list[str]
         "--convert-subs", "vtt",
         "-o", str(output_path),
     ]
+    # fmt: on
 
 
 def build_audio_cmd(url: str, output_path: Path, cookies: Path | str) -> list[str]:
+    # fmt: off
     return [
         *_base_ytdlp_cmd(cookies),
         url,
@@ -67,6 +76,7 @@ def build_audio_cmd(url: str, output_path: Path, cookies: Path | str) -> list[st
         "--postprocessor-args", "ExtractAudio:-c:a aac -ac 1 -b:a 48k -af aresample=async=1",
         "-o", str(output_path),
     ]
+    # fmt: on
 
 
 # --- AGNOSTIC WORKFLOWS ---
@@ -89,11 +99,12 @@ async def download_video(
 
 async def download_vtt(
     url: str,
-    output_path: Path | str,
+    output_filename: str,
+    output_dir: Path | str,
     cookies_path: Path | str,
     force: bool = False,
 ) -> Path:
-    out_p = Path(output_path)
+    out_p = Path(output_dir) / output_filename
     out_p.parent.mkdir(parents=True, exist_ok=True)
 
     base_output = out_p.with_suffix("")
@@ -105,7 +116,7 @@ async def download_vtt(
 
     raw_vtt = Path(f"{base_output}.es.vtt")
     if not raw_vtt.is_file() and not target_vtt.is_file():
-        raise FileNotFoundError(f"Subtitle download failed: '{raw_vtt}' not generated.")
+        raise ValueError(f"Subtitle download failed: '{raw_vtt}' not generated.")
 
     return remove_middle_extension(raw_vtt) if raw_vtt.is_file() else target_vtt
 
@@ -126,7 +137,7 @@ async def download_audio(
 
 
 # --- UNIFIED DISPATCHER ---
-async def download_media(params: dict) -> Path:
+async def download_media(params: dict, cookies_path: str | Path, base) -> Path:
     """
     Expects params dict with 'file_type', 'url', 'output_path', and 'cookies_path'.
     """
@@ -165,6 +176,7 @@ async def download_media(params: dict) -> Path:
     print(f"File saved in {path}")
     return path
 
+
 class YTDownloader:
 
     def __init__(self, base_dir, cookies_path):
@@ -174,6 +186,8 @@ class YTDownloader:
     async def run(self, params):
         params = params.copy()
         file_type = params.get("file_type")
-        params["output_path"] = Path(self.base_dir) / file_type / params.pop("output_filename")
+        params["output_path"] = (
+            Path(self.base_dir) / file_type / params.pop("output_filename")
+        )
         params["cookies_path"] = self.cookies_path
         return await download_media(params)

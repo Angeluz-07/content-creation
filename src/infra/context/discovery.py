@@ -1,16 +1,22 @@
 from src.infra.dbs.qdrant import get_client
 from src.infra.dbs.qdrant import QdrantVectorStore
-from src.config import  QDRANTDB_URI
+from src.config import QDRANTDB_URI
 from src.config import EMBEDDER_URI
 from src.config import GROQ_API_KEY, DEEPGRAM_API_KEY
-from src.config import INGESTION_DIR, PROMPTS_DIR
+from src.config import INGESTION_DIR, PROMPTS_DIR, VTT_DIR, COOKIES_PATH
 from src.infra.clients.embedding import Embedder
-from src.infra.clients.transcription import GroqAudioTranscriber, DeepgramAudioTranscriber
-from src.services.discovery.detection import DetectorV2, DetectorV3
-from src.infra.context.common import assets
-from src.infra.context.download import downloader
+from src.infra.clients.transcription import (
+    GroqAudioTranscriber,
+    DeepgramAudioTranscriber,
+)
 from src.infra.dbs.md import PromptRepository
+from src.config import GROQ_API_KEY, GEMINI_API_KEY
+from src.infra.clients.llm import GroqClient, GeminiClient
+from functools import partial
+from src.services.discovery.detection import get_moments
+from pathlib import Path
 
+gemini_client = GeminiClient(GEMINI_API_KEY)
 prompts_repo = PromptRepository(PROMPTS_DIR)
 
 qdrant_client = get_client(QDRANTDB_URI)
@@ -20,9 +26,16 @@ collection_name = "moments"  # change to 'moments'
 qvs = QdrantVectorStore(qdrant_client, embedder, collection_name)
 qvs.create_collection()
 
-metal_detector = DetectorV2(assets, qvs)
 transcriber = GroqAudioTranscriber(GROQ_API_KEY)
 deepgram_transcriber = DeepgramAudioTranscriber(DEEPGRAM_API_KEY)
-metal_detector3 = DetectorV3(assets, downloader, deepgram_transcriber)
 
 
+async def get_metals(data):
+    return await get_moments(
+        data,
+        vtt_dir=VTT_DIR,
+        cookies_path=COOKIES_PATH,
+        llm_client=gemini_client,
+        prompts_repo=prompts_repo,
+        debug=False,
+    )
