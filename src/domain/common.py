@@ -81,11 +81,11 @@ async def run_async_subprocess(
     full_output = "".join(captured_output)
 
     if process.returncode != 0:
-        print("\n" + "=" * 50)
-        print("DETAILED ERROR OUTPUT:")
-        print("=" * 50)
-        print(full_output.strip())
-        print("=" * 50 + "\n")
+        # print("\n" + "=" * 50)
+        # print("DETAILED ERROR OUTPUT:")
+        # print("=" * 50)
+        # print(full_output.strip())
+        # print("=" * 50 + "\n")
 
         raise subprocess.CalledProcessError(
             returncode=process.returncode,

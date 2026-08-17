@@ -82,19 +82,21 @@ def build_audio_cmd(url: str, output_path: Path, cookies: Path | str) -> list[st
 # --- AGNOSTIC WORKFLOWS ---
 async def download_video(
     url: str,
-    output_path: Path | str,
+    output_filename: str,
+    output_dir: Path | str,
     cookies_path: Path | str,
     start: str,
     end: str,
     force: bool = False,
 ) -> Path:
-    out_p = Path(output_path)
+    out_p = Path(output_dir) / output_filename
     out_p.parent.mkdir(parents=True, exist_ok=True)
 
-    if not out_p.is_file() or force:
+    target = out_p.with_suffix(".mp4")
+    if not target.is_file() or force:
         cmd = build_video_cmd(url, start, end, out_p, cookies_path)
         await run_async_subprocess(cmd)
-    return out_p
+    return target
 
 
 async def download_vtt(
@@ -122,20 +124,23 @@ async def download_vtt(
 
 
 async def download_audio(
-    url: str,
-    output_path: Path | str,
+    url: str,    
+    output_filename: str,
+    output_dir: Path | str,
     cookies_path: Path | str,
     force: bool = False,
 ) -> Path:
-    out_p = Path(output_path)
+    out_p = Path(output_dir) / output_filename
     out_p.parent.mkdir(parents=True, exist_ok=True)
 
-    if not out_p.is_file() or force:
-        cmd = build_audio_cmd(url, out_p.with_suffix(""), cookies_path)
+    target = out_p.with_suffix(".m4a")
+
+    if not target.is_file() or force:
+        cmd = build_audio_cmd(url, out_p, cookies_path)
         await run_async_subprocess(cmd)
-    return out_p.with_suffix(".m4a")
+    return target
 
-
+# todo:upd
 # --- UNIFIED DISPATCHER ---
 async def download_media(params: dict, cookies_path: str | Path, base) -> Path:
     """
@@ -175,19 +180,3 @@ async def download_media(params: dict, cookies_path: str | Path, base) -> Path:
 
     print(f"File saved in {path}")
     return path
-
-
-class YTDownloader:
-
-    def __init__(self, base_dir, cookies_path):
-        self.cookies_path = cookies_path
-        self.base_dir = base_dir
-
-    async def run(self, params):
-        params = params.copy()
-        file_type = params.get("file_type")
-        params["output_path"] = (
-            Path(self.base_dir) / file_type / params.pop("output_filename")
-        )
-        params["cookies_path"] = self.cookies_path
-        return await download_media(params)

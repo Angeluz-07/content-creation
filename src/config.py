@@ -6,19 +6,23 @@ PROJECT_DIR = Path(__file__).resolve().parent.parent
 
 DATA_DIR = PROJECT_DIR / ".data"
 
+VTT_DIR = str(DATA_DIR / "downloads" / "vtt")
+VIDEO_DIR_DOWNLOAD = str(DATA_DIR / "videos" /"downloads" )
+AUDIO_DIR_DOWNLOAD = str(DATA_DIR / "downloads" / "audio")
+VIDEO_DIR_OUTPUT = str(DATA_DIR / "videos" /"output" )
+TEMP_DIR = str(DATA_DIR / "temp")
+TEMPLATES_DIR = str(DATA_DIR / "imgs" / "templates")
+FONTS_DIR = str(DATA_DIR / "assets")
+
+
 GOLD_SAMPLES_DIR = str(DATA_DIR / "gold_samples")
 DOWNLOAD_DIR = str(DATA_DIR / "downloads")
-DOWNLOAD_DIR_VIDEO = str(DATA_DIR / "downloads" / "video")
 DOWNLOAD_DIR_AUDIO = str(DATA_DIR / "downloads" / "audio")
-TEMP_DIR = str(DATA_DIR / "temp")
 OUTPUT_DIR = str(DATA_DIR / "output_videos")
-VTT_DIR = str(DATA_DIR / "downloads" / "vtt")
 METALS_DIR = str(DATA_DIR / "metals")
 INGESTION_DIR = str(DATA_DIR / "gold_samples")
-TRANSCRIPTION_DIR = str(DATA_DIR / "transcriptions")
 
 IMGS_DIR = str(DATA_DIR / "imgs")
-TEMPLATES_DIR = str(DATA_DIR / "imgs" / "templates")
 
 PROMPTS_DIR = str(DATA_DIR / "prompts")
 
