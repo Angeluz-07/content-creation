@@ -57,8 +57,14 @@ def get_cmd_assemble_video_and_template2(
         ]            
         return command
 
+# todo: improve, split speeding from assembling
 def get_cmd_assemble_video_and_template(
-    video_input: str, target_output: str, ui_png: str, debug: bool, speed: float = 1.2
+    video_input: str,
+    target_output: str,
+    ui_png: str,
+    debug: bool,
+    temp_dir: Path | str,
+    speed: float = 1.3,
 ) -> list[str]:
     """Generates the appropriate FFmpeg execution array."""
     CANVAS_W = 720
@@ -72,8 +78,7 @@ def get_cmd_assemble_video_and_template(
             f"[0:v]pad={CANVAS_W}:{CANVAS_H}:(ow-iw)/2:{POS_Y}:black[padded];"
             f"[padded][1:v]overlay=0:0"
         )
-        base_dir = Path(target_output).parent.parent
-        target_output = str(base_dir / "temp" / "debug_frame.png")
+        target_output = Path(temp_dir)/ "debug_frame.png"
         command = [
             "ffmpeg", "-y",
             "-loglevel", "error",
@@ -116,22 +121,11 @@ def get_cmd_assemble_video_and_template(
             target_output
         ]            
         return command
-    
 
-def assemble_video_and_template(input_path, output_path, ui_png, debug):
+
+async def assemble_video_and_template(input_path, output_path, ui_png, debug, temp_dir) -> str:
     ffmpeg_cmd = get_cmd_assemble_video_and_template(
-        input_path, output_path, ui_png, debug
-    )
-    print(f"{'DEBUG' if debug else 'PRODUCTION'} MODE: Assembling (Sync)...")
-    run_subprocess(command=ffmpeg_cmd)
-    return output_path
-
-
-async def assemble_video_and_template_async(
-    input_path, output_path, ui_png, debug
-) -> str:
-    ffmpeg_cmd = get_cmd_assemble_video_and_template(
-        input_path, output_path, ui_png, debug
+        input_path, output_path, ui_png, debug, temp_dir
     )
 
     print(f"{'DEBUG' if debug else 'PRODUCTION'} MODE: Assembling (Async)...")

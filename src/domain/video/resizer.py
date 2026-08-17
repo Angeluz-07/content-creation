@@ -63,18 +63,7 @@ def get_filter_full_vertical(input, output, percentage):
     return ffmpeg_cmd
 
 
-def resize_zoomed_square(input: str, output: str, force: bool):
-    resized = output
-    resized_exists = Path(output).is_file()
-    if force or not resized_exists:
-        print("Start resizing (Sync)...")
-        ffmpeg_cmd = get_filter_zoomed_square(input, output)
-        run_subprocess(command=ffmpeg_cmd)
-        print(f"Resizing successful with file: {resized}")
-        return resized
-    else:
-        print("Resized file exists. Skipping resizing...")
-        return resized
+
 
 
 def resize_full_vertical(input: str, output: str, force: bool, percentage=0.0):
@@ -91,7 +80,7 @@ def resize_full_vertical(input: str, output: str, force: bool, percentage=0.0):
         return resized
 
 
-async def resize_zoomed_square_async(input: str, output: str, force: bool):
+async def resize_zoomed_square(input: str, output: str, force: bool):
     resized = output
     resized_exists = Path(output).is_file()
     if force or not resized_exists:

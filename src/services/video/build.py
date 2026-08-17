@@ -1,80 +1,44 @@
-from dataclasses import dataclass, field
-from abc import ABC, abstractmethod
-from src.services.common.asset import AssetProvider
-from src.domain.video.resizer import resize_zoomed_square_async, resize_zoomed_square
+from src.domain.video.resizer import resize_zoomed_square
 from src.domain.video.layer import add_text_to_template
-from src.domain.video.assembler import (
-    assemble_video_and_template_async,
-    assemble_video_and_template,
-)
+from src.domain.video.assembler import assemble_video_and_template
+from pathlib import Path
 
 
-@dataclass
-class BaseBuilder(ABC):
-    assets: AssetProvider
+async def build_v1(
+    params,
+    input_dir: Path | str,
+    output_dir: Path | str,
+    temp_dir: Path | str,
+    template_dir: Path | str,
+    font_dir: Path | str,
+):
+    input_filename = params.get("input_filename")
+    force_resize = params.get("force_resize", True)
+    input_fp = Path(input_dir) / f"{input_filename}.mp4"
+    resized_fp = Path(temp_dir) / "temp_resized.mp4"
 
-    @abstractmethod
-    def run(self):
-        pass
+    resized_fp = await resize_zoomed_square(input_fp, resized_fp, force_resize)
 
+    template_name = params.get("template_name", "fp")
+    template_path = Path(template_dir) / f"{template_name}.png"
+    font_path = Path(font_dir) / "GoogleSans-Bold.ttf"
+    hook_text = params.get("hook_text")
+    hook_text = hook_text.replace("\\n", "\n")
+    layer_fp = Path(temp_dir) / "temp_ui.png"
+    layer_fp = add_text_to_template(
+        template_path,
+        font_path,
+        hook_text,
+        output_path=layer_fp,
+    )
 
-class BuilderV4(BaseBuilder):
-
-    def run(self, params):
-        input = params.get("input_filename")
-        force_resize = params.get("force_resize")
-        input = self.assets.get_path("input", input)
-        resized = self.assets.get_path("temp", "temp_resized.mp4")  #
-        resized = resize_zoomed_square(input, resized, force=force_resize)
-
-        template_name = "template_fp.png"
-        template_name = "template_bM.png"
-        template_path = self.assets.get_path("templates", template_name)
-        font_name = "GoogleSans-Bold"
-        font_path = self.assets.get_path("font", font_name)
-        hook_text = params.get("hook_text")
-        layer = self.assets.get_path("temp", "temp_ui.png")  #
-        layer = add_text_to_template(
-            template_path,
-            font_path,
-            hook_text,
-            output_path=layer,
-        )
-
-        output = params.get("output_filename")
-        debug_frame = params.get("debug_frame")
-        output = params.get("output_filename")
-        output_path = self.assets.get_path("output_videos", output)
-        result = assemble_video_and_template(
-            resized, output_path, layer, debug=debug_frame
-        )
-        return result
-
-    async def run_async(self, params):
-        input_filename = params.get("input_filename")
-        force_resize = params.get("force_resize", True)
-        input = self.assets.get_path("input", input_filename)
-        resized = self.assets.get_path("temp", "temp_resized.mp4")  #
-        resized = await resize_zoomed_square_async(input, resized, force=force_resize)
-
-        template_name = params.get("template_name", "fp.png")
-        template_path = self.assets.get_path("templates", f"template_{template_name}")
-        font_name = "GoogleSans-Bold"
-        font_path = self.assets.get_path("font", font_name)
-        hook_text = params.get("hook_text")
-        hook_text = hook_text.replace("\\n", "\n")
-        layer = self.assets.get_path("temp", "temp_ui.png")  #
-        layer = add_text_to_template(
-            template_path,
-            font_path,
-            hook_text,
-            output_path=layer,
-        )
-
-        output = params.get("output_filename")
-        output_path = self.assets.get_path("output_videos", output)
-        debug_frame = params.get("debug_frame")
-        result = await assemble_video_and_template_async(
-            input, output_path, layer, debug=debug_frame
-        )
-        return result
+    output_filename = params.get("output_filename")
+    output_fp = Path(output_dir) / f"{output_filename}.mp4"
+    debug_frame = params.get("debug_frame")
+    result = await assemble_video_and_template(
+        resized_fp, output_fp, layer_fp, debug_frame, temp_dir
+    )
+    if debug_frame:
+        print(f"Debug frame built at {Path(temp_dir) / "debug_frame.png"}")
+    else:
+        print(f"Video built at {result}")
