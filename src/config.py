@@ -13,6 +13,7 @@ VIDEO_DIR_OUTPUT = str(DATA_DIR / "videos" /"output" )
 TEMP_DIR = str(DATA_DIR / "temp")
 TEMPLATES_DIR = str(DATA_DIR / "imgs" / "templates")
 FONTS_DIR = str(DATA_DIR / "assets")
+IMGS_DIR = str(DATA_DIR / "imgs")
 
 
 GOLD_SAMPLES_DIR = str(DATA_DIR / "gold_samples")

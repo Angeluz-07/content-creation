@@ -12,30 +12,23 @@ from src.infra.clients.transcription import (
 from src.infra.dbs.md import PromptRepository
 from src.config import GROQ_API_KEY, GEMINI_API_KEY
 from src.infra.clients.llm import GroqClient, GeminiClient
-from functools import partial
-from src.services.discovery.detection import get_moments
-from pathlib import Path
+from src.services.gen import gen_imgs as gen_imgs_
 
 gemini_client = GeminiClient(GEMINI_API_KEY)
 prompts_repo = PromptRepository(PROMPTS_DIR)
 
-qdrant_client = get_client(QDRANTDB_URI)
-embedder = Embedder(EMBEDDER_URI)
+#qdrant_client = get_client(QDRANTDB_URI)
+#embedder = Embedder(EMBEDDER_URI)
 
-collection_name = "moments"  # change to 'moments'
-qvs = QdrantVectorStore(qdrant_client, embedder, collection_name)
-qvs.create_collection()
+#collection_name = "moments"  # change to 'moments'
+#qvs = QdrantVectorStore(qdrant_client, embedder, collection_name)
+#qvs.create_collection()
 
 transcriber = GroqAudioTranscriber(GROQ_API_KEY)
 deepgram_transcriber = DeepgramAudioTranscriber(DEEPGRAM_API_KEY)
 
-
-async def get_metals(data):
-    return await get_moments(
-        data,
-        vtt_dir=VTT_DIR,
-        cookies_path=COOKIES_PATH,
-        llm_client=gemini_client,
-        prompts_repo=prompts_repo,
-        debug=False,
+async def gen_imgs(url, output_filename, debug=False, force=False):
+    return await gen_imgs_(
+        url, output_filename, VTT_DIR, COOKIES_PATH, gemini_client, prompts_repo, debug
     )
+
