@@ -19,6 +19,8 @@
 
 .postgres_data
 
+.azure_data
+
 # data folders
 .data
 

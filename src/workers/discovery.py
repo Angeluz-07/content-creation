@@ -1,6 +1,6 @@
 import traceback
 from prefect import flow, tags
-from src.infra.context.discovery import metal_detector
+#from infra.context.gen import metal_detector
 from src.config import WEBHOOK_URI
 import httpx
 
@@ -41,7 +41,8 @@ def discovery(task_id: str, data: dict):
     print(f"--- [WORKER] Iniciando proceso de: {data.get("output_filename")}---")
 
     try:
-        metal_detector.run(data)
+        #metal_detector.run(data)
+        print("not implemented")
 
         print(f"--- [WORKER] Finalizado con éxito: {data.get("output_filename")}---")
 

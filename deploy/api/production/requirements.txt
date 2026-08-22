@@ -4,3 +4,4 @@ pymongo==4.16.0
 python-dotenv==1.2.2
 prefect==3.7.5
 requests
+azure-storage-blob

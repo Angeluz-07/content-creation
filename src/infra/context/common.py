@@ -1,6 +1,4 @@
-from src.services.common.asset import AssetProvider
 from src.config import (
-    DOWNLOAD_DIR_VIDEO,
     DOWNLOAD_DIR_AUDIO,
     ASSETS_DIR,
     OUTPUT_DIR,
@@ -29,3 +27,24 @@ get_path = partial(get_path_, registry=dir_map)
 #     .add_source("audio", DOWNLOAD_DIR_AUDIO, extension=".m4a")
 #     .add_source("transcriptions", TRANSCRIPTION_DIR, extension=".json")
 # )
+
+# storage/factory.py
+import os
+
+from src.infra.storage.azure import AzureStorageService
+
+def get_storage_service() :
+    provider = os.getenv("STORAGE_PROVIDER", "azure").lower()
+    container_name = os.getenv("STORAGE_CONTAINER_NAME", "uploads")
+
+    if provider == "azure":
+        connection_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING", "")
+        return AzureStorageService(connection_string=connection_str, container_name=container_name)
+    
+    # Próximos proveedores (ej. AWS S3)
+    # elif provider == "s3":
+    #     return S3StorageService(...)
+
+    raise ValueError(f"Proveedor de storage '{provider}' no soportado")
+
+storage_service = get_storage_service()

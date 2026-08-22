@@ -4,6 +4,11 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
+      path: '/dummy',
+      name: 'dummy',
+      component: () => import('../views/Dummy.vue'),
+    },
+    {
       path: '/download-section',
       name: 'downloadSection',
       component: () => import('../views/DownloadSection.vue'),

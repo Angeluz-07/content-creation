@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from .models import ProductionInput, DownloadInput, DiscoveryInput
-from src.infra.context.common import assets
-from src.services.common.utils import read_json
-
+#from src.infra.context.common import assets
+from src.domain.common import read_json
+from src.infra.context.common import storage_service
 from src.infra.context.production import prefect_service
 from src.infra.context.production import (
     short_producer,
@@ -14,6 +14,7 @@ from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from pathlib import Path
 from .models import TaskSyncInput
+from pydantic import BaseModel
 
 router = APIRouter(prefix="", tags=["main"])
 
@@ -21,6 +22,20 @@ router = APIRouter(prefix="", tags=["main"])
 @router.get("/helloworld")
 def hello_world():
     return {"message": "hello world"}
+
+class SignedUrlRequest(BaseModel):
+    fileName: str
+    fileType: str
+
+@router.post("/storage/signed-url")
+def get_signed_url(payload: SignedUrlRequest):
+    try:
+        return storage_service.generate_upload_signed_url(
+            file_name=payload.fileName,
+            file_type=payload.fileType
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/images/")

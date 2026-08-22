@@ -187,6 +187,9 @@ services:
       - MONGODB_URI=${MONGODB_URI}
       - PREFECT_API_URL=http://prefect-server:4200/api
       - GROQ_API_KEY=${GROQ_API_KEY}
+      - STORAGE_PROVIDER=${STORAGE_PROVIDER}
+      - STORAGE_CONTAINER_NAME=${STORAGE_CONTAINER_NAME}
+      - AZURE_STORAGE_CONNECTION_STRING=${AZURE_STORAGE_CONNECTION_STRING}
     volumes:
       - ./.data:/app/.data:z
       - ./src:/app/src:z
@@ -233,3 +236,14 @@ services:
           memory: 1G
     profiles:
       - custom
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    command: "azurite --blobHost 0.0.0.0 --skipApiVersionCheck"
+    container_name: azurite_storage
+    ports:
+      - "10000:10000" # Blob service
+      - "10001:10001" # Queue service
+      - "10002:10002" # Table service
+    volumes:
+      - ./.azure_data:/data
